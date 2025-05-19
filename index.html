@@ -50,22 +50,7 @@
         h1, h2, h3 {
             color: #4a89dc;
         }
-        .image-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 20px;
-        }
-        .image-placeholder {
-            background-color: #eee;
-            height: 200px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 5px;
-        }
-        .upload-form {
-            margin-bottom: 20px;
-        }
+
         .comment {
             border-bottom: 1px solid #eee;
             padding: 10px 0;
@@ -335,7 +320,6 @@
         <a href="#home" data-text="menu-home">홈</a>
         <a href="#about" data-text="menu-about">소개</a>
         <a href="#thoughts" data-text="menu-thoughts">생각/아이디어</a>
-        <a href="#gallery" data-text="menu-gallery">갤러리</a>
         <a href="#games" data-text="menu-games">내 게임들</a>
         <a href="#contact" data-text="menu-contact">연락처</a>
     </nav>
@@ -374,23 +358,7 @@
             </article>
         </section>
         
-        <section id="gallery">
-            <h2 data-text="gallery-title">갤러리</h2>
-            <div class="upload-form">
-                <h3 data-text="gallery-upload-title">이미지 업로드</h3>
-                <form>
-                    <input type="file" accept="image/*">
-                    <button type="submit" data-text="gallery-upload-button">업로드</button>
-                </form>
-            </div>
-            
-            <div class="image-grid">
-                <div class="image-placeholder">이미지 #1</div>
-                <div class="image-placeholder">이미지 #2</div>
-                <div class="image-placeholder">이미지 #3</div>
-                <div class="image-placeholder">이미지 #4</div>
-            </div>
-        </section>
+
         
         <section id="comments">
             <h2 data-text="comments-title">댓글</h2>
@@ -498,7 +466,6 @@
                 'menu-home': '홈',
                 'menu-about': '소개',
                 'menu-thoughts': '생각/아이디어',
-                'menu-gallery': '갤러리',
                 'menu-contact': '연락처',
                 'home-title': '홈',
                 'home-welcome': '제 블로그에 오신 것을 환영합니다! 이곳에서 Jay에 대한 소개, 제 생각과 아이디어, 그리고 제가 공유하고 싶은 이미지들을 찾아보실 수 있습니다.',
@@ -515,9 +482,6 @@
                 'thought-2-content-1': '여기에 Jay의 두 번째 생각이나 아이디어에 대한 내용을 작성하세요.',
                 'thought-2-content-2': 'Jay의 생각과 아이디어를 자유롭게 추가하세요.',
                 'thought-2-date': '작성일: 2025년 5월 18일',
-                'gallery-title': '갤러리',
-                'gallery-upload-title': '이미지 업로드',
-                'gallery-upload-button': '업로드',
                 'comments-title': '댓글',
                 'comments-form-title': '댓글 남기기',
                 'comments-name-label': '이름:',
@@ -549,7 +513,6 @@
                 'menu-home': 'Home',
                 'menu-about': 'About',
                 'menu-thoughts': 'Thoughts/Ideas',
-                'menu-gallery': 'Gallery',
                 'menu-contact': 'Contact',
                 'home-title': 'Home',
                 'home-welcome': 'Welcome to Jay blog! Here you can find information about me, my thoughts and ideas, and images I want to share.',
@@ -566,9 +529,6 @@
                 'thought-2-content-1': 'Write the content of your second thought or idea here.',
                 'thought-2-content-2': 'Feel free to add your thoughts and ideas.',
                 'thought-2-date': 'Date: May 18, 2025',
-                'gallery-title': 'Gallery',
-                'gallery-upload-title': 'Upload Image',
-                'gallery-upload-button': 'Upload',
                 'comments-title': 'Comments',
                 'comments-form-title': 'Leave a Comment',
                 'comments-name-label': 'Name:',
