@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>오! 지석이보다 빨르다고?</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="language-selector">
+    <button class="lang-btn" data-lang="en">English</button>
+    <button class="lang-btn" data-lang="ko">한국어</button>
+  </div>
+  
+  <div class="container">
+    <h1><span id="game-title">Oh!</span> <span data-text="title">can you faster than Jay?</span></h1>
+    
+    <div id="instructions">
+      <p data-text="game-description">반응 속도를 테스트하는 간단한 게임입니다:</p>
+      <ol>
+        <li data-text="instruction-1">시작하기 버튼을 누르세요</li>
+        <li data-text="instruction-2">화면이 녹색으로 바뀔 때까지 기다리세요</li>
+        <li data-text="instruction-3">녹색으로 바뀌는 즉시 화면을 클릭하세요</li>
+        <li data-text="instruction-4">5회 반복 후 평균 반응 시간이 표시됩니다</li>
+      </ol>
+      <p class="warning" data-text="warning">주의: 녹색으로 바뀌기 전에 클릭하면 안 됩니다!</p>
+    </div>
+    
+    <button id="start-btn" data-text="start-button">시작하기</button>
+    
+    <div id="signal-box" data-text="ready">준비</div>
+    
+    <div id="results"></div>
+    
+    <div id="leaderboard-section" class="hidden">
+      <h2 data-text="leaderboard-title">순위표</h2>
+      
+      <div class="leaderboard-tabs">
+        <button id="average-tab" class="tab-btn active" data-text="average-scores">평균 기록</button>
+        <button id="best-tab" class="tab-btn" data-text="best-scores">최고 기록</button>
+      </div>
+      
+      <div id="leaderboard-loading" data-text="loading">로딩 중...</div>
+      
+      <!-- 평균 기록 순위표 -->
+      <div id="average-leaderboard" class="leaderboard-content">
+        <table id="average-leaderboard-table" class="hidden">
+          <thead>
+            <tr>
+              <th data-text="rank">순위</th>
+              <th data-text="name">이름</th>
+              <th data-text="score">반응속도</th>
+              <th data-text="date">날짜</th>
+            </tr>
+          </thead>
+          <tbody id="average-leaderboard-body">
+            <!-- 평균 순위 데이터가 여기에 들어갑니다 -->
+          </tbody>
+        </table>
+        <button id="average-show-more-btn" class="show-more-btn hidden" data-text="show-more">더 보기</button>
+      </div>
+      
+      <!-- 최고 기록 순위표 -->
+      <div id="best-leaderboard" class="leaderboard-content hidden">
+        <table id="best-leaderboard-table" class="hidden">
+          <thead>
+            <tr>
+              <th data-text="rank">순위</th>
+              <th data-text="name">이름</th>
+              <th data-text="score">반응속도</th>
+              <th data-text="date">날짜</th>
+            </tr>
+          </thead>
+          <tbody id="best-leaderboard-body">
+            <!-- 최고 순위 데이터가 여기에 들어갑니다 -->
+          </tbody>
+        </table>
+        <button id="best-show-more-btn" class="show-more-btn hidden" data-text="show-more">더 보기</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- WordPress 인터페이스를 위한 숨겨진 폼 -->
+  <form id="score-form" style="display: none;">
+    <input type="hidden" id="form-player-name" name="player_name" value="">
+    <input type="hidden" id="form-score" name="player_score" value="">
+    <input type="hidden" id="form-datetime" name="play_datetime" value="">
+    <input type="hidden" name="action" value="save_reaction_score">
+    <input type="hidden" id="form-security" name="security" value="">
+  </form>
+  
+  <script src="script.js"></script>
+</body>
+</html>
