@@ -110,6 +110,82 @@
             background-color: #4a89dc;
             color: white;
         }
+        
+        /* 게임 관련 스타일 */
+        .game-challenge {
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .game-button {
+            background-color: #ff6b6b;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        
+        .game-button:hover {
+            background-color: #ff5252;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        /* 게임 모달 스타일 */
+        .game-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.7);
+            z-index: 999;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .game-modal.active {
+            display: flex;
+        }
+        
+        .game-content {
+            width: 90%;
+            max-width: 800px;
+            height: 90%;
+            max-height: 700px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .game-close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0,0,0,0.2);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            font-size: 16px;
+            cursor: pointer;
+            z-index: 2;
+        }
+        
+        .game-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
         footer {
             text-align: center;
             padding: 20px;
@@ -140,6 +216,10 @@
         <section id="home">
             <h2 data-text="home-title">홈</h2>
             <p data-text="home-welcome">제 블로그에 오신 것을 환영합니다! 이곳에서 Jay에 대한 소개, 제 생각과 아이디어, 그리고 제가 공유하고 싶은 이미지들을 찾아보실 수 있습니다.</p>
+            
+            <div class="game-challenge">
+                <button id="play-reaction-game" class="game-button" data-text="game-challenge">Click faster than Jay</button>
+            </div>
         </section>
         
         <section id="about">
@@ -225,12 +305,21 @@
         <p data-text="footer-copyright">&copy; 2025 My Blog. 모든 권리 보유.</p>
     </footer>
     
+    <!-- 게임 모달 -->
+    <div id="game-modal" class="game-modal">
+        <div class="game-content">
+            <button id="close-game" class="game-close">✕</button>
+            <iframe id="game-iframe" class="game-iframe" src="" title="Reaction Test Game"></iframe>
+        </div>
+    </div>
+    
     <script>
         // 언어 데이터 객체
         const translations = {
             'ko': {
                 'blog-title': 'My Blog',
                 'blog-subtitle': '내 개인 공간에 오신 것을 환영합니다',
+                'game-challenge': 'Jay보다 빠르게 클릭해보세요',
                 'menu-home': '홈',
                 'menu-about': '소개',
                 'menu-thoughts': '생각/아이디어',
@@ -272,6 +361,7 @@
             'en': {
                 'blog-title': 'My Blog',
                 'blog-subtitle': 'Welcome to Jay personal space',
+                'game-challenge': 'Click faster than Jay',
                 'menu-home': 'Home',
                 'menu-about': 'About',
                 'menu-thoughts': 'Thoughts/Ideas',
@@ -357,6 +447,46 @@
                     const lang = this.getAttribute('data-lang');
                     changeLanguage(lang);
                 });
+            });
+            
+            // 게임 관련 요소 가져오기
+            const gameButton = document.getElementById('play-reaction-game');
+            const gameModal = document.getElementById('game-modal');
+            const gameIframe = document.getElementById('game-iframe');
+            const closeGameButton = document.getElementById('close-game');
+            
+            // 게임 버튼 클릭 이벤트
+            gameButton.addEventListener('click', function() {
+                // iframe에 게임 URL 설정
+                gameIframe.src = 'reaction_test/react_test.html';
+                // 모달 표시
+                gameModal.classList.add('active');
+                // 스크롤 잠금
+                document.body.style.overflow = 'hidden';
+            });
+            
+            // 게임 닫기 버튼 클릭 이벤트
+            closeGameButton.addEventListener('click', function() {
+                // 모달 닫기
+                gameModal.classList.remove('active');
+                // iframe 소스 비우기
+                gameIframe.src = '';
+                // 스크롤 해제
+                document.body.style.overflow = 'auto';
+            });
+            
+            // 모달 바깥쪽 클릭 시 닫기
+            gameModal.addEventListener('click', function(e) {
+                if (e.target === gameModal) {
+                    closeGameButton.click();
+                }
+            });
+            
+            // Escape 키 누르면 모달 닫기
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && gameModal.classList.contains('active')) {
+                    closeGameButton.click();
+                }
             });
         });
     </script>
