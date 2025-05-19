@@ -186,6 +186,133 @@
             height: 100%;
             border: none;
         }
+        
+        /* 게임셸 섹션 스타일 */
+        .games-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 25px;
+            margin-top: 20px;
+        }
+        
+        .game-card {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .game-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .game-info {
+            padding: 20px;
+            flex: 1;
+        }
+        
+        .game-info h3 {
+            margin-top: 0;
+            font-size: 1.4rem;
+        }
+        
+        .game-info p {
+            color: #666;
+            margin-bottom: 20px;
+        }
+        
+        .game-preview {
+            position: relative;
+            height: 180px;
+        }
+        
+        .game-thumbnail {
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+        
+        #reaction-thumbnail {
+            background-color: #4a89dc;
+            background-image: linear-gradient(45deg, #4a89dc, #5cb85c);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 24px;
+        }
+        
+        .placeholder-thumbnail {
+            background-color: #f3f4f6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .placeholder-thumbnail span {
+            font-size: 48px;
+            color: #ccc;
+        }
+        
+        .thumbnail-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .game-card:hover .thumbnail-overlay {
+            opacity: 1;
+        }
+        
+        .play-game-btn {
+            background-color: #4a89dc;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+        
+        .play-game-btn:hover {
+            background-color: #3b78cc;
+        }
+        
+        .game-placeholder {
+            background-color: #fafafa;
+            border: 2px dashed #ddd;
+            box-shadow: none;
+        }
+        
+        /* 하이라이트 효과 */
+        @keyframes highlightSection {
+            0% { background-color: white; }
+            50% { background-color: rgba(74, 137, 220, 0.1); }
+            100% { background-color: white; }
+        }
+        
+        .highlight {
+            animation: highlightSection 1.5s ease;
+        }
         footer {
             text-align: center;
             padding: 20px;
@@ -209,6 +336,7 @@
         <a href="#about" data-text="menu-about">소개</a>
         <a href="#thoughts" data-text="menu-thoughts">생각/아이디어</a>
         <a href="#gallery" data-text="menu-gallery">갤러리</a>
+        <a href="#games" data-text="menu-games">내 게임들</a>
         <a href="#contact" data-text="menu-contact">연락처</a>
     </nav>
     
@@ -291,12 +419,50 @@
             </div>
         </section>
         
+        <section id="games">
+            <h2 data-text="games-title">내 게임들</h2>
+            <p data-text="games-intro">제가 직접 만든 게임들을 플레이해보세요. 즐거운 시간 보내세요!</p>
+            
+            <div class="games-container">
+                <!-- 게임 카드 1: 반응 속도 게임 -->
+                <div class="game-card">
+                    <div class="game-info">
+                        <h3 data-text="reaction-game-title">반응 속도 테스트</h3>
+                        <p data-text="reaction-game-desc">반응 속도를 테스트하는 게임입니다. 화면이 녹색으로 변할 때 클릭하세요. Jay와 경쟁해보세요!</p>
+                        <button class="play-game-btn" data-game="reaction" data-text="play-game">게임 하기</button>
+                    </div>
+                    <div class="game-preview">
+                        <div class="game-thumbnail" id="reaction-thumbnail">
+                            <div class="thumbnail-overlay">
+                                <span data-text="click-to-play">클릭하여 플레이</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 추가 게임을 위한 플레이스홀더 -->
+                <div class="game-card game-placeholder">
+                    <div class="game-info">
+                        <h3 data-text="coming-soon">곧 출시 예정</h3>
+                        <p data-text="new-games-coming">새로운 게임이 공개될 예정입니다. 기대하세요!</p>
+                    </div>
+                    <div class="game-preview">
+                        <div class="game-thumbnail placeholder-thumbnail">
+                            <div class="thumbnail-overlay">
+                                <span>+</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
         <section id="contact">
             <h2 data-text="contact-title">연락처</h2>
             <p data-text="contact-instruction">아래의 정보로 연락해주세요:</p>
             <ul>
-                <li data-text="contact-email">이메일: your.email@example.com</li>
-                <li data-text="contact-sns">SNS: @your_username</li>
+                <li data-text="contact-email">이메일: fromsnowman14@gmail.com</li>
+                <li data-text="contact-sns">Blog: https://jaylikecodes.github.io/blog</li>
             </ul>
         </section>
     </main>
@@ -320,6 +486,15 @@
                 'blog-title': 'My Blog',
                 'blog-subtitle': '내 개인 공간에 오신 것을 환영합니다',
                 'game-challenge': 'Jay보다 빠르게 클릭해보세요',
+                'menu-games': '내 게임들',
+                'games-title': '내 게임들',
+                'games-intro': '제가 직접 만든 게임들을 플레이해보세요. 즐거운 시간 보내세요!',
+                'reaction-game-title': '반응 속도 테스트',
+                'reaction-game-desc': '반응 속도를 테스트하는 게임입니다. 화면이 녹색으로 변할 때 클릭하세요. Jay와 경쟁해보세요!',
+                'play-game': '게임 하기',
+                'click-to-play': '클릭하여 플레이',
+                'coming-soon': '곧 출시 예정',
+                'new-games-coming': '새로운 게임이 공개될 예정입니다. 기대하세요!',
                 'menu-home': '홈',
                 'menu-about': '소개',
                 'menu-thoughts': '생각/아이디어',
@@ -362,6 +537,15 @@
                 'blog-title': 'My Blog',
                 'blog-subtitle': 'Welcome to Jay personal space',
                 'game-challenge': 'Click faster than Jay',
+                'menu-games': 'My Games',
+                'games-title': 'My Games',
+                'games-intro': 'Play the games I created. Have fun!',
+                'reaction-game-title': 'Reaction Speed Test',
+                'reaction-game-desc': 'Test your reaction speed. Click when the screen turns green. Compete with Jay!',
+                'play-game': 'Play Now',
+                'click-to-play': 'Click to Play',
+                'coming-soon': 'Coming Soon',
+                'new-games-coming': 'New games will be released soon. Stay tuned!',
                 'menu-home': 'Home',
                 'menu-about': 'About',
                 'menu-thoughts': 'Thoughts/Ideas',
@@ -487,6 +671,59 @@
                 if (e.key === 'Escape' && gameModal.classList.contains('active')) {
                     closeGameButton.click();
                 }
+            });
+            
+            // 게임 카드 버튼과 썸네일 클릭 이벤트 처리
+            const playButtons = document.querySelectorAll('.play-game-btn');
+            const gameCards = document.querySelectorAll('.game-card');
+            
+            // 게임 카드 클릭 이벤트
+            gameCards.forEach(card => {
+                // 마지막 카드(출시 예정 카드)는 제외
+                if (!card.classList.contains('game-placeholder')) {
+                    const thumbnail = card.querySelector('.game-thumbnail');
+                    if (thumbnail) {
+                        thumbnail.addEventListener('click', function() {
+                            const gameButton = card.querySelector('.play-game-btn');
+                            if (gameButton) {
+                                gameButton.click();
+                            }
+                        });
+                    }
+                }
+            });
+            
+            // 게임 플레이 버튼 이벤트
+            playButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const game = this.getAttribute('data-game');
+                    // 게임 유형에 따른 처리
+                    if (game === 'reaction') {
+                        gameIframe.src = 'reaction_test/react_test.html';
+                        gameModal.classList.add('active');
+                        document.body.style.overflow = 'hidden';
+                    }
+                    // 추후 다른 게임들을 추가할 수 있습니다.
+                });
+            });
+            
+            // 홈 섹션에서 게임 접근 후 베너 없애기
+            document.querySelectorAll('.game-challenge .game-button').forEach(button => {
+                button.addEventListener('click', function() {
+                    // 메뉴 항목을 클릭하지 않고 바로 게임 섹션으로 이동
+                    const gamesSection = document.getElementById('games');
+                    if (gamesSection) {
+                        gamesSection.scrollIntoView({ behavior: 'smooth' });
+                    }
+                    
+                    // 게임 섹션 하이라이트 효과
+                    setTimeout(() => {
+                        gamesSection.classList.add('highlight');
+                        setTimeout(() => {
+                            gamesSection.classList.remove('highlight');
+                        }, 1500);
+                    }, 500);
+                });
             });
         });
     </script>
