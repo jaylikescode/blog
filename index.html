@@ -1,3 +1,364 @@
-<h1> Arcade blog</h1>
-
-<p style="color: red"> Try these games!</p>
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Blog</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            color: #333;
+            background-color: #f8f8f8;
+        }
+        header {
+            background-color: #4a89dc;
+            color: white;
+            text-align: center;
+            padding: 1rem;
+            position: relative;
+        }
+        nav {
+            background-color: #333;
+            overflow: hidden;
+        }
+        nav a {
+            float: left;
+            display: block;
+            color: white;
+            text-align: center;
+            padding: 14px 16px;
+            text-decoration: none;
+        }
+        nav a:hover {
+            background-color: #555;
+        }
+        main {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+        section {
+            background-color: white;
+            margin-bottom: 30px;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        h1, h2, h3 {
+            color: #4a89dc;
+        }
+        .image-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        .image-placeholder {
+            background-color: #eee;
+            height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 5px;
+        }
+        .upload-form {
+            margin-bottom: 20px;
+        }
+        .comment {
+            border-bottom: 1px solid #eee;
+            padding: 10px 0;
+        }
+        textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+        button {
+            background-color: #4a89dc;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            cursor: pointer;
+            border-radius: 3px;
+        }
+        button:hover {
+            background-color: #3b78cc;
+        }
+        .language-selector {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 5px;
+        }
+        .language-btn {
+            background-color: #fff;
+            color: #4a89dc;
+            border: 1px solid #4a89dc;
+            padding: 5px 10px;
+            font-size: 14px;
+            cursor: pointer;
+            border-radius: 3px;
+            transition: all 0.3s ease;
+        }
+        .language-btn:hover {
+            background-color: #eef5ff;
+        }
+        .language-btn.active {
+            background-color: #4a89dc;
+            color: white;
+        }
+        footer {
+            text-align: center;
+            padding: 20px;
+            background-color: #333;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="language-selector">
+            <button class="language-btn" data-lang="ko">한국어</button>
+            <button class="language-btn" data-lang="en">English</button>
+        </div>
+        <h1 data-text="blog-title">My Blog</h1>
+        <p data-text="blog-subtitle">Welcome to my personal space</p>
+    </header>
+    
+    <nav>
+        <a href="#home" data-text="menu-home">홈</a>
+        <a href="#about" data-text="menu-about">소개</a>
+        <a href="#thoughts" data-text="menu-thoughts">생각/아이디어</a>
+        <a href="#gallery" data-text="menu-gallery">갤러리</a>
+        <a href="#contact" data-text="menu-contact">연락처</a>
+    </nav>
+    
+    <main>
+        <section id="home">
+            <h2 data-text="home-title">홈</h2>
+            <p data-text="home-welcome">제 블로그에 오신 것을 환영합니다! 이곳에서 저에 대한 소개, 제 생각과 아이디어, 그리고 제가 공유하고 싶은 이미지들을 찾아보실 수 있습니다.</p>
+        </section>
+        
+        <section id="about">
+            <h2 data-text="about-title">자기소개</h2>
+            <p data-text="about-greeting">안녕하세요! 저는 Jay입니다.</p>
+            <p data-text="about-description">이곳은 나중에 Jay의 자기소개를 작성할 수 있는 공간입니다. Jay의 관심사, 전문 분야, 취미 등을 포함할 수 있습니다.</p>
+            <p data-text="about-instruction">자기소개를 추가하려면 이 텍스트를 Jay에 관한 정보로 대체하세요.</p>
+        </section>
+        
+        <section id="thoughts">
+            <h2 data-text="thoughts-title">생각 및 아이디어</h2>
+            <article>
+                <h3 data-text="thought-1-title">첫 번째 생각</h3>
+                <p data-text="thought-1-content-1">여기에 Jay의 첫 번째 생각이나 아이디어에 대한 내용을 작성하세요.</p>
+                <p data-text="thought-1-content-2">이것은 블로그 포스트, 생각, 아이디어 또는 Jay가 공유하고 싶은 내용이 될 수 있습니다.</p>
+                <small data-text="thought-1-date">작성일: 2025년 5월 18일</small>
+            </article>
+            
+            <article>
+                <h3 data-text="thought-2-title">두 번째 생각</h3>
+                <p data-text="thought-2-content-1">여기에 Jay의 두 번째 생각이나 아이디어에 대한 내용을 작성하세요.</p>
+                <p data-text="thought-2-content-2">당신의 생각과 아이디어를 자유롭게 추가하세요.</p>
+                <small data-text="thought-2-date">작성일: 2025년 5월 18일</small>
+            </article>
+        </section>
+        
+        <section id="gallery">
+            <h2 data-text="gallery-title">갤러리</h2>
+            <div class="upload-form">
+                <h3 data-text="gallery-upload-title">이미지 업로드</h3>
+                <form>
+                    <input type="file" accept="image/*">
+                    <button type="submit" data-text="gallery-upload-button">업로드</button>
+                </form>
+            </div>
+            
+            <div class="image-grid">
+                <div class="image-placeholder">이미지 #1</div>
+                <div class="image-placeholder">이미지 #2</div>
+                <div class="image-placeholder">이미지 #3</div>
+                <div class="image-placeholder">이미지 #4</div>
+            </div>
+        </section>
+        
+        <section id="comments">
+            <h2 data-text="comments-title">댓글</h2>
+            <div class="comment-form">
+                <h3 data-text="comments-form-title">댓글 남기기</h3>
+                <form>
+                    <div>
+                        <label for="name" data-text="comments-name-label">이름:</label>
+                        <input type="text" id="name" required>
+                    </div>
+                    <div>
+                        <label for="comment" data-text="comments-content-label">댓글:</label>
+                        <textarea id="comment" rows="4" required></textarea>
+                    </div>
+                    <button type="submit" data-text="comments-submit-button">댓글 작성</button>
+                </form>
+            </div>
+            
+            <div class="comments-list">
+                <h3 data-text="comments-list-title">댓글 목록</h3>
+                <div class="comment">
+                    <strong data-text="comments-visitor">방문자</strong>
+                    <p data-text="comments-example">첫 번째 댓글 예시입니다. Jay의 블로그가 정말 멋져요!</p>
+                    <small data-text="comments-date">2025년 5월 18일</small>
+                </div>
+            </div>
+        </section>
+        
+        <section id="contact">
+            <h2 data-text="contact-title">연락처</h2>
+            <p data-text="contact-instruction">아래의 정보로 연락해주세요:</p>
+            <ul>
+                <li data-text="contact-email">이메일: your.email@example.com</li>
+                <li data-text="contact-sns">SNS: @your_username</li>
+            </ul>
+        </section>
+    </main>
+    
+    <footer>
+        <p data-text="footer-copyright">&copy; 2025 My Blog. 모든 권리 보유.</p>
+    </footer>
+    
+    <script>
+        // 언어 데이터 객체
+        const translations = {
+            'ko': {
+                'blog-title': 'My Blog',
+                'blog-subtitle': '내 개인 공간에 오신 것을 환영합니다',
+                'menu-home': '홈',
+                'menu-about': '소개',
+                'menu-thoughts': '생각/아이디어',
+                'menu-gallery': '갤러리',
+                'menu-contact': '연락처',
+                'home-title': '홈',
+                'home-welcome': '제 블로그에 오신 것을 환영합니다! 이곳에서 저에 대한 소개, 제 생각과 아이디어, 그리고 제가 공유하고 싶은 이미지들을 찾아보실 수 있습니다.',
+                'about-title': '자기소개',
+                'about-greeting': '안녕하세요! 저는 [당신의 이름]입니다.',
+                'about-description': '이곳은 나중에 당신의 자기소개를 작성할 수 있는 공간입니다. 당신의 관심사, 전문 분야, 취미 등을 포함할 수 있습니다.',
+                'about-instruction': '자기소개를 추가하려면 이 텍스트를 당신에 관한 정보로 대체하세요.',
+                'thoughts-title': '생각 및 아이디어',
+                'thought-1-title': '첫 번째 생각',
+                'thought-1-content-1': '여기에 당신의 첫 번째 생각이나 아이디어에 대한 내용을 작성하세요.',
+                'thought-1-content-2': '이것은 블로그 포스트, 생각, 아이디어 또는 당신이 공유하고 싶은 내용이 될 수 있습니다.',
+                'thought-1-date': '작성일: 2025년 5월 18일',
+                'thought-2-title': '두 번째 생각',
+                'thought-2-content-1': '여기에 당신의 두 번째 생각이나 아이디어에 대한 내용을 작성하세요.',
+                'thought-2-content-2': '당신의 생각과 아이디어를 자유롭게 추가하세요.',
+                'thought-2-date': '작성일: 2025년 5월 18일',
+                'gallery-title': '갤러리',
+                'gallery-upload-title': '이미지 업로드',
+                'gallery-upload-button': '업로드',
+                'comments-title': '댓글',
+                'comments-form-title': '댓글 남기기',
+                'comments-name-label': '이름:',
+                'comments-content-label': '댓글:',
+                'comments-submit-button': '댓글 작성',
+                'comments-list-title': '댓글 목록',
+                'comments-visitor': '방문자',
+                'comments-example': '첫 번째 댓글 예시입니다. 당신의 블로그가 정말 멋져요!',
+                'comments-date': '2025년 5월 18일',
+                'contact-title': '연락처',
+                'contact-instruction': '아래의 정보로 연락해주세요:',
+                'contact-email': '이메일: your.email@example.com',
+                'contact-sns': 'SNS: @your_username',
+                'footer-copyright': '© 2025 My Blog. 모든 권리 보유.'
+            },
+            'en': {
+                'blog-title': 'My Blog',
+                'blog-subtitle': 'Welcome to my personal space',
+                'menu-home': 'Home',
+                'menu-about': 'About',
+                'menu-thoughts': 'Thoughts/Ideas',
+                'menu-gallery': 'Gallery',
+                'menu-contact': 'Contact',
+                'home-title': 'Home',
+                'home-welcome': 'Welcome to my blog! Here you can find information about me, my thoughts and ideas, and images I want to share.',
+                'about-title': 'About Me',
+                'about-greeting': 'Hello! I am [Your Name].',
+                'about-description': 'This is a space where you can write your self-introduction later. You can include your interests, professional field, hobbies, etc.',
+                'about-instruction': 'To add your self-introduction, replace this text with information about yourself.',
+                'thoughts-title': 'Thoughts and Ideas',
+                'thought-1-title': 'First Thought',
+                'thought-1-content-1': 'Write the content of your first thought or idea here.',
+                'thought-1-content-2': 'This can be a blog post, thought, idea, or anything you want to share.',
+                'thought-1-date': 'Date: May 18, 2025',
+                'thought-2-title': 'Second Thought',
+                'thought-2-content-1': 'Write the content of your second thought or idea here.',
+                'thought-2-content-2': 'Feel free to add your thoughts and ideas.',
+                'thought-2-date': 'Date: May 18, 2025',
+                'gallery-title': 'Gallery',
+                'gallery-upload-title': 'Upload Image',
+                'gallery-upload-button': 'Upload',
+                'comments-title': 'Comments',
+                'comments-form-title': 'Leave a Comment',
+                'comments-name-label': 'Name:',
+                'comments-content-label': 'Comment:',
+                'comments-submit-button': 'Submit Comment',
+                'comments-list-title': 'Comments List',
+                'comments-visitor': 'Visitor',
+                'comments-example': 'This is an example of the first comment. Your blog is really awesome!',
+                'comments-date': 'May 18, 2025',
+                'contact-title': 'Contact',
+                'contact-instruction': 'Contact me using the information below:',
+                'contact-email': 'Email: fromsnowman14@gmail.com',
+                'contact-sns': 'Blog: https://jaylikecodes.github.io/blog',
+                'footer-copyright': '© 2025 My Blog. All rights reserved.'
+            }
+        };
+        
+        // 언어 변경 함수
+        function changeLanguage(lang) {
+            // HTML 언어 속성 변경
+            document.documentElement.lang = lang;
+            
+            // 데이터 속성을 가진 모든 요소 찾기
+            const elements = document.querySelectorAll('[data-text]');
+            
+            // 각 요소의 텍스트 내용 업데이트
+            elements.forEach(element => {
+                const textKey = element.getAttribute('data-text');
+                if (translations[lang] && translations[lang][textKey]) {
+                    element.textContent = translations[lang][textKey];
+                }
+            });
+            
+            // 언어 버튼 활성화 상태 업데이트
+            document.querySelectorAll('.language-btn').forEach(btn => {
+                if (btn.getAttribute('data-lang') === lang) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+            
+            // 현재 언어를 로컬 스토리지에 저장
+            localStorage.setItem('selectedLanguage', lang);
+        }
+        
+        // 언어 버튼 클릭 이벤트 리스너 설정
+        document.addEventListener('DOMContentLoaded', function() {
+            const languageButtons = document.querySelectorAll('.language-btn');
+            
+            // 로컬 스토리지에서 저장된 언어 가져오기 또는 기본값 설정
+            const savedLanguage = localStorage.getItem('selectedLanguage') || 'ko';
+            
+            // 초기 언어 설정
+            changeLanguage(savedLanguage);
+            
+            // 언어 버튼 클릭 이벤트
+            languageButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const lang = this.getAttribute('data-lang');
+                    changeLanguage(lang);
+                });
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+# Ignore Google Drive specific files
+*.gsheet
+*.gdoc
+*.gslides
+*.gdraw
+*.gform
+*.gtable
+
+# Ignore OS specific files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Ignore node modules if you're using NPM
+node_modules/
+
+# Ignore any potential build directories
+build/
+dist/
