@@ -7,7 +7,8 @@ const translations = {
   'en': {
     'title': 'Faster than Jay?',
     'game-description': 'A simple game to test your reaction speed:',
-    'instruction-1': 'Press the Start button',
+    'click-to-start': 'Click here to start',
+    'instruction-1': 'Click on the game area',
     'instruction-2': 'Wait until the screen turns green',
     'instruction-3': 'Click the screen as soon as it turns green',
     'instruction-4': 'After 5 rounds, your best reaction time will be recorded',
@@ -48,7 +49,8 @@ const translations = {
   'ko': {
     'title': '지석이보다 빠르다고?',
     'game-description': '반응 속도를 테스트하는 간단한 게임입니다:',
-    'instruction-1': '시작하기 버튼을 누르세요',
+    'click-to-start': '화면을 클릭하여 시작하세요',
+    'instruction-1': '게임 화면을 클릭하세요',
     'instruction-2': '화면이 녹색으로 바뀔 때까지 기다리세요',
     'instruction-3': '녹색으로 바뀌는 즉시 화면을 클릭하세요',
     'instruction-4': '5회 반복 후 최고 반응 시간이 기록됩니다',
@@ -88,8 +90,8 @@ const translations = {
   }
 };
 
-// 현재 언어 - 기본값은 한국어
-let currentLang = 'ko';
+// 현재 언어 - 기본값은 영어
+let currentLang = 'en';
 
 /**
  * 텍스트 가져오기 유틸리티 함수
@@ -109,7 +111,7 @@ function getText(key) {
  */
 function changeLanguage(lang) {
   if (lang !== 'en' && lang !== 'ko') {
-    lang = 'ko'; // 기본값은 한국어
+    lang = 'en'; // 기본값은 영어
   }
   
   currentLang = lang;
