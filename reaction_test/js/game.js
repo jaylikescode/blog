@@ -304,25 +304,45 @@ function createNameInputForm(score) {
   
   // 저장 버튼 클릭 이벤트
   saveButton.addEventListener('click', function() {
+    // 저장 중임을 표시
+    saveButton.disabled = true;
+    saveButton.textContent = window.gameTranslations.getText('saving') || 'Saving...';
+    
     // 이름을 입력하지 않은 경우 'Anonymous'로 설정
     const playerName = nameInput.value.trim() || window.gameTranslations.getText('anonymous');
     
-    // 순위표에 기록 저장
-    const rank = window.gameLeaderboard.addScoreToLeaderboard(playerName, score);
-    
-    // 저장 성공 메시지
-    nameDiv.innerHTML = '';
-    const successMsg = document.createElement('div');
-    successMsg.className = 'save-success';
-    successMsg.textContent = `${window.gameTranslations.getText('score-saved')} (${window.gameTranslations.getText('rank')}: ${rank})`;
-    nameDiv.appendChild(successMsg);
-    
-    // 다시하기 버튼
-    const retryBtn = document.createElement('button');
-    retryBtn.id = 'retry';
-    retryBtn.textContent = window.gameTranslations.getText('retry');
-    retryBtn.addEventListener('click', startTest);
-    nameDiv.appendChild(retryBtn);
+    // 순위표에 기록 저장 (Promise 처리)
+    window.gameLeaderboard.addScoreToLeaderboard(playerName, score)
+      .then(rank => {
+        // 저장 성공 메시지
+        nameDiv.innerHTML = '';
+        const successMsg = document.createElement('div');
+        successMsg.className = 'save-success';
+        successMsg.textContent = `${window.gameTranslations.getText('score-saved')} (${window.gameTranslations.getText('rank')}: ${rank})`;
+        nameDiv.appendChild(successMsg);
+        
+        // 다시하기 버튼
+        const retryBtn = document.createElement('button');
+        retryBtn.id = 'retry';
+        retryBtn.textContent = window.gameTranslations.getText('retry');
+        retryBtn.addEventListener('click', startTest);
+        nameDiv.appendChild(retryBtn);
+      })
+      .catch(error => {
+        // 오류 발생 시 메시지 표시
+        console.error('Error saving score:', error);
+        nameDiv.innerHTML = '';
+        const errorMsg = document.createElement('div');
+        errorMsg.className = 'save-error';
+        errorMsg.textContent = window.gameTranslations.getText('save-error') || 'Error saving score. Please try again.';
+        nameDiv.appendChild(errorMsg);
+        
+        // 재시도 버튼
+        const retryBtn = document.createElement('button');
+        retryBtn.textContent = window.gameTranslations.getText('try-again') || 'Try Again';
+        retryBtn.addEventListener('click', () => createNameInputForm(score));
+        nameDiv.appendChild(retryBtn);
+      });
   });
   
   // 요소들을 추가
