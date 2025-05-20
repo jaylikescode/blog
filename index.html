@@ -510,6 +510,9 @@
     <div id="game-modal" class="game-modal">
         <div class="game-content">
             <button id="close-game" class="game-close">✕</button>
+            <div class="game-loading-spinner">
+                <div class="spinner"></div>
+            </div>
             <iframe id="game-iframe" class="game-iframe" src="" frameborder="0" allowfullscreen></iframe>
         </div>
     </div>
@@ -521,10 +524,11 @@
             position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.7);
             z-index: 1000;
+            overflow: hidden;
         }
         
         .game-modal.active {
@@ -536,13 +540,15 @@
         .game-content {
             background: white;
             border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            width: 80vw;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            width: 90vw;
             max-width: 800px;
-            height: 80vh;
+            height: 70vh;
             max-height: 600px;
             position: relative;
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
         }
         
         .game-close {
@@ -556,7 +562,8 @@
             cursor: pointer;
             padding: 10px;
             border-radius: 50%;
-            transition: background-color 0.3s;
+            transition: background-color 0.2s ease;
+            z-index: 10;
         }
         
         .game-close:hover {
@@ -564,23 +571,28 @@
         }
         
         .game-iframe {
+            flex: 1;
             width: 100%;
-            height: 100%;
             border: none;
+            object-fit: contain;
         }
         
-        /* Loading Animation */
-        .game-modal.loading {
-            opacity: 0.8;
-            pointer-events: none;
-        }
-        
-        .game-modal.loading::after {
-            content: '';
+        /* Loading Spinner */
+        .game-loading-spinner {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
+            z-index: 5;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .game-modal.loading .game-loading-spinner {
+            opacity: 1;
+        }
+        
+        .spinner {
             width: 40px;
             height: 40px;
             border: 4px solid #4a89dc;
