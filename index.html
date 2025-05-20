@@ -328,12 +328,45 @@
     </header>
     
     <nav>
-        <a href="#home" data-text="menu-home">홈</a>
-        <a href="#about" data-text="menu-about">소개</a>
-        <a href="#thoughts" data-text="menu-thoughts">생각/아이디어</a>
-        <a href="#games" data-text="menu-games">내 게임들</a>
-        <a href="#contact" data-text="menu-contact">연락처</a>
+        <a href="#home" class="nav-link" data-text="menu-home">홈</a>
+        <a href="#about" class="nav-link" data-text="menu-about">소개</a>
+        <a href="#thoughts" class="nav-link" data-text="menu-thoughts">생각/아이디어</a>
+        <a href="#games" class="nav-link" data-text="menu-games">내 게임들</a>
+        <a href="#contact" class="nav-link" data-text="menu-contact">연락처</a>
     </nav>
+    
+    <style>
+        .nav-link {
+            text-decoration: none;
+            color: white;
+            padding: 14px 16px;
+            display: block;
+            transition: background-color 0.3s ease;
+        }
+        .nav-link:hover {
+            background-color: #555;
+        }
+        .nav-link.active {
+            background-color: #4a89dc;
+        }
+    </style>
+    
+    <script>
+        // Add smooth scrolling for navigation links
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href').substring(1);
+                const targetSection = document.getElementById(targetId);
+                if (targetSection) {
+                    targetSection.scrollIntoView({ behavior: 'smooth' });
+                    // Update active state
+                    document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+                    this.classList.add('active');
+                }
+            });
+        });
+    </script>
     
     <main>
         <section id="home">
@@ -713,45 +746,39 @@
             });
             
             // 게임 플레이 버튼 이벤트
-            playButtons.forEach(button => {
-                button.addEventListener('click', function() {
+            document.querySelectorAll('.play-game-btn').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
                     const game = this.getAttribute('data-game');
                     const embeddedGameTitle = document.getElementById('embedded-game-title');
                     const embeddedGameIframe = document.getElementById('embedded-game-iframe');
                     const embeddedGameContainer = document.getElementById('embedded-game-container');
+                    
+                    if (!embeddedGameContainer || !embeddedGameIframe) return;
                     
                     // 게임 유형에 따른 처리
                     if (game === 'reaction') {
                         // 반응 속도 테스트 게임
                         embeddedGameIframe.src = 'reaction_test/react_test.html';
                         embeddedGameTitle.textContent = translations[document.documentElement.lang]['reaction-game-title'] || 'Reaction Speed Test';
-                        embeddedGameContainer.style.display = 'block';
-                        
-                        // Set up game container size for reaction game
-                        embeddedGameContainer.style.width = '800px';
-                        embeddedGameContainer.style.height = '600px';
-                        embeddedGameIframe.style.width = '100%';
-                        embeddedGameIframe.style.height = '100%';
                     } 
                     else if (game === 'smoke') {
                         // Smoke 게임
                         embeddedGameIframe.src = 'reaction_test/Smoke.html';
                         embeddedGameTitle.textContent = 'Smoke Game';
-                        embeddedGameContainer.style.display = 'block';
-                        
-                        // Set up game container size for smoke game
-                        embeddedGameContainer.style.width = '800px';
-                        embeddedGameContainer.style.height = '600px';
-                        embeddedGameIframe.style.width = '100%';
-                        embeddedGameIframe.style.height = '100%';
                     }
                     
-                    // 게임 컨테이너로 부드럽게 스크롤
-                    if (embeddedGameContainer.style.display === 'block') {
-                        embeddedGameContainer.scrollIntoView({ behavior: 'smooth' });
-                    }
+                    // 게임 컨테이너 설정
+                    embeddedGameContainer.style.display = 'block';
+                    embeddedGameContainer.style.width = '800px';
+                    embeddedGameContainer.style.height = '600px';
+                    embeddedGameIframe.style.width = '100%';
+                    embeddedGameIframe.style.height = '100%';
                     
-                    // Add game loading animation
+                    // 부드러운 스크롤
+                    embeddedGameContainer.scrollIntoView({ behavior: 'smooth' });
+                    
+                    // 로딩 애니메이션
                     embeddedGameContainer.classList.add('game-loading');
                     setTimeout(() => {
                         embeddedGameContainer.classList.remove('game-loading');
