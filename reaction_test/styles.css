@@ -372,12 +372,7 @@ h1 {
   position: relative;
 }
 
-.current-user-name::after {
-  content: '★';
-  position: absolute;
-  margin-left: 5px;
-  color: #2196f3;
-}
+/* Removed star icon from player name */
 
 /* Player name clickable style */
 .player-name-clickable {
