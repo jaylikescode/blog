@@ -3,6 +3,7 @@
  * 웹표준 준수(HTML5, CSS3, Vanilla JS)
  * 모바일·데스크탑 브라우저 모두 지원
  * 다국어 지원 (EN/KO)
+ * 로컬 저장소를 이용한 순위표 기능 추가
  */
 
 // Language translations
@@ -121,57 +122,36 @@ const startBtn = document.getElementById('start-btn');
 const box = document.getElementById('signal-box');
 const resultsDiv = document.getElementById('results');
 const instructions = document.getElementById('instructions');
+const leaderboardLoading = document.getElementById('leaderboard-loading');
+const leaderboardBody = document.getElementById('leaderboard-body');
+const leaderboardTable = document.getElementById('leaderboard-table');
+const showMoreBtn = document.getElementById('show-more-btn');
+
+// 언어 선택 버튼
 const langButtons = document.querySelectorAll('.lang-btn');
 
-// 순위표 관련 DOM 요소
-const leaderboardSection = document.getElementById('leaderboard-section');
-const leaderboardLoading = document.getElementById('leaderboard-loading');
-
-// 평균 기록 순위표
-const averageTab = document.getElementById('average-tab');
-const averageLeaderboard = document.getElementById('average-leaderboard');
-const averageLeaderboardTable = document.getElementById('average-leaderboard-table');
-const averageLeaderboardBody = document.getElementById('average-leaderboard-body');
-const averageShowMoreBtn = document.getElementById('average-show-more-btn');
-
-// 최고 기록 순위표
-const bestTab = document.getElementById('best-tab');
-const bestLeaderboard = document.getElementById('best-leaderboard');
-const bestLeaderboardTable = document.getElementById('best-leaderboard-table');
-const bestLeaderboardBody = document.getElementById('best-leaderboard-body');
-const bestShowMoreBtn = document.getElementById('best-show-more-btn');
-
-// 점수 저장 폼
-const scoreForm = document.getElementById('score-form');
-const formPlayerName = document.getElementById('form-player-name');
-const formScore = document.getElementById('form-score');
-const formDateTime = document.getElementById('form-datetime');
-const formSecurity = document.getElementById('form-security');
-const formRecordType = document.createElement('input'); // 동적으로 생성
-formRecordType.type = 'hidden';
-formRecordType.name = 'record_type';
-scoreForm.appendChild(formRecordType);
-
-// 게임 상태 변수
-let times = [];
-let startTime = null;
-let waitTime = null;
-let round = 0;
-let isWaiting = false;
-let gameActive = false;
-let tooEarly = false;
-let lastScore = 0;
-let bestRound = 0; // 테스트 중 최고 점수
+// 게임 관련 변수
+let startTime = 0; // 시작 시간
+let reactionTime = 0; // 반응 시간
+let timeout; // 타임아웃 허들
+let ready = false; // 준비 상태
+let round = 0; // 현재 라운드
+let times = []; // 각 라운드별 시간 기록
+const maxRounds = 5; // 최대 라운드 수
 
 // 순위표 관련 변수
-let leaderboardShowing = false;
-let currentLeaderboardType = 'average'; // 'average' 또는 'best'
-let averageLeaderboardPage = 1;
-let bestLeaderboardPage = 1;
-let leaderboardPerPage = 10;
-let maxLeaderboardRank = 100; // 최대 100등까지만 표시
-let hasMoreAverageRecords = false;
-let hasMoreBestRecords = false;
+let leaderboardPage = 1; // 현재 페이지
+let hasMoreRecords = false; // 더 보기 가능 여부
+const visibleRecords = 20; // 초기 표시 기록 수
+const maxLeaderboardRank = 100; // 최대 순위 수
+let isMoreRecordsVisible = false; // 추가 기록 표시 여부
+
+// 로컬 스토리지 키
+const LEADERBOARD_KEY = 'reaction_game_leaderboard';
+
+// 현재 사용자 관련 변수
+let currentUserId = null;
+let currentBestScore = 0;
 
 // Google Sheets API 관련 변수
 const googleSheetsApiUrl = 'https://script.google.com/macros/s/AKfycbz6UbYyk-Z1JEEP1BQDmYwGn12PR-b2M8GAakEJAg1_SzixO20UoeA96PggFaHfc5d3/exec'; // 여기에 배포한 Google Apps Script 웹 앱 URL을 입력하세요
