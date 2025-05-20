@@ -22,13 +22,28 @@ function updateLanguageButtons() {
 function setupLanguageEvents() {
   const langButtons = document.querySelectorAll('.lang-btn');
   langButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
-      const lang = btn.getAttribute('data-lang');
-      window.gameTranslations.changeLanguage(lang);
-      updateLanguageButtons();
-      window.gameTranslations.updateAllText();
-    });
+    // Remove any existing click handlers to prevent duplicates
+    btn.removeEventListener('click', handleLanguageButtonClick);
+    // Add new click handler
+    btn.addEventListener('click', handleLanguageButtonClick);
   });
+}
+
+/**
+ * 언어 버튼 클릭 핸들러
+ * @param {Event} event - 클릭 이벤트
+ */
+function handleLanguageButtonClick(event) {
+  const btn = event.currentTarget;
+  const lang = btn.getAttribute('data-lang');
+  
+  // 언어 변경 및 UI 업데이트
+  window.gameTranslations.changeLanguage(lang);
+  updateLanguageButtons();
+  window.gameTranslations.updateAllText();
+  
+  // 저장된 언어 설정 업데이트
+  localStorage.setItem('selected_language', lang);
 }
 
 /**
@@ -97,6 +112,7 @@ function initUI() {
 window.gameUI = {
   updateLanguageButtons,
   setupLanguageEvents,
+  handleLanguageButtonClick,
   setupCollapsibleMenu,
   initUI
 };
