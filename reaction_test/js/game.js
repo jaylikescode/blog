@@ -17,21 +17,22 @@ const maxRounds = 5; // 최대 라운드 수
  */
 function startTest() {
   // DOM 요소 참조
-  const startBtn = document.getElementById('start-btn');
   const box = document.getElementById('signal-box');
   const resultsDiv = document.getElementById('results');
+  const recordsDiv = document.getElementById('reaction-records');
   const instructions = document.getElementById('instructions');
   
   // UI 초기화
-  startBtn.style.display = 'none';
   box.style.display = 'flex';
   box.textContent = window.gameTranslations.getText('waiting');
   
   // Reset all classes and add waiting state
   box.className = '';
   box.classList.add('waiting');
+  box.classList.remove('clickable-start');
   
   resultsDiv.innerHTML = '';
+  recordsDiv.innerHTML = ''; // 반응 기록 초기화
   instructions.style.display = 'none';
   
   // 변수 초기화
@@ -118,6 +119,12 @@ function showSignal() {
  */
 function handleBoxClick() {
   const box = document.getElementById('signal-box');
+  
+  // 게임 시작 전 상태
+  if (box.classList.contains('clickable-start')) {
+    startTest();
+    return;
+  }
   
   // 게임이 시작하지 않았거나 완료된 경우
   if (round === 0 || round > maxRounds) return;
@@ -208,7 +215,7 @@ function handleEarlyClick() {
  * 반응 시간 기록 함수
  */
 function recordReaction() {
-  const resultsDiv = document.getElementById('results');
+  const recordsDiv = document.getElementById('reaction-records');
   
   // 반응 시간 기록
   times.push(reactionTime);
@@ -218,11 +225,15 @@ function recordReaction() {
     bestTime = reactionTime;
   }
   
-  // 현재 라운드 결과 표시
+  // 현재 라운드 결과 표시 - 오른쪽 탭에 추가
   const resultItem = document.createElement('div');
-  resultItem.className = 'result-item';
-  resultItem.textContent = `${window.gameTranslations.getText('round')} ${round}: ${reactionTime}ms`;
-  resultsDiv.appendChild(resultItem);
+  resultItem.className = 'record-item';
+  // 더 좋은 시간이면 하이라이트
+  if (reactionTime === bestTime && times.length > 1) {
+    resultItem.classList.add('best-time');
+  }
+  resultItem.innerHTML = `<span class="round-number">${round}</span><span class="round-time">${reactionTime}ms</span>`;
+  recordsDiv.appendChild(resultItem);
 }
 
 /**
@@ -272,26 +283,31 @@ function showResults() {
   // 이름 입력 필드 및 점수 저장 UI 생성
   createNameInputForm(bestTime);
   
+  // 게임 재시작 설정
+  box.classList.add('clickable-start');
+  box.textContent = window.gameTranslations.getText('click-to-start');
+  
   // 인스트럭션 표시
   instructions.style.display = 'block';
 }
 
 /**
- * 이름 입력 폼 생성 함수
+ * 이름 입력 폼 생성 함수 - 단순화된 인터페이스
  * @param {number} score - 저장할 점수
  */
 function createNameInputForm(score) {
   const resultsDiv = document.getElementById('results');
   
-  // 이름 입력 컨테이너
+  // 이름 입력 컨테이너 - 수평 레이아웃
   const nameDiv = document.createElement('div');
-  nameDiv.className = 'player-info';
+  nameDiv.className = 'player-info horizontal-form';
   
-  // 안내 레이블
-  const nameLabel = document.createElement('label');
-  nameLabel.textContent = window.gameTranslations.getText('enter-name');
+  // 간단한 설명
+  const scoreInfo = document.createElement('span');
+  scoreInfo.className = 'score-info';
+  scoreInfo.textContent = `${score}ms: `;
   
-  // 이름 입력 필드
+  // 이름 입력 필드 - 다른 요소와 한 줄에 표시
   const nameInput = document.createElement('input');
   nameInput.type = 'text';
   nameInput.className = 'player-name-input';
@@ -314,9 +330,11 @@ function createNameInputForm(score) {
     // 순위표에 기록 저장 (Promise 처리)
     window.gameLeaderboard.addScoreToLeaderboard(playerName, score)
       .then(rank => {
-        // 저장 성공 메시지
+        // 저장 성공 메시지 - 한 줄로 표시
         nameDiv.innerHTML = '';
-        const successMsg = document.createElement('div');
+        nameDiv.className = 'player-info horizontal-form';
+        
+        const successMsg = document.createElement('span');
         successMsg.className = 'save-success';
         successMsg.textContent = `${window.gameTranslations.getText('score-saved')} (${window.gameTranslations.getText('rank')}: ${rank})`;
         nameDiv.appendChild(successMsg);
@@ -345,11 +363,9 @@ function createNameInputForm(score) {
       });
   });
   
-  // 요소들을 추가
-  nameDiv.appendChild(nameLabel);
-  nameDiv.appendChild(document.createElement('br'));
+  // 요소들을 한 줄로 추가 (개행 없음)
+  nameDiv.appendChild(scoreInfo);
   nameDiv.appendChild(nameInput);
-  nameDiv.appendChild(document.createElement('br'));
   nameDiv.appendChild(saveButton);
   
   resultsDiv.appendChild(nameDiv);
@@ -359,16 +375,15 @@ function createNameInputForm(score) {
  * 게임 관련 이벤트 설정
  */
 function setupGameEvents() {
-  const startBtn = document.getElementById('start-btn');
   const box = document.getElementById('signal-box');
   
-  // 시작 버튼 클릭 이벤트
-  if (startBtn) {
-    startBtn.addEventListener('click', startTest);
-  }
-  
-  // 박스 클릭 이벤트
+  // 시그널 박스(게임 화면) 클릭 이벤트 - 게임 시작과 플레이 모두 처리
   if (box) {
+    // 처음에 클릭하여 시작하도록 표시
+    box.classList.add('clickable-start');
+    box.textContent = window.gameTranslations.getText('click-to-start');
+    
+    // 클릭 이벤트
     box.addEventListener('click', handleBoxClick);
   }
 }
