@@ -77,23 +77,27 @@
             right: 10px;
             display: flex;
             gap: 5px;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 5px;
+            border-radius: 20px;
         }
         .language-btn {
-            background-color: #fff;
-            color: #4a89dc;
-            border: 1px solid #4a89dc;
-            padding: 5px 10px;
+            background: none;
+            border: 1px solid white;
+            color: white;
+            padding: 5px 15px;
             font-size: 14px;
             cursor: pointer;
-            border-radius: 3px;
+            border-radius: 15px;
             transition: all 0.3s ease;
         }
         .language-btn:hover {
-            background-color: #eef5ff;
+            background: rgba(255, 255, 255, 0.2);
         }
         .language-btn.active {
-            background-color: #4a89dc;
-            color: white;
+            background: white;
+            color: #4a89dc;
+            font-weight: bold;
         }
         
         /* 게임 관련 스타일 */
@@ -328,10 +332,6 @@
         <section id="home">
             <h2 data-text="home-title">홈</h2>
             <p data-text="home-welcome">제 블로그에 오신 것을 환영합니다! 이곳에서 Jay에 대한 소개, 제 생각과 아이디어, 그리고 제가 공유하고 싶은 이미지들을 찾아보실 수 있습니다.</p>
-            
-            <div class="game-challenge">
-                <button id="play-reaction-game" class="game-button" data-text="game-challenge">Click faster than Jay</button>
-            </div>
         </section>
         
         <section id="about">
@@ -408,7 +408,23 @@
                     </div>
                 </div>
                 
-                        <!-- 추가 게임을 위한 플레이스홀더 -->
+                        <!-- Smoke Game -->
+                <div class="game-card">
+                    <div class="game-info">
+                        <h3>Smoke Game</h3>
+                        <p>Use arrow keys to move and attack. Defeat the enemy before your health runs out!</p>
+                        <button class="play-game-btn" data-game="smoke" data-text="play-game">게임 하기</button>
+                    </div>
+                    <div class="game-preview">
+                        <div class="game-thumbnail" id="smoke-thumbnail">
+                            <div class="thumbnail-overlay">
+                                <span data-text="click-to-play">클릭하여 플레이</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Additional game placeholder -->
                 <div class="game-card game-placeholder">
                     <div class="game-info">
                         <h3 data-text="coming-soon">곧 출시 예정</h3>
@@ -693,36 +709,61 @@
             playButtons.forEach(button => {
                 button.addEventListener('click', function() {
                     const game = this.getAttribute('data-game');
+                    const embeddedGameTitle = document.getElementById('embedded-game-title');
+                    
                     // 게임 유형에 따른 처리
                     if (game === 'reaction') {
-                        // 임베디드 게임 표시
+                        // 반응 속도 테스트 게임
                         embeddedGameIframe.src = 'reaction_test/react_test.html';
+                        embeddedGameTitle.textContent = translations[document.documentElement.lang]['reaction-game-title'] || 'Reaction Speed Test';
                         embeddedGameContainer.style.display = 'block';
-                        // 게임 컨테이너로 부드럽게 스크롤
+                    } 
+                    else if (game === 'smoke') {
+                        // Smoke 게임
+                        embeddedGameIframe.src = 'reaction_test/Smoke.html';
+                        embeddedGameTitle.textContent = 'Smoke Game';
+                        embeddedGameContainer.style.display = 'block';
+                    }
+                    
+                    // 게임 컨테이너로 부드럽게 스크롤
+                    if (embeddedGameContainer.style.display === 'block') {
                         embeddedGameContainer.scrollIntoView({ behavior: 'smooth' });
                     }
-                    // 추후 다른 게임들을 추가할 수 있습니다.
                 });
             });
             
-            // 홈 섹션에서 게임 접근 후 베너 없애기
-            document.querySelectorAll('.game-challenge .game-button').forEach(button => {
-                button.addEventListener('click', function() {
-                    // 메뉴 항목을 클릭하지 않고 바로 게임 섹션으로 이동
-                    const gamesSection = document.getElementById('games');
-                    if (gamesSection) {
-                        gamesSection.scrollIntoView({ behavior: 'smooth' });
+            // 언어 버튼 클릭 이벤트 핸들러
+            function handleLanguageButtonClick(e) {
+                e.preventDefault();
+                const lang = this.getAttribute('data-lang');
+                changeLanguage(lang);
+                
+                // 언어 버튼 업데이트
+                document.querySelectorAll('.language-btn').forEach(btn => {
+                    if (btn.getAttribute('data-lang') === lang) {
+                        btn.classList.add('active');
+                    } else {
+                        btn.classList.remove('active');
                     }
-                    
-                    // 게임 섹션 하이라이트 효과
-                    setTimeout(() => {
-                        gamesSection.classList.add('highlight');
-                        setTimeout(() => {
-                            gamesSection.classList.remove('highlight');
-                        }, 1500);
-                    }, 500);
                 });
+            }
+            
+            // 언어 버튼에 이벤트 리스너 추가
+            document.querySelectorAll('.language-btn').forEach(btn => {
+                btn.removeEventListener('click', handleLanguageButtonClick);
+                btn.addEventListener('click', handleLanguageButtonClick);
             });
+            
+            // 게임 섹션 하이라이트 효과
+            const gamesSection = document.getElementById('games');
+            if (gamesSection) {
+                setTimeout(() => {
+                    gamesSection.classList.add('highlight');
+                    setTimeout(() => {
+                        gamesSection.classList.remove('highlight');
+                    }, 1500);
+                }, 500);
+            }
         });
     </script>
 </body>

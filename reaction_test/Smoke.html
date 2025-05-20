@@ -1,0 +1,297 @@
+
+// Global variables
+let player;
+let enemy;
+let smokeParticles = [];
+let gameState = 'start'; // 'start', 'playing', 'gameOver'
+let score = 0;
+
+// Smoke effect control
+let smokeEmissionDuration = 120; // Emit smoke for ~2 seconds (120 frames at 60fps)
+let smokeEmissionTimer = 0;
+let playerDeathX; // X-coordinate where player died
+
+// Player and Enemy y-offset from bottom of screen
+const yFloorOffset = 5;
+
+function setup() {
+  createCanvas(windowWidth, windowHeight);
+  // Set color mode to HSB (Hue, Saturation, Brightness, Alpha)
+  // Hue ranges from 0 to 360, Sat/Bri from 0 to 100, Alpha from 0 to 1
+  colorMode(HSB, 360, 100, 100, 1);
+  
+  player = {}; // Placeholder, properly initialized on game start
+  enemy = {};  // Placeholder
+}
+
+function initializePlayer() {
+  player = {
+    x: width / 4,
+    y: height - (30 / 2) - yFloorOffset, // 30 is player size
+    size: 30,
+    speed: 5,
+    hp: 100,
+    maxHp: 100,
+    attackPower: 20,
+    attackRange: 50, // Radius of attack from player center
+    attackCooldown: 30, // frames
+    lastAttackFrame: -Infinity, // Allow immediate first attack
+    isAttacking: false,
+    attackAnimFrames: 10 // How long attack visual lasts
+  };
+}
+
+function initializeEnemy() {
+  let enemySize = 40;
+  enemy = {
+    x: (width * 3) / 4,
+    y: height - (enemySize / 2) - yFloorOffset,
+    size: enemySize,
+    speed: 1.5,
+    hp: 150,
+    maxHp: 150,
+    attackPower: 10,
+    attackRange: 45, // Max distance from enemy center to player center for attack
+    attackCooldown: 60, // frames
+    lastAttackFrame: -Infinity // Allow immediate first attack
+  };
+}
+
+function resetGame() {
+  score = 0;
+  initializePlayer();
+  initializeEnemy();
+  smokeParticles = []; // Clear any existing smoke particles
+  smokeEmissionTimer = 0; // Reset smoke emission state
+  gameState = 'playing';
+}
+
+function draw() {
+  let bgHue = (frameCount * 0.2) % 360;
+
+  if (gameState === 'start') {
+    background(bgHue, 70, 80); // Dynamic vibrant background
+    textAlign(CENTER, CENTER);
+    fill(0, 0, 100); // White text using HSB (Hue ignored, Sat=0, Bri=100)
+    textSize(48);
+    text("Simple Combat Game", width / 2, height / 3);
+    textSize(24);
+    text("Arrow Keys or A/D to Move", width / 2, height / 2);
+    text("SPACE to Attack", width / 2, height / 2 + 40);
+    textSize(32);
+    text("Press ENTER to Start", width / 2, height / 2 + 100);
+  } else if (gameState === 'playing') {
+    background(220, 30, 20); // Dark, desaturated blue background for gameplay
+
+    handleInput();
+    updatePlayer();
+    updateEnemy();
+    
+    drawPlayer();
+    drawEnemy();
+    drawUI();
+
+    if (player.hp <= 0) {
+      gameState = 'gameOver';
+      playerDeathX = player.x; // Store X position for smoke origin
+      smokeEmissionTimer = 0; // Start smoke emission sequence
+    }
+    if (enemy.hp <= 0) {
+      score += 100;
+      // Respawn enemy, making it slightly stronger
+      initializeEnemy(); // Resets HP, position etc.
+      enemy.x = random(width * 0.1, width * 0.9); // Randomize respawn x
+      enemy.y = height - (enemy.size / 2) - yFloorOffset; // Ensure y is correct
+      enemy.maxHp += score / 10; // Increase max HP based on score
+      enemy.hp = enemy.maxHp;
+    }
+
+  } else if (gameState === 'gameOver') {
+    background(0, 70, 50); // Dark red background for game over
+    
+    // Handle smoke emission from canvas floor below player's death position
+    if (smokeEmissionTimer < smokeEmissionDuration) {
+      if (frameCount % 3 === 0) { // Emit particles every 3 frames
+        for (let i = 0; i < 2; i++) { // Emit 2 particles at a time
+          smokeParticles.push(new SmokeParticle(playerDeathX, height));
+        }
+      }
+      smokeEmissionTimer++;
+    }
+
+    // Update and draw all smoke particles
+    for (let i = smokeParticles.length - 1; i >= 0; i--) {
+      smokeParticles[i].update();
+      smokeParticles[i].display();
+      if (smokeParticles[i].isDead()) {
+        smokeParticles.splice(i, 1);
+      }
+    }
+
+    textAlign(CENTER, CENTER);
+    fill(0, 0, 100); // White text
+    textSize(64);
+    text("GAME OVER", width / 2, height / 3);
+    textSize(32);
+    text("Score: " + score, width / 2, height / 2);
+    
+    if (smokeEmissionTimer >= smokeEmissionDuration && smokeParticles.length < 15) {
+      textSize(24);
+      text("Press R to Restart", width / 2, height / 2 + 80);
+    }
+  }
+}
+
+function handleInput() {
+  if (keyIsDown(LEFT_ARROW) || keyIsDown(65)) { // 65 is 'A'
+    player.x -= player.speed;
+  }
+  if (keyIsDown(RIGHT_ARROW) || keyIsDown(68)) { // 68 is 'D'
+    player.x += player.speed;
+  }
+  player.x = constrain(player.x, player.size / 2, width - player.size / 2);
+
+  if (keyIsDown(32) && frameCount > player.lastAttackFrame + player.attackCooldown) {
+    player.isAttacking = true;
+    player.lastAttackFrame = frameCount;
+    
+    let d = dist(player.x, player.y, enemy.x, enemy.y);
+    if (d < player.attackRange + enemy.size / 2) { // Hit if enemy center is within player attack range
+      enemy.hp -= player.attackPower;
+    }
+  }
+}
+
+function updatePlayer() {
+  if (player.isAttacking && frameCount > player.lastAttackFrame + player.attackAnimFrames) {
+    player.isAttacking = false;
+  }
+}
+
+function updateEnemy() {
+  if (abs(player.x - enemy.x) > enemy.size / 4) { 
+     if (player.x < enemy.x) {
+        enemy.x -= enemy.speed;
+     } else {
+        enemy.x += enemy.speed;
+     }
+  }
+  enemy.x = constrain(enemy.x, enemy.size / 2, width - enemy.size / 2);
+
+  let d = dist(player.x, player.y, enemy.x, enemy.y);
+  if (d < enemy.attackRange + player.size / 2 && frameCount > enemy.lastAttackFrame + enemy.attackCooldown) {
+    player.hp -= enemy.attackPower;
+    enemy.lastAttackFrame = frameCount;
+  }
+}
+
+function drawPlayer() {
+  fill(120, 80, 90); // Greenish (HSB)
+  ellipse(player.x, player.y, player.size, player.size);
+
+  if (player.isAttacking) {
+    fill(0, 0, 100, 0.3); // Semi-transparent white attack indicator
+    ellipse(player.x, player.y, player.attackRange * 2, player.attackRange * 2);
+  }
+  
+  drawHealthBar(player.x - player.size / 2, player.y - player.size / 2 - 15, player.size, 8, player.hp, player.maxHp);
+}
+
+function drawEnemy() {
+  fill(0, 80, 90); // Reddish (HSB)
+  ellipse(enemy.x, enemy.y, enemy.size, enemy.size);
+  
+  drawHealthBar(enemy.x - enemy.size / 2, enemy.y - enemy.size / 2 - 15, enemy.size, 8, enemy.hp, enemy.maxHp);
+}
+
+function drawHealthBar(x, y, w, h, currentHp, maxHp) {
+  noStroke();
+  fill(0, 0, 20); // Dark background for health bar
+  rect(x, y, w, h);
+  
+  let hpRatio = constrain(currentHp / maxHp, 0, 1);
+  fill(100, 90, 80); // Bright Green for health
+  if (hpRatio > 0) {
+    rect(x, y, w * hpRatio, h);
+  }
+}
+
+function drawUI() {
+  fill(0, 0, 100); // White text
+  textSize(20);
+  textAlign(LEFT, TOP);
+  text("Score: " + score, 10, 10);
+}
+
+function keyPressed() {
+  if (gameState === 'start' && keyCode === ENTER) {
+    resetGame();
+  } else if (gameState === 'gameOver') {
+    if (smokeEmissionTimer >= smokeEmissionDuration && smokeParticles.length < 15) {
+      if (key === 'r' || key === 'R') {
+        resetGame();
+      }
+    }
+  }
+}
+
+class SmokeParticle {
+  constructor(originX, originY) {
+    this.x = originX + random(-15, 15); 
+    this.y = originY;                   
+    this.vx = random(-0.4, 0.4);        
+    this.vy = random(-0.7, -2.2);       
+
+    this.initialAlpha = random(0.4, 0.7); 
+    this.alpha = this.initialAlpha;
+
+    this.size = random(15, 40);         
+    this.initialSize = this.size;
+
+    this.lifespan = 70 + floor(random(50)); 
+    this.age = 0;
+
+    this.hue = 0; 
+    this.saturation = 0; 
+    this.brightness = random(15, 45); 
+  }
+
+  update() {
+    this.x += this.vx;
+    this.y += this.vy;
+
+    this.vy *= 0.97; 
+    this.vx *= 0.99; 
+
+    this.age++;
+    let lifeProgress = this.age / this.lifespan;
+
+    this.alpha = this.initialAlpha * (1 - lifeProgress);
+    this.size = this.initialSize * (0.3 + 1.0 * sin(PI * lifeProgress));
+    this.size = max(0, this.size); 
+  }
+
+  isDead() {
+    return this.alpha <= 0.01 || this.age >= this.lifespan || this.y < -this.size;
+  }
+
+  display() {
+    noStroke();
+    fill(this.hue, this.saturation, this.brightness, this.alpha);
+    ellipse(this.x, this.y, this.size, this.size);
+  }
+}
+
+function windowResized() {
+  resizeCanvas(windowWidth, windowHeight);
+  if (gameState === 'playing' || gameState === 'gameOver') {
+    if (player && player.size) { 
+        player.y = height - (player.size / 2) - yFloorOffset;
+        player.x = constrain(player.x, player.size / 2, width - player.size / 2);
+    }
+    if (enemy && enemy.size) { 
+        enemy.y = height - (enemy.size / 2) - yFloorOffset;
+        enemy.x = constrain(enemy.x, enemy.size / 2, width - enemy.size / 2);
+    }
+  }
+}
