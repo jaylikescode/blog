@@ -10,12 +10,15 @@ document.addEventListener('DOMContentLoaded', function() {
     return;
   }
   
-  // 초기 언어 설정
+  // UI 초기화
+  window.gameUI.initUI();
+  
+  // 초기 언어 설정 (UI 초기화 후에 설정)
   const savedLanguage = localStorage.getItem('selected_language') || 'ko';
   window.gameTranslations.changeLanguage(savedLanguage);
   
-  // UI 초기화
-  window.gameUI.initUI();
+  // UI 업데이트
+  window.gameUI.updateLanguageButtons();
   
   // 이벤트 리스너 설정
   window.gameUI.setupLanguageEvents();

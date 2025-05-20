@@ -77,8 +77,20 @@ function setupCollapsibleMenu() {
  * UI 모듈 초기화
  */
 function initUI() {
-  updateLanguageButtons();
+  // Set up collapsible menu and language events
   setupCollapsibleMenu();
+  setupLanguageEvents();
+  
+  // Update the language buttons to reflect the current language
+  updateLanguageButtons();
+  
+  // Also update the active state when the page is fully loaded
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', updateLanguageButtons);
+  } else {
+    // In case the DOM is already loaded
+    updateLanguageButtons();
+  }
 }
 
 // 모듈 내보내기
