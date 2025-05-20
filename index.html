@@ -185,79 +185,86 @@
         }
         
         .game-card {
-            background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
-            overflow: hidden;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            height: 100%;
             display: flex;
-            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            background-color: #fff;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 1px solid #e0e0e0;
         }
-        
         .game-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.15);
+            border-color: #4a89dc;
         }
         
         .game-info {
-            padding: 20px;
             flex: 1;
+            padding-right: 20px;
         }
-        
         .game-info h3 {
-            margin-top: 0;
-            font-size: 1.4rem;
+            margin: 0 0 10px 0;
+            color: #4a89dc;
+            font-size: 1.2em;
         }
-        
         .game-info p {
+            margin: 0 0 15px 0;
             color: #666;
-            margin-bottom: 20px;
+            font-size: 0.9em;
+            line-height: 1.4;
+        }
+        .play-game-btn {
+            background-color: #4a89dc;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background-color 0.3s ease;
+        }
+        .play-game-btn:hover {
+            background-color: #3b78cc;
         }
         
         .game-preview {
+            width: 200px;
+            height: 150px;
+            background-color: #f8f8f8;
+            border-radius: 10px;
+            overflow: hidden;
             position: relative;
-            height: 180px;
         }
-        
         .game-thumbnail {
             width: 100%;
             height: 100%;
             background-size: cover;
             background-position: center;
-            background-repeat: no-repeat;
+            transition: transform 0.3s ease;
         }
-        
-        #reaction-thumbnail {
-            background-color: #4a89dc;
-            background-image: linear-gradient(45deg, #4a89dc, #5cb85c);
+        .game-card:hover .game-thumbnail {
+            transform: scale(1.05);
+        }
+        .game-thumbnail.placeholder-thumbnail {
+            background-color: #f0f0f0;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: white;
-            font-weight: bold;
-            font-size: 24px;
+            color: #666;
+            font-size: 40px;
         }
-        
-        .placeholder-thumbnail {
-            background-color: #f3f4f6;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .placeholder-thumbnail span {
-            font-size: 48px;
-            color: #ccc;
-        }
-        
         .thumbnail-overlay {
             position: absolute;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.4);
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -710,6 +717,8 @@
                 button.addEventListener('click', function() {
                     const game = this.getAttribute('data-game');
                     const embeddedGameTitle = document.getElementById('embedded-game-title');
+                    const embeddedGameIframe = document.getElementById('embedded-game-iframe');
+                    const embeddedGameContainer = document.getElementById('embedded-game-container');
                     
                     // 게임 유형에 따른 처리
                     if (game === 'reaction') {
@@ -717,20 +726,65 @@
                         embeddedGameIframe.src = 'reaction_test/react_test.html';
                         embeddedGameTitle.textContent = translations[document.documentElement.lang]['reaction-game-title'] || 'Reaction Speed Test';
                         embeddedGameContainer.style.display = 'block';
+                        
+                        // Set up game container size for reaction game
+                        embeddedGameContainer.style.width = '800px';
+                        embeddedGameContainer.style.height = '600px';
+                        embeddedGameIframe.style.width = '100%';
+                        embeddedGameIframe.style.height = '100%';
                     } 
                     else if (game === 'smoke') {
                         // Smoke 게임
                         embeddedGameIframe.src = 'reaction_test/Smoke.html';
                         embeddedGameTitle.textContent = 'Smoke Game';
                         embeddedGameContainer.style.display = 'block';
+                        
+                        // Set up game container size for smoke game
+                        embeddedGameContainer.style.width = '800px';
+                        embeddedGameContainer.style.height = '600px';
+                        embeddedGameIframe.style.width = '100%';
+                        embeddedGameIframe.style.height = '100%';
                     }
                     
                     // 게임 컨테이너로 부드럽게 스크롤
                     if (embeddedGameContainer.style.display === 'block') {
                         embeddedGameContainer.scrollIntoView({ behavior: 'smooth' });
                     }
+                    
+                    // Add game loading animation
+                    embeddedGameContainer.classList.add('game-loading');
+                    setTimeout(() => {
+                        embeddedGameContainer.classList.remove('game-loading');
+                    }, 500);
                 });
             });
+            
+            // Add game loading animation styles
+            const gameLoadingStyles = `
+                .game-loading {
+                    opacity: 0.8;
+                    pointer-events: none;
+                }
+                .game-loading::after {
+                    content: '';
+                    position: absolute;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    width: 40px;
+                    height: 40px;
+                    border: 4px solid #4a89dc;
+                    border-radius: 50%;
+                    border-top-color: transparent;
+                    animation: spin 1s linear infinite;
+                }
+                @keyframes spin {
+                    to { transform: translate(-50%, -50%) rotate(360deg); }
+                }
+            `;
+            const style = document.createElement('style');
+            style.textContent = gameLoadingStyles;
+            document.head.appendChild(style);
             
             // 언어 버튼 클릭 이벤트 핸들러
             function handleLanguageButtonClick(e) {
