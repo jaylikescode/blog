@@ -320,8 +320,8 @@
 <body>
     <header>
         <div class="language-selector">
-            <button class="language-btn" data-lang="ko">한국어</button>
-            <button class="language-btn" data-lang="en">English</button>
+            <button class="lang-btn" data-lang="ko">한국어</button>
+            <button class="lang-btn" data-lang="en">English</button>
         </div>
         <h1 data-text="blog-title">My Blog</h1>
         <p data-text="blog-subtitle">Welcome to my personal space</p>
@@ -506,14 +506,14 @@
         <p data-text="footer-copyright">&copy; 2025 My Blog. 모든 권리 보유.</p>
     </footer>
     
-    <!-- Game Modal -->
-    <div id="game-modal" class="game-modal">
+    <!-- Game Container -->
+    <div id="embedded-game-container" class="game-container">
         <div class="game-content">
-            <button id="close-game" class="game-close">✕</button>
+            <button id="close-embedded-game" class="game-close">✕</button>
             <div class="game-loading-spinner">
                 <div class="spinner"></div>
             </div>
-            <iframe id="game-iframe" class="game-iframe" src="" frameborder="0" allowfullscreen></iframe>
+            <iframe id="embedded-game-iframe" class="game-iframe" src="" frameborder="0" allowfullscreen></iframe>
         </div>
     </div>
     
@@ -850,7 +850,7 @@
                 'contact-instruction': 'Contact me using the information below:',
                 'contact-email': 'Email: fromsnowman14@gmail.com',
                 'contact-sns': 'Blog: https://jaylikecodes.github.io/blog',
-                'footer-copyright': '© 2025 My Blog. All rights reserved.'
+                'footer-copyright': ' 2025 My Blog. All rights reserved.'
             }
         };
         
@@ -871,7 +871,7 @@
             });
             
             // 언어 버튼 활성화 상태 업데이트
-            document.querySelectorAll('.language-btn').forEach(btn => {
+            document.querySelectorAll('.lang-btn').forEach(btn => {
                 if (btn.getAttribute('data-lang') === lang) {
                     btn.classList.add('active');
                 } else {
@@ -881,6 +881,9 @@
             
             // 현재 언어를 로컬 스토리지에 저장
             localStorage.setItem('selectedLanguage', lang);
+            
+            // 동기화된 currentLang 업데이트
+            window.gameTranslations.currentLang = lang;
         }
         
         // 언어 버튼 클릭 이벤트 리스너 설정
@@ -901,60 +904,74 @@
                 });
             });
             
-            // 게임 버튼 클릭 이벤트 (using .play-game-btn class)
+            // 게임 버튼 클릭 이벤트
             document.querySelectorAll('.play-game-btn').forEach(button => {
                 button.addEventListener('click', function(e) {
                     e.preventDefault();
                     const game = this.getAttribute('data-game');
-                    const embeddedGameTitle = document.getElementById('embedded-game-title');
-                    const embeddedGameIframe = document.getElementById('embedded-game-iframe');
-                    const embeddedGameContainer = document.getElementById('embedded-game-container');
-                    const closeGameButton = document.getElementById('close-embedded-game');
+                    const gameIframe = document.getElementById('embedded-game-iframe');
+                    const gameContainer = document.getElementById('embedded-game-container');
+                    const gameTitle = document.getElementById('embedded-game-title');
+                    const gameCloseButton = document.getElementById('close-embedded-game');
 
-                    if (!embeddedGameContainer || !embeddedGameIframe) return;
+                    if (!gameContainer || !gameIframe) return;
 
                     // 게임 유형에 따른 처리
                     if (game === 'reaction') {
-                        // 반응 속도 테스트 게임
-                        embeddedGameIframe.src = 'reaction_test/react_test.html';
-                        embeddedGameTitle.textContent = translations[document.documentElement.lang]['reaction-game-title'] || 'Reaction Speed Test';
-                    } 
-                    else if (game === 'smoke') {
-                        // Smoke 게임
-                        embeddedGameIframe.src = 'reaction_test/Smoke.html';
-                        embeddedGameTitle.textContent = 'Smoke Game';
+                        gameIframe.src = 'reaction_test/react_test.html';
+                        gameTitle.textContent = translations[document.documentElement.lang]['reaction-game-title'] || 'Reaction Speed Test';
+                    } else if (game === 'smoke') {
+                        gameIframe.src = 'reaction_test/Smoke.html';
+                        gameTitle.textContent = 'Smoke Game';
                     }
 
-                    // 게임 컨테이너 설정
-                    embeddedGameContainer.style.display = 'flex';
-                    embeddedGameContainer.style.visibility = 'visible';
+                    // 모달 표시 및 로딩 표시
+                    gameContainer.classList.add('active', 'loading');
                     
-                    // 로딩 애니메이션
-                    embeddedGameContainer.classList.add('game-loading');
-                    setTimeout(() => {
-                        embeddedGameContainer.classList.remove('game-loading');
-                    }, 500);
+                    // iframe 로드 완료 시 로딩 표시 제거
+                    gameIframe.onload = () => {
+                        gameContainer.classList.remove('loading');
+                    };
 
-                    // 게임 카드 클릭 시 부드러운 스크롤
-                    const gameCard = this.closest('.game-card');
-                    if (gameCard) {
-                        gameCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }
+                    // 스크롤 비활성화
+                    document.body.style.overflow = 'hidden';
                 });
             });
 
-            // 게임 닫기 버튼 클릭 이벤트
-            const closeGameButton = document.getElementById('close-embedded-game');
-            if (closeGameButton) {
-                closeGameButton.addEventListener('click', function() {
-                    const embeddedGameContainer = document.getElementById('embedded-game-container');
-                    if (embeddedGameContainer) {
-                        embeddedGameContainer.style.display = 'none';
-                        embeddedGameContainer.style.visibility = 'hidden';
-                        embeddedGameContainer.classList.remove('game-loading');
-                        embeddedGameContainer.querySelector('iframe').src = '';
-                    }
+            // 게임 닫기 이벤트
+            const gameCloseButton = document.getElementById('close-embedded-game');
+            const gameContainer = document.getElementById('embedded-game-container');
+            if (gameCloseButton && gameContainer) {
+                // ✕ 버튼 클릭
+                gameCloseButton.addEventListener('click', closeModal);
+                
+                // 배경 클릭
+                gameContainer.addEventListener('click', function(e) {
+                    if (e.target === this) closeModal();
                 });
+                
+                // ESC 키
+                document.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape') closeModal();
+                });
+            }
+
+            // 모달 닫기 함수
+            function closeModal() {
+                if (!gameContainer) return;
+                
+                // 모달 숨기기
+                gameContainer.classList.remove('active', 'loading');
+                
+                // iframe 초기화
+                const gameIframe = document.getElementById('embedded-game-iframe');
+                if (gameIframe) {
+                    gameIframe.src = '';
+                    gameIframe.onload = null;
+                }
+                
+                // 스크롤 활성화
+                document.body.style.overflow = '';
             }
             
             // 모달 바깥쪽 클릭 시 닫기
