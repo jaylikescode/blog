@@ -3,7 +3,7 @@
  */
 
 // Language translations
-const translations = {
+export const translations = {
   'en': {
     'title': 'Faster than Jay?',
     'game-description': 'A simple game to test your reaction speed:',
@@ -44,10 +44,36 @@ const translations = {
     'no-records': 'No records yet. Be the first!',
     'saving': 'Saving your score...',
     'your-rank': 'Your rank',
-    'restart-game': 'Restart Game'
+    'restart-game': 'Restart Game',
+    'smoke-game-title': 'Smoke Game',
+    'smoke-game-desc': 'Use arrow keys to move and attack. Defeat the enemy before your health runs out!',
+    'game-modal-title': 'Game Modal',
+    'game-loading': 'Game loading...',
+    'game-close': 'Close Game',
+    'click-to-play': 'Click to play',
+    'play-game': 'Play Game',
+    'game-error': 'Failed to load game',
+    'game-container': 'Game Container',
+    'game-wrapper': 'Game Wrapper',
+    'game-iframe': 'Game Frame',
+    'game-content': 'Game Content',
+    'game-close-button': 'Close Game Button'
   },
   'ko': {
     'title': '지석이보다 빠르다고?',
+    'smoke-game-title': '연기 게임',
+    'smoke-game-desc': '화살표 키를 사용하여 이동하고 공격하세요. 체력이 다 떨어지기 전에 적을 물리쳐보세요!',
+    'game-modal-title': '게임 모달',
+    'game-loading': '게임 로딩 중...',
+    'game-close': '게임 닫기',
+    'click-to-play': '클릭하여 플레이',
+    'play-game': '게임 하기',
+    'game-error': '게임 로드 실패',
+    'game-container': '게임 컨테이너',
+    'game-wrapper': '게임 래퍼',
+    'game-iframe': '게임 프레임',
+    'game-content': '게임 콘텐츠',
+    'game-close-button': '게임 닫기 버튼',
     'game-description': '반응 속도를 테스트하는 간단한 게임입니다:',
     'click-to-start': '화면을 클릭하여 시작하세요',
     'instruction-1': '게임 화면을 클릭하세요',

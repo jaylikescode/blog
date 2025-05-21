@@ -87,5 +87,92 @@
   <script src="js/game.js"></script>
   <script src="js/ui.js"></script>
   <script src="js/main.js"></script>
+  <!-- Game scripts -->
+  <script type="module">
+    import { translations } from './js/translations.js';
+    
+    // Handle language from URL parameter
+    function getLanguageFromURL() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const langParam = urlParams.get('lang');
+      return langParam && (langParam === 'en' || langParam === 'ko') ? langParam : 'ko'; // Default to Korean
+    }
+
+    // Initialize language
+    function initializeLanguage() {
+      const lang = getLanguageFromURL();
+      document.documentElement.lang = lang;
+      
+      // Create global translation object for other modules to use
+      window.gameTranslations = {
+        translations: translations,
+        currentLang: lang,
+        
+        // Get text for current language
+        getText: function(key) {
+          return this.translations[this.currentLang][key] || key;
+        },
+        
+        // Change language
+        changeLanguage: function(lang) {
+          this.currentLang = lang;
+          document.documentElement.lang = lang;
+          
+          // Sync with parent if in iframe
+          if (window.parent && window.parent !== window) {
+            try {
+              if (window.parent.changeLanguage) {
+                window.parent.changeLanguage(lang);
+              }
+            } catch (e) {
+              console.log('Could not sync language with parent window', e);
+            }
+          }
+        },
+        
+        // Update all text content
+        updateAllText: function() {
+          document.querySelectorAll('[data-text]').forEach(element => {
+            const textKey = element.getAttribute('data-text');
+            if (this.translations[this.currentLang] && this.translations[this.currentLang][textKey]) {
+              element.textContent = this.translations[this.currentLang][textKey];
+            }
+          });
+          
+          // Update language button states
+          document.querySelectorAll('.lang-btn').forEach(btn => {
+            if (btn.getAttribute('data-lang') === this.currentLang) {
+              btn.classList.add('active');
+            } else {
+              btn.classList.remove('active');
+            }
+          });
+        }
+      };
+      
+      // Update all text content for initial rendering
+      window.gameTranslations.updateAllText();
+      
+      // Set up language buttons
+      document.querySelectorAll('.lang-btn').forEach(button => {
+        button.addEventListener('click', function() {
+          const lang = this.getAttribute('data-lang');
+          window.gameTranslations.changeLanguage(lang);
+          window.gameTranslations.updateAllText();
+          localStorage.setItem('selected_language', lang);
+        });
+      });
+    }
+    
+    // Initialize when DOM is loaded
+    document.addEventListener('DOMContentLoaded', function() {
+      initializeLanguage();
+    });
+    
+    // Call initialize immediately if document already loaded
+    if (document.readyState === 'complete' || document.readyState === 'interactive') {
+      initializeLanguage();
+    }
+  </script>
 </body>
 </html>

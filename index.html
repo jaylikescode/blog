@@ -5,12 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Blog</title>
     <link rel="stylesheet" href="styles.css">
-    <script type="module" src="js/translations.js"></script>
-    <script type="module" src="js/ui.js"></script>
-    <script type="module" src="js/game.js"></script>
-    <script type="module" src="js/audio.js"></script>
-    <script type="module" src="js/leaderboard.js"></script>
-    <script type="module" src="js/main.js"></script>
+    <script type="module" src="reaction_test/js/translations.js"></script>
+    <script type="module" src="reaction_test/js/ui.js"></script>
+    <script type="module" src="reaction_test/js/game.js"></script>
+    <script type="module" src="reaction_test/js/audio.js"></script>
+    <script type="module" src="reaction_test/js/leaderboard.js"></script>
+    <script type="module" src="main.js"></script>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -455,11 +455,11 @@
                     </div>
                 </div>
                 
-                        <!-- Smoke Game -->
+                <!-- Smoke Game -->
                 <div class="game-card">
                     <div class="game-info">
-                        <h3>Smoke Game</h3>
-                        <p>Use arrow keys to move and attack. Defeat the enemy before your health runs out!</p>
+                        <h3 data-text="smoke-game-title">Smoke Game</h3>
+                        <p data-text="smoke-game-desc">화살표 키를 사용하여 이동하고 공격하세요. 체력이 다 떨어지기 전에 적을 물리쳐보세요!</p>
                         <button class="play-game-btn" data-game="smoke" data-text="play-game">게임 하기</button>
                     </div>
                     <div class="game-preview">
@@ -469,6 +469,19 @@
                             </div>
                         </div>
                     </div>
+                </div>
+            </div>
+
+            <!-- Game Modal -->
+            <div id="embedded-game-container" class="game-modal">
+                <div class="game-content">
+                    <button id="close-embedded-game" class="game-close">&times;</button>
+                    <h2 id="embedded-game-title"></h2>
+                    <div id="embedded-game-wrapper">
+                        <iframe id="embedded-game-iframe" class="game-iframe" allowfullscreen></iframe>
+                    </div>
+                </div>
+            </div>
                 </div>
                 
                 <!-- Additional game placeholder -->

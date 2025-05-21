@@ -1,15 +1,132 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Smoke Game</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
 
-// Global variables
-let player;
-let enemy;
-let smokeParticles = [];
-let gameState = 'start'; // 'start', 'playing', 'gameOver'
-let score = 0;
+  <!-- Language handling script -->
+  <script type="module">
+    import { translations } from './js/translations.js';
+    
+    // Handle language from URL parameter
+    function getLanguageFromURL() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const langParam = urlParams.get('lang');
+      return langParam && (langParam === 'en' || langParam === 'ko') ? langParam : 'ko'; // Default to Korean
+    }
 
-// Smoke effect control
-let smokeEmissionDuration = 120; // Emit smoke for ~2 seconds (120 frames at 60fps)
-let smokeEmissionTimer = 0;
-let playerDeathX; // X-coordinate where player died
+    // Initialize language
+    function initializeLanguage() {
+      const lang = getLanguageFromURL();
+      document.documentElement.lang = lang;
+      
+      // Create global translation object for other modules to use
+      window.gameTranslations = {
+        translations: translations,
+        currentLang: lang,
+        
+        // Get text for current language
+        getText: function(key) {
+          return this.translations[this.currentLang][key] || key;
+        },
+        
+        // Change language
+        changeLanguage: function(lang) {
+          this.currentLang = lang;
+          document.documentElement.lang = lang;
+          
+          // Sync with parent if in iframe
+          if (window.parent && window.parent !== window) {
+            try {
+              if (window.parent.changeLanguage) {
+                window.parent.changeLanguage(lang);
+              }
+            } catch (e) {
+              console.log('Could not sync language with parent window', e);
+            }
+          }
+        },
+        
+        // Update all text content
+        updateAllText: function() {
+          document.querySelectorAll('[data-text]').forEach(element => {
+            const textKey = element.getAttribute('data-text');
+            if (this.translations[this.currentLang] && this.translations[this.currentLang][textKey]) {
+              element.textContent = this.translations[this.currentLang][textKey];
+            }
+          });
+          
+          // Update language button states
+          document.querySelectorAll('.lang-btn').forEach(btn => {
+            if (btn.getAttribute('data-lang') === this.currentLang) {
+              btn.classList.add('active');
+            } else {
+              btn.classList.remove('active');
+            }
+          });
+        }
+      };
+      
+      // Update all text content for initial rendering
+      window.gameTranslations.updateAllText();
+      
+      // Set up language buttons
+      document.querySelectorAll('.lang-btn').forEach(button => {
+        button.addEventListener('click', function() {
+          const lang = this.getAttribute('data-lang');
+          window.gameTranslations.changeLanguage(lang);
+          window.gameTranslations.updateAllText();
+          localStorage.setItem('selected_language', lang);
+        });
+      });
+    }
+    
+    // Initialize when DOM is loaded
+    document.addEventListener('DOMContentLoaded', function() {
+      initializeLanguage();
+    });
+    
+    // Call initialize immediately if document already loaded
+    if (document.readyState === 'complete' || document.readyState === 'interactive') {
+      initializeLanguage();
+    }
+  </script>
+</head>
+<body>
+  <div class="language-selector">
+  
+  <div class="game-container">
+    <div class="game-area">
+      <h1><span data-text="smoke-game-title">Smoke Game</span></h1>
+      <div id="game-canvas"></div>
+      
+      <div class="game-instructions">
+        <p data-text="smoke-game-desc">Use arrow keys to move and attack. Defeat the enemy before your health runs out!</p>
+        <ul>
+          <li data-text="smoke-instruction-1">Use left/right arrow keys to move</li>
+          <li data-text="smoke-instruction-2">Press space bar to attack</li>
+          <li data-text="smoke-instruction-3">Stay close to the enemy to deal damage</li>
+          <li data-text="smoke-instruction-4">Press Enter to restart the game after game over</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  // Global variables
+  let player;
+  let enemy;
+  let smokeParticles = [];
+  let gameState = 'start'; // 'start', 'playing', 'gameOver'
+  let score = 0;
+
+  // Smoke effect control
+  let smokeEmissionDuration = 120; // Emit smoke for ~2 seconds (120 frames at 60fps)
+  let smokeEmissionTimer = 0;
+  let playerDeathX; // X-coordinate where player died
 
 // Player and Enemy y-offset from bottom of screen
 const yFloorOffset = 5;
@@ -66,6 +183,7 @@ function resetGame() {
   gameState = 'playing';
 }
 
+// Main p5.js draw function
 function draw() {
   let bgHue = (frameCount * 0.2) % 360;
 
@@ -295,3 +413,12 @@ function windowResized() {
     }
   }
 }
+
+// Create p5 instance in the game-canvas div
+new p5((p) => {
+  // Assign the p5 instance methods to the global scope
+  window.setup = function() { setup(); };
+  window.draw = function() { draw(); };
+  window.keyPressed = function() { keyPressed(); };
+  window.windowResized = function() { windowResized(); };
+}, 'game-canvas');
