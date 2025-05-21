@@ -75,42 +75,10 @@
     </div>
   </div>
   
-  <!-- 모듈화된 JavaScript 파일들 로드 -->
-  <!-- Firebase 스크립트 - 안전한 구성 적용 -->
-  <script type="module">
-    // Firebase 구성 보안 경고
-    console.info('주의: Firebase 구성을 사용하기 전에 firebase-config.js 파일을 반드시 설정하세요.');
-    console.info('firebase-config.template.js 파일을 firebase-config.js로 복사하고 실제 API 키와 프로젝트 정보를 입력하세요.');
-    
-    // Firebase SDK 동적 로드
-    import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js';
-    import { getDatabase, ref, push, set, get, onValue, query, orderByChild, limitToLast } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js';
-    import { getAnalytics } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-analytics.js';
-    
-    // Firebase SDK를 전역 객체에 할당 (기존 코드와 호환성 유지)
-    window.firebaseModules = {
-      initializeApp,
-      getDatabase,
-      ref,
-      push,
-      set,
-      get,
-      onValue,
-      query,
-      orderByChild,
-      limitToLast,
-      getAnalytics
-    };
-  </script>
-  
-  <!-- 기존 Firebase API (호환성 유지) -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-  
-  <!-- 애플리케이션 스크립트 -->
-  <!-- Firebase 설정 파일을 가장 먼저 로드 -->
-  <script src="js/firebase-config.js"></script>
+  <!-- JavaScript 파일들 로드 -->
+  <!-- Firebase SDK 대신 로컬 DB 모듈 사용 -->
   <script src="js/translations.js"></script>
+  <script src="js/db.js"></script>
   <script src="js/audio.js"></script>
   <script src="js/leaderboard.js"></script>
   <script src="js/game.js"></script>
