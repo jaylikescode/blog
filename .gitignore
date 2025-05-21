@@ -17,3 +17,13 @@ node_modules/
 # Ignore any potential build directories
 build/
 dist/
+
+# Ignore environment variable files
+.env
+.env.local
+.env.development
+.env.production
+
+# Ignore firebase config with real keys
+firebase-config-secret.js
+firebase-secrets.js
