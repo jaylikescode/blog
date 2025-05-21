@@ -23,7 +23,7 @@ function initializeFirebaseForApp() {
       return false;
     }
   } else {
-    console.warn('Firebase 초기화 함수를 찾을 수 없습니다. firebase-secrets.js가 제대로 로드되었는지 확인하세요.');
+    console.warn('Firebase 초기화 함수를 찾을 수 없습니다. firebase-config.js가 제대로 로드되었는지 확인하세요.');
     return false;
   }
 }
