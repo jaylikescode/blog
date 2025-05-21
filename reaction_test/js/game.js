@@ -89,6 +89,7 @@ function startTest() {
   const box = document.getElementById('signal-box');
   const instructions = document.getElementById('instructions');
   
+<<<<<<< Updated upstream
   // UI 초기화
   box.style.display = 'flex';
   box.textContent = window.gameTranslations.getText('waiting');
@@ -112,6 +113,45 @@ function startTest() {
   }
   
   instructions.style.display = 'none';
+=======
+  // UI 초기화 (null 체크 추가)
+  if (startBtn) {
+    startBtn.style.display = 'none';
+  }
+  
+  if (box) {
+    box.style.display = 'flex';
+    box.textContent = window.gameTranslations.getText('waiting');
+    
+    // Reset all classes and add waiting state
+    box.className = '';
+    box.classList.add('waiting');
+  } else {
+    console.error('Signal box element not found. Game cannot start.');
+    return; // 박스가 없으면 게임을 시작할 수 없음
+  }
+  
+  // 결과 영역이 존재하는지 확인 후 초기화
+  if (resultsDiv) {
+    resultsDiv.innerHTML = '';
+  } else {
+    console.warn('Results div not found. Creating a new one...');
+    // 결과 영역이 없으면 생성
+    const gameScreen = document.getElementById('game-screen');
+    if (gameScreen) {
+      const newResultsDiv = document.createElement('div');
+      newResultsDiv.id = 'results';
+      gameScreen.parentNode.insertBefore(newResultsDiv, gameScreen.nextSibling);
+      // 전역 참조 업데이트
+      window.resultsDiv = newResultsDiv;
+    }
+  }
+  
+  // 게임 설명 영역 (존재하는 경우만 숨김)
+  if (instructions) {
+    instructions.style.display = 'none';
+  }
+>>>>>>> Stashed changes
   
   // 변수 초기화
   round = 0;
@@ -305,23 +345,100 @@ function handleEarlyClick() {
  * 반응 시간 기록 함수
  */
 function recordReaction() {
-  // DOM 요소 재초기화 (성능 문제가 있는 경우에만 활성화)
-  if (!resultsContentDiv || !recordsListDiv) {
-    initDomReferences();
-  }
-  
-  // 반응 시간 기록
+  // 이미 화면을 클릭한 경우는 반응하지 않음
+  if (round === 0 || waiting || reacted) return;
+
+  reacted = true;
+  const now = new Date().getTime();
+  reactionTime = now - startTime;
+
+  // 결과 저장
   times.push(reactionTime);
   
-  // 최고 기록 갱신
-  if (reactionTime < bestTime) {
-    bestTime = reactionTime;
+  // box 요소 확인
+  const box = document.getElementById('signal-box');
+  if (box) {
+    box.textContent = reactionTime + ' ms';
   }
   
-  // 현재 라운드 결과 표시
-  if (resultsContentDiv) {
-    resultsContentDiv.innerHTML = `<p>${window.gameTranslations.getText('round')} ${round}: <strong>${reactionTime} ms</strong></p>`;
-    resultsContentDiv.innerHTML += `<p>${window.gameTranslations.getText('best-time')}: <strong>${bestTime} ms</strong></p>`;
+  // resultsDiv 확인
+  let localResultsDiv = document.getElementById('results') || window.resultsDiv;
+  if (localResultsDiv) {
+    localResultsDiv.innerHTML += `<p>${window.gameTranslations.getText('round')} ${round}: <strong>${reactionTime} ms</strong></p>`;
+  } else {
+    console.warn('Results div not found in recordReaction, creating results element');
+    // 결과 영역이 없으면 생성
+    const gameScreen = document.getElementById('game-screen');
+    if (gameScreen) {
+      const newResultsDiv = document.createElement('div');
+      newResultsDiv.id = 'results';
+      gameScreen.parentNode.insertBefore(newResultsDiv, gameScreen.nextSibling);
+      // 새로 만든 요소에 결과 표시
+      newResultsDiv.innerHTML = `<p>${window.gameTranslations.getText('round')} ${round}: <strong>${reactionTime} ms</strong></p>`;
+      // 전역 참조 업데이트
+      window.resultsDiv = newResultsDiv;
+    }
+    }
+  }
+
+  // 다음 라운드로 이동
+  setTimeout(nextRound, 1500);
+}
+
+/**
+ * 결과 표시 함수
+ */
+function showResults() {
+  const box = document.getElementById('signal-box');
+  let resultsDiv = document.getElementById('results') || window.resultsDiv;
+  const instructions = document.getElementById('instructions');
+  
+  // 게임 완료 표시 (box 요소 확인)
+  if (box) {
+    box.style.backgroundColor = '#E0E0E0';
+    box.textContent = window.gameTranslations.getText('completed');
+  } else {
+    console.error('Signal box element not found in showResults');
+  }
+  
+  // 결과 영역이 없는 경우 생성
+  if (!resultsDiv) {
+    console.warn('Results div not found in showResults. Creating a new one...');
+    const gameScreen = document.getElementById('game-screen');
+    if (gameScreen) {
+      resultsDiv = document.createElement('div');
+      resultsDiv.id = 'results';
+      gameScreen.parentNode.insertBefore(resultsDiv, gameScreen.nextSibling);
+      window.resultsDiv = resultsDiv;
+    } else {
+      console.error('Game screen not found. Cannot create results div');
+      return; // 게임 화면이 없는 경우 함수 종료
+    }
+  }
+  
+  // 최종 결과 표시
+  resultsDiv.innerHTML = '';
+  
+  // 최고 기록 표시
+  const bestDiv = document.createElement('div');
+  bestDiv.className = 'average';
+  bestDiv.textContent = `${window.gameTranslations.getText('best')}: ${bestTime} ${window.gameTranslations.getText('ms')}`;
+  resultsDiv.appendChild(bestDiv);
+  
+  // 성과 메시지 결정
+  let message = '';
+  if (bestTime < 200) {
+    message = window.gameTranslations.getText('amazing');
+    if (window.gameAudio) window.gameAudio.playTone(880, 0.5);
+  } else if (bestTime < 250) {
+    message = window.gameTranslations.getText('very-fast');
+    if (window.gameAudio) window.gameAudio.playTone(783.99, 0.5);
+  } else if (bestTime < 300) {
+    message = window.gameTranslations.getText('excellent');
+    if (window.gameAudio) window.gameAudio.playTone(659.25, 0.5);
+  } else if (bestTime < 350) {
+    message = window.gameTranslations.getText('above-average');
+>>>>>>> Stashed changes
   } else {
     // 하위호환성 유지
     const resultsDiv = document.getElementById('results');
@@ -364,25 +481,18 @@ function createNameInputForm(score) {
     console.error('이름 입력 폼을 표시할 요소를 찾을 수 없습니다.');
     return;
   }
-  
-  // 이름 입력 영역 생성
   const nameDiv = document.createElement('div');
   nameDiv.className = 'player-info';
-  nameDiv.innerHTML = `
-    <div class="score-info">
-      <span data-text="best-score">최고 기록</span>: ${score} ms
-    </div>
-    <div class="horizontal-form">
-      <label for="player-name" data-text="your-name">이름:</label>
-    </div>
-  `;
   
-  // 이름 입력 폼 요소
+  // 안내 레이블
+  const nameLabel = document.createElement('label');
+  nameLabel.textContent = window.gameTranslations.getText('enter-name');
+  
+  // 이름 입력 필드
   const nameInput = document.createElement('input');
   nameInput.type = 'text';
-  nameInput.id = 'player-name';
   nameInput.className = 'player-name-input';
-  nameInput.placeholder = window.gameTranslations.getText('name-placeholder');
+  nameInput.placeholder = window.gameTranslations.getText('player-name-placeholder');
   nameInput.maxLength = 15;
   
   // 저장 버튼
