@@ -17,13 +17,11 @@ const maxRounds = 5; // 최대 라운드 수
  */
 function startTest() {
   // DOM 요소 참조
-  const startBtn = document.getElementById('start-btn');
   const box = document.getElementById('signal-box');
   const resultsDiv = document.getElementById('results');
   const instructions = document.getElementById('instructions');
   
   // UI 초기화
-  startBtn.style.display = 'none';
   box.style.display = 'flex';
   box.textContent = window.gameTranslations.getText('waiting');
   
@@ -339,17 +337,21 @@ function createNameInputForm(score) {
  * 게임 관련 이벤트 설정
  */
 function setupGameEvents() {
-  const startBtn = document.getElementById('start-btn');
   const box = document.getElementById('signal-box');
   
-  // 시작 버튼 클릭 이벤트
-  if (startBtn) {
-    startBtn.addEventListener('click', startTest);
-  }
-  
-  // 박스 클릭 이벤트
+  // signal-box 클릭 이벤트 - 게임 시작 또는 게임 중 클릭 처리
   if (box) {
-    box.addEventListener('click', handleBoxClick);
+    // 게임 시작 전에는 startTest 함수를, 게임 중에는 handleBoxClick 함수를 호출
+    box.addEventListener('click', function() {
+      if (box.classList.contains('clickable-start')) {
+        // 시작 화면일 때는 게임 시작
+        box.classList.remove('clickable-start');
+        startTest();
+      } else {
+        // 게임 중일 때는 클릭 처리
+        handleBoxClick();
+      }
+    });
   }
 }
 
