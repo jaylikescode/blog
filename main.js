@@ -23,7 +23,7 @@ function changeLanguage(lang) {
     });
     
     // Update language button states
-    document.querySelectorAll('.lang-btn').forEach(btn => {
+    document.querySelectorAll('.language-btn').forEach(btn => {
         if (btn.getAttribute('data-lang') === lang) {
             btn.classList.add('active');
         } else {
@@ -46,7 +46,7 @@ const savedLang = localStorage.getItem('selectedLanguage') || 'ko';
 changeLanguage(savedLang);
 
 // Language button click handlers
-document.querySelectorAll('.lang-btn').forEach(button => {
+document.querySelectorAll('.language-btn').forEach(button => {
     button.addEventListener('click', function() {
         const lang = this.getAttribute('data-lang');
         changeLanguage(lang);
@@ -62,7 +62,7 @@ const closeButton = document.getElementById('close-embedded-game');
 // Close button functionality
 if (closeButton) {
     closeButton.addEventListener('click', function() {
-        modal.style.display = 'none';
+        modal.classList.remove('active');
         gameIframe.src = '';
     });
 }
@@ -70,7 +70,7 @@ if (closeButton) {
 // Close modal when clicking outside the content
 window.addEventListener('click', function(event) {
     if (event.target === modal) {
-        modal.style.display = 'none';
+        modal.classList.remove('active');
         gameIframe.src = '';
     }
 });
@@ -104,7 +104,7 @@ document.querySelectorAll('.play-game-btn').forEach(button => {
             gameIframe.src = gameUrl;
             
             // Show modal
-            modal.style.display = 'flex';
+            modal.classList.add('active');
         }
     });
 });
