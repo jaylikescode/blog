@@ -473,6 +473,7 @@
             </div>
 
             <!-- Game Modal -->
+            <!-- 게임 모달 컨테이너 (여기에만 id="embedded-game-container" 사용) -->  
             <div id="embedded-game-container" class="game-modal">
                 <div class="game-content">
                     <button id="close-embedded-game" class="game-close">&times;</button>
@@ -501,7 +502,8 @@
             </div>
             
             <!-- 임베디드 게임 컨테이너 -->
-            <div id="embedded-game-container" style="display: none; margin-top: 30px; background-color: white; padding: 20px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+            <!-- 이전 게임 컨테이너(사용되지 않음) --> 
+            <div class="old-game-container" style="display: none; margin-top: 30px; background-color: white; padding: 20px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
                 <div class="embedded-game-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                     <h3 id="embedded-game-title" data-text="reaction-game-title">반응 속도 테스트</h3>
                     <button id="close-embedded-game" style="background-color: #ff6b6b; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer;">✕</button>
@@ -527,7 +529,8 @@
     </footer>
     
     <!-- Game Container -->
-    <div id="embedded-game-container" class="game-container">
+    <!-- 이전 게임 컨테이너(사용되지 않음) --> 
+    <div class="alternative-game-container">
         <div class="game-content">
             <button id="close-embedded-game" class="game-close">✕</button>
             <div class="game-loading-spinner">
@@ -945,7 +948,7 @@
                 e.preventDefault();
                 const game = this.getAttribute('data-game');
                 const gameIframe = document.getElementById('embedded-game-iframe');
-                const gameContainer = document.getElementById('embedded-game-container');
+                const gameContainer = document.getElementById('embedded-game-container'); // 게임 모달 컨테이너
                 const gameTitle = document.getElementById('embedded-game-title');
                 const gameCloseButton = document.getElementById('close-embedded-game');
 
@@ -961,6 +964,7 @@
                 }
 
                 // Show modal and handle loading
+                gameContainer.style.display = 'flex'; // flex로 표시해서 모달이 보이도록 설정
                 gameContainer.classList.add('active', 'loading');
                 gameIframe.onload = () => {
                     gameContainer.classList.remove('loading');
@@ -974,6 +978,7 @@
         const gameContainer = document.getElementById('embedded-game-container');
         if (gameCloseButton && gameContainer) {
             const closeModal = () => {
+                gameContainer.style.display = 'none'; // 모달 숨기기
                 gameContainer.classList.remove('active', 'loading');
                 const gameIframe = document.getElementById('embedded-game-iframe');
                 if (gameIframe) {
