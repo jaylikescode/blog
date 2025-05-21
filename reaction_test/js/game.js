@@ -381,15 +381,40 @@ function createNameInputForm(score) {
 }
 
 /**
+ * 게임 관련 디버깅 로그 출력
+ */
+function logGameDebug(message, data) {
+  console.log(`[Game] ${message}`, data || '');
+}
+
+/**
  * 게임 관련 이벤트 설정
  */
 function setupGameEvents() {
-  console.log('게임 이벤트 설정 시작...');
+  logGameDebug('게임 이벤트 설정 시작');
   const box = document.getElementById('signal-box');
+  const gameContainer = document.getElementById('game-container');
+  
+  // 게임 시작 타이머 설정 (시작 버튼 클릭이 작동하지 않을 경우를 대비)
+  window.gameStartTimers = window.gameStartTimers || [];
+  
+  // 이전 타이머 정리
+  window.gameStartTimers.forEach(timer => clearTimeout(timer));
+  window.gameStartTimers = [];
+  
+  // 3초 후 시작 버튼 클릭 아직도 작동하지 않는지 확인
+  window.gameStartTimers.push(setTimeout(() => {
+    logGameDebug('시작 버튼 작동 확인 시작');
+    testClickHandling();
+  }, 3000));
   
   // 시그널 박스(게임 화면) 클릭 이벤트 - 게임 시작과 플레이 모두 처리
   if (box) {
-    console.log('시그널 박스 발견:', box);
+    logGameDebug('시그널 박스 발견', { 
+      id: box.id, 
+      display: box.style.display,
+      classList: box.className
+    });
     
     // 이전 클릭 이벤트 제거 (중복 방지)
     box.removeEventListener('click', handleBoxClick);
@@ -408,33 +433,66 @@ function setupGameEvents() {
     
     // 클릭 이벤트 추가 - 직접 함수 사용하여 클릭 시 시작하도록 설정
     box.addEventListener('click', function(event) {
-      console.log('박스 클릭됨:', event);
+      logGameDebug('시그널 박스 클릭됨', {
+        target: event.target.id,
+        timestamp: new Date().toISOString(),
+        boxState: box.className
+      });
       handleBoxClick();
     });
     
-    // 추가 - 직접 시작 버튼 추가
-    const startButton = document.createElement('button');
-    startButton.id = 'manual-start-button';
-    startButton.textContent = '게임 시작하기';
-    startButton.className = 'start-button';
-    startButton.style.marginTop = '15px';
-    startButton.style.padding = '10px 15px';
-    startButton.style.backgroundColor = '#4a89dc';
-    startButton.style.color = 'white';
-    startButton.style.border = 'none';
-    startButton.style.borderRadius = '5px';
-    startButton.style.cursor = 'pointer';
-    startButton.style.fontWeight = 'bold';
-    
-    startButton.addEventListener('click', function() {
-      console.log('시작 버튼 클릭됨');
-      startTest();
-    });
-    
-    // 박스 아래에 버튼 추가
-    box.parentNode.insertBefore(startButton, box.nextSibling);
+    // 이미 있는 시작 버튼 제거 (사용자 요구사항)
+    let startButton = document.getElementById('manual-start-button');
+    if (startButton) {
+      logGameDebug('시작 버튼 제거 시작', { buttonId: startButton.id });
+      startButton.remove();
+      logGameDebug('시작 버튼이 제거됨');
+    }
   } else {
     console.error('시그널 박스를 찾을 수 없습니다!');
+    logGameDebug('시그널 박스 요소를 찾을 수 없음', { 'signal-box': !!document.getElementById('signal-box') });
+  }
+}
+
+/**
+ * 클릭 이벤트 작동 테스트 함수
+ */
+function testClickHandling() {
+  logGameDebug('클릭 이벤트 테스트 시작');
+  const box = document.getElementById('signal-box');
+  const startButton = document.getElementById('manual-start-button');
+  
+  // 0. 요소 확인
+  if (!box) {
+    logGameDebug('signal-box 요소가 없음');
+    return;
+  }
+  
+  // 1. 박스 클래스 확인
+  logGameDebug('박스 클래스 상태', { 
+    className: box.className,
+    hasClickableStart: box.classList.contains('clickable-start'),
+    startButtonExists: !!startButton
+  });
+  
+  // 2. 제대로 동작하지 않는 경우 추가 조치
+  if (box.classList.contains('clickable-start')) {
+    // 클릭 가능한 상태인데 아무것도 하지 않았다면
+    logGameDebug('클릭 가능한 상태인데 아직 시작되지 않음');
+    
+    // 시작 버튼이 있는지 확인하고 강조
+    if (startButton) {
+      logGameDebug('시작 버튼이 있음 - 강조 추가');
+      // 강조 효과
+      startButton.style.boxShadow = '0 0 15px rgba(255, 215, 0, 0.8)';
+      startButton.style.animation = 'pulse 2s infinite';
+      
+      // 5초 후 효과 제거
+      setTimeout(() => {
+        startButton.style.boxShadow = '';
+        startButton.style.animation = '';
+      }, 5000);
+    }
   }
 }
 

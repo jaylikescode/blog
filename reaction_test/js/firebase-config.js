@@ -27,7 +27,15 @@ if (!window.firebaseConfig) {
  */
 function initializeFirebase() {
   try {
-    firebase.initializeApp(firebaseConfig);
+    // 이미 초기화되었는지 확인
+    if (firebase.apps.length > 0) {
+      console.log("Firebase가 이미 초기화되었습니다.");
+      window.database = firebase.database();
+      return;
+    }
+    
+    // 처음 초기화하는 경우
+    firebase.initializeApp(window.firebaseConfig);
     console.log("Firebase 초기화 성공");
     
     // Firebase 데이터베이스 참조 생성
@@ -42,11 +50,11 @@ function initializeFirebase() {
         console.warn('Firebase 데이터베이스에 연결할 수 없습니다.');
       }
     });
-    
   } catch (e) {
     console.error("Firebase 초기화 실패:", e);
     // Firebase가 없어도 기본 기능은 작동하도록 처리
-    window.firebase = {
+    window.firebase = window.firebase || {
+      apps: [],
       database: () => ({
         ref: () => ({
           once: () => Promise.resolve({ val: () => null }),
@@ -57,17 +65,20 @@ function initializeFirebase() {
     };
     
     // 기본 데이터베이스 객체 생성
-    window.database = firebase.database();
+    window.database = window.firebase.database();
   }
 }
 
-// 로딩이 진행 중인지 확인
-// script를 통해 자동으로 초기화되지 않은 경우 상위 코드에서 initializeFirebase 호출
-// 이 부분은 로딩 중이고 위에서 자동으로 초기화하지 않았을 경우를 위한 백업
-// 5초 후에 아직 초기화되지 않았다면 기본 구성으로 초기화
- setTimeout(() => {
-  if (typeof window.database === 'undefined') {
-    console.warn('자동 로드 실패, 기본 구성으로 초기화');
-    initializeFirebase();
-  }
-}, 5000);
+// 페이지 로드가 완료되면 Firebase 초기화
+// DOMContentLoaded 이벤트 후 Firebase 초기화 실행
+document.addEventListener('DOMContentLoaded', function() {
+  console.log('DOM 로드 완료, Firebase 초기화 시작');
+  // 1초 지연 후 초기화 - 기타 스크립트가 모두 로드되도록
+  setTimeout(initializeFirebase, 1000);
+});
+
+// 이미 DOM이 로드되었을 경우 바로 초기화
+if (document.readyState === 'complete' || document.readyState === 'interactive') {
+  console.log('DOM이 이미 로드됨, 2초 뒤 Firebase 초기화 시작');
+  setTimeout(initializeFirebase, 2000);
+}
