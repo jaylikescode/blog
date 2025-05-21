@@ -8,17 +8,27 @@
  */
 
 // Firebase 설정 객체 - 여러분의 Firebase 프로젝트 정보로 업데이트하세요
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID",
-  measurementId: "YOUR_MEASUREMENT_ID",
-  databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com"
+  apiKey: "AIzaSyBdKiejBgTitVGFaZeNSnoh5ueQ134Uz3Y",
+  authDomain: "reaction-speed-test-e27db.firebaseapp.com",
+  projectId: "reaction-speed-test-e27db",
+  storageBucket: "reaction-speed-test-e27db.firebasestorage.app",
+  messagingSenderId: "190376860464",
+  appId: "1:190376860464:web:25233ce11804d4e2b146f5",
+  measurementId: "G-0W1GHK01FM"
 };
 
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
 // 모듈 내보내기
 export default firebaseConfig;
 
