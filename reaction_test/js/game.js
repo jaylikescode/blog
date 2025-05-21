@@ -120,8 +120,17 @@ function showSignal() {
 function handleBoxClick() {
   const box = document.getElementById('signal-box');
   
+  // 디버깅 로그: 박스 상태 출력
+  console.log('Box clicked:', {
+    classes: box.className,
+    hasClickableStart: box.classList.contains('clickable-start'),
+    round: round,
+    ready: ready
+  });
+  
   // 게임 시작 전 상태
   if (box.classList.contains('clickable-start')) {
+    console.log('Starting test...');
     startTest();
     return;
   }
@@ -375,16 +384,57 @@ function createNameInputForm(score) {
  * 게임 관련 이벤트 설정
  */
 function setupGameEvents() {
+  console.log('게임 이벤트 설정 시작...');
   const box = document.getElementById('signal-box');
   
   // 시그널 박스(게임 화면) 클릭 이벤트 - 게임 시작과 플레이 모두 처리
   if (box) {
-    // 처음에 클릭하여 시작하도록 표시
-    box.classList.add('clickable-start');
-    box.textContent = window.gameTranslations.getText('click-to-start');
+    console.log('시그널 박스 발견:', box);
     
-    // 클릭 이벤트
-    box.addEventListener('click', handleBoxClick);
+    // 이전 클릭 이벤트 제거 (중복 방지)
+    box.removeEventListener('click', handleBoxClick);
+    
+    // 처음에 클릭하여 시작하도록 표시
+    box.className = ''; // 클래스 초기화
+    box.classList.add('clickable-start');
+    
+    // 텍스트 업데이트
+    try {
+      box.textContent = window.gameTranslations.getText('click-to-start');
+    } catch (e) {
+      console.error('텍스트 설정 오류:', e);
+      box.textContent = '화면을 클릭하여 시작하세요';
+    }
+    
+    // 클릭 이벤트 추가 - 직접 함수 사용하여 클릭 시 시작하도록 설정
+    box.addEventListener('click', function(event) {
+      console.log('박스 클릭됨:', event);
+      handleBoxClick();
+    });
+    
+    // 추가 - 직접 시작 버튼 추가
+    const startButton = document.createElement('button');
+    startButton.id = 'manual-start-button';
+    startButton.textContent = '게임 시작하기';
+    startButton.className = 'start-button';
+    startButton.style.marginTop = '15px';
+    startButton.style.padding = '10px 15px';
+    startButton.style.backgroundColor = '#4a89dc';
+    startButton.style.color = 'white';
+    startButton.style.border = 'none';
+    startButton.style.borderRadius = '5px';
+    startButton.style.cursor = 'pointer';
+    startButton.style.fontWeight = 'bold';
+    
+    startButton.addEventListener('click', function() {
+      console.log('시작 버튼 클릭됨');
+      startTest();
+    });
+    
+    // 박스 아래에 버튼 추가
+    box.parentNode.insertBefore(startButton, box.nextSibling);
+  } else {
+    console.error('시그널 박스를 찾을 수 없습니다!');
   }
 }
 

@@ -4,9 +4,24 @@
 
 // 페이지 로드 완료 시 실행
 function initializeApp() {
+  console.log('앱 초기화 시작...');
+  
+  // 모듈 로드 상태 로그
+  console.log('모듈 로드 상태:', {
+    translations: !!window.gameTranslations,
+    leaderboard: !!window.gameLeaderboard,
+    core: !!window.gameCore,
+    ui: !!window.gameUI
+  });
+  
   // 각 모듈 존재 여부 확인
   if (!window.gameTranslations || !window.gameLeaderboard || !window.gameCore || !window.gameUI) {
-    console.error('필요한 모듈이 로드되지 않았습니다.');
+    console.error('필요한 모듈이 로드되지 않았습니다. 새로고침해보세요.');
+    // 5초 후 자동으로 새로 고침
+    setTimeout(() => {
+      console.log('필요한 모듈이 로드되지 않아 자동으로 새로고침합니다.');
+      //location.reload();
+    }, 5000);
     return;
   }
   

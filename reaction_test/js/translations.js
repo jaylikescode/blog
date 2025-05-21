@@ -2,8 +2,8 @@
  * translations.js - 언어 번역 관련 모듈
  */
 
-// Language translations
-export const translations = {
+// Language translations - 전역 변수로 선언 (export 키워드 제거)
+const translations = {
   'en': {
     // Blog sections
     'blog-title': 'My Blog',
