@@ -1,43 +1,59 @@
-import { translations } from './reaction_test/js/translations.js';
-import { initializeUI } from './reaction_test/js/ui.js';
-import { initializeGame } from './reaction_test/js/game.js';
-import { initializeAudio } from './reaction_test/js/audio.js';
-import { initializeLeaderboard } from './reaction_test/js/leaderboard.js';
+// 게임 관련 번역 데이터
+const translations = {
+  'ko': {
+    'title': '반응 속도 테스트',
+    'reaction-game-title': '반응 속도 테스트 게임',
+    'smoke-game-title': '스모크 게임',
+    'game-description': '얼마나 빠르게 반응할 수 있는지 테스트해보세요!',
+    'play-now': '지금 플레이하기'
+  },
+  'en': {
+    'title': 'Reaction Speed Test',
+    'reaction-game-title': 'Reaction Speed Test Game',
+    'smoke-game-title': 'Smoke Game',
+    'game-description': 'Test how quickly you can react!',
+    'play-now': 'Play Now'
+  }
+};
 
-// Initialize all components
-initializeUI();
-initializeGame();
-initializeAudio();
-initializeLeaderboard();
+// 게임 컴포넌트는 별도 로드합니다. (window 객체로 노출됨)
+// 게임 페이지가 로드될 때 초기화됩니다.
 
 // Language handling
 function changeLanguage(lang) {
-    document.documentElement.lang = lang;
-    
-    // Update text content for elements with data-text attribute
-    document.querySelectorAll('[data-text]').forEach(element => {
-        const textKey = element.getAttribute('data-text');
-        if (translations[lang] && translations[lang][textKey]) {
-            element.textContent = translations[lang][textKey];
+    try {
+        document.documentElement.lang = lang;
+        
+        // Update text content for elements with data-text attribute
+        document.querySelectorAll('[data-text]').forEach(element => {
+            const textKey = element.getAttribute('data-text');
+            if (translations[lang] && translations[lang][textKey]) {
+                element.textContent = translations[lang][textKey];
+            }
+        });
+        
+        // Update language button states
+        document.querySelectorAll('.language-btn').forEach(btn => {
+            if (btn.getAttribute('data-lang') === lang) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        });
+        
+        // Save current language to localStorage
+        localStorage.setItem('selectedLanguage', lang);
+        
+        // Update game translations if game is loaded
+        if (window.gameTranslations && typeof window.gameTranslations.changeLanguage === 'function') {
+            console.log('게임 번역 업데이트:', lang);
+            window.gameTranslations.changeLanguage(lang);
+            if (typeof window.gameTranslations.updateAllText === 'function') {
+                window.gameTranslations.updateAllText();
+            }
         }
-    });
-    
-    // Update language button states
-    document.querySelectorAll('.language-btn').forEach(btn => {
-        if (btn.getAttribute('data-lang') === lang) {
-            btn.classList.add('active');
-        } else {
-            btn.classList.remove('active');
-        }
-    });
-    
-    // Save current language to localStorage
-    localStorage.setItem('selectedLanguage', lang);
-    
-    // Update game translations if game is loaded
-    if (window.gameTranslations) {
-        window.gameTranslations.changeLanguage(lang);
-        window.gameTranslations.updateAllText();
+    } catch (error) {
+        console.error('언어 변경 중 오류 발생:', error);
     }
 }
 

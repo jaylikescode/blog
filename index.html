@@ -873,35 +873,71 @@
         };
         
         // 언어 변경 함수
+        const blogTranslations = {
+            'ko': {
+                'home-title': '홈',
+                'about-title': '소개',
+                'thoughts-title': '생각 및 아이디어',
+                'games-title': '게임',
+                'reaction-game-title': '반응 속도 테스트',
+                'smoke-game-title': '스모크 게임',
+                'play-now': '지금 플레이',
+                'about-instruction': '자기소개를 추가하려면 이 텍스트를 Jay에 관한 정보로 대체하세요.'
+            },
+            'en': {
+                'home-title': 'Home',
+                'about-title': 'About',
+                'thoughts-title': 'Thoughts & Ideas',
+                'games-title': 'Games',
+                'reaction-game-title': 'Reaction Speed Test',
+                'smoke-game-title': 'Smoke Game',
+                'play-now': 'Play Now',
+                'about-instruction': 'To add an about section, replace this text with information about Jay.'
+            },
+            currentLang: 'ko'  // 기본 언어
+        };
+        
         function changeLanguage(lang) {
-            // HTML 언어 속성 변경
-            document.documentElement.lang = lang;
-            
-            // 데이터 속성을 가진 모든 요소 찾기
-            const elements = document.querySelectorAll('[data-text]');
-            
-            // 각 요소의 텍스트 내용 업데이트
-            elements.forEach(element => {
-                const textKey = element.getAttribute('data-text');
-                if (translations[lang] && translations[lang][textKey]) {
-                    element.textContent = translations[lang][textKey];
+            try {
+                console.log('언어 변경:', lang);
+                document.documentElement.lang = lang;
+                
+                // 단어 번역된 텍스트 업데이트
+                document.querySelectorAll('[data-text]').forEach(element => {
+                    const textKey = element.getAttribute('data-text');
+                    if (blogTranslations[lang] && blogTranslations[lang][textKey]) {
+                        element.textContent = blogTranslations[lang][textKey];
+                    }
+                });
+                
+                // 언어 버튼 활성화 상태 업데이트
+                document.querySelectorAll('.language-btn').forEach(btn => {
+                    if (btn.getAttribute('data-lang') === lang) {
+                        btn.classList.add('active');
+                    } else {
+                        btn.classList.remove('active');
+                    }
+                });
+                
+                // 현재 언어를 로컬 스토리지에 저장
+                localStorage.setItem('selectedLanguage', lang);
+                
+                // 로컬 언어 설정 업데이트
+                blogTranslations.currentLang = lang;
+                
+                // iframe이 있는 경우 언어 전달 시도
+                try {
+                    const gameIframe = document.getElementById('embedded-game-iframe');
+                    if (gameIframe && gameIframe.contentWindow && gameIframe.contentWindow.gameTranslations) {
+                        gameIframe.contentWindow.gameTranslations.changeLanguage(lang);
+                        console.log('iframe 언어 업데이트 성공');
+                    }
+                } catch (iframeError) {
+                    console.log('iframe 언어 업데이트 실패:', iframeError);
                 }
-            });
-            
-            // 언어 버튼 활성화 상태 업데이트
-            document.querySelectorAll('.lang-btn').forEach(btn => {
-                if (btn.getAttribute('data-lang') === lang) {
-                    btn.classList.add('active');
-                } else {
-                    btn.classList.remove('active');
-                }
-            });
-            
-            // 현재 언어를 로컬 스토리지에 저장
-            localStorage.setItem('selectedLanguage', lang);
-            
-            // 동기화된 currentLang 업데이트
-            window.gameTranslations.currentLang = lang;
+            } catch (error) {
+                console.error('언어 변경 오류:', error);
+            }
         }
         
         // 언어 버튼 클릭 이벤트 리스너 설정
@@ -925,14 +961,14 @@
     </script>
     
     <script>
-        // Initialize language from localStorage
-        const savedLang = localStorage.getItem('selectedLanguage') || 'ko';
-        changeLanguage(savedLang);
+        // 이미 초기화되어 있으므로 여기서는 언어 초기화하지 않음
+        console.log('로드완료 후 시작');
 
-        // Language button click handler
+        // 언어 버튼 클릭 이벤트 처리기
         document.querySelectorAll('.lang-btn').forEach(button => {
             button.addEventListener('click', function() {
                 const lang = this.getAttribute('data-lang');
+                console.log('버튼 클릭으로 언어 변경:', lang);
                 changeLanguage(lang);
             });
         });
@@ -949,21 +985,43 @@
 
                 if (!gameContainer || !gameIframe) return;
 
-                // Set game source
+                // 현재 언어 설정 가져오기
+                const currentLang = document.documentElement.lang || 'ko';
+                console.log('현재 언어 설정:', currentLang);
+                
+                // 게임 소스 설정
                 if (game === 'reaction') {
-                    gameIframe.src = 'reaction_test/react_test.html';
-                    gameTitle.textContent = translations[document.documentElement.lang]['reaction-game-title'] || 'Reaction Speed Test';
+                    // 언어 파라미터 추가
+                    gameIframe.src = `reaction_test/react_test.html?lang=${currentLang}`;
+                    gameTitle.textContent = translations[currentLang]['reaction-game-title'] || 'Reaction Speed Test';
+                    console.log('반응 속도 게임 로드:', gameIframe.src);
                 } else if (game === 'smoke') {
                     gameIframe.src = 'reaction_test/Smoke.html';
                     gameTitle.textContent = 'Smoke Game';
                 }
 
-                // Show modal and handle loading
+                // 모달 표시 및 로딩 처리
                 gameContainer.style.display = 'flex'; // flex로 표시해서 모달이 보이도록 설정
                 gameContainer.classList.add('active', 'loading');
+                
+                // iframe 로드가 완료되면 로딩 상태 제거
                 gameIframe.onload = () => {
                     gameContainer.classList.remove('loading');
+                    console.log('게임 iframe 로드 완료');
+                    
+                    // iframe 로드 후 언어 설정을 한 번 더 전달 (중요: 일부 브라우저에서 필요)
+                    try {
+                        setTimeout(() => {
+                            const iframeWindow = gameIframe.contentWindow;
+                            if (iframeWindow && iframeWindow.gameTranslations) {
+                                console.log('iframe 내부 번역 객체 업데이트');
+                            }
+                        }, 500);
+                    } catch (e) {
+                        console.log('iframe 언어 설정 실패:', e);
+                    }
                 };
+                
                 document.body.style.overflow = 'hidden';
             });
         });

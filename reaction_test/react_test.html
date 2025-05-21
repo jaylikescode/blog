@@ -23,11 +23,19 @@
           <div id="signal-box" class="clickable-start" data-text="click-to-start">화면을 클릭하여 시작하세요</div>
         </div>
         
-        <!-- 좌측 결과 및 기록 영역 -->
-        <div id="results"></div>
-        
-        <!-- 우측 반응 속도 측정 기록 -->
-        <div id="reaction-records" class="reaction-records"></div>
+        <div class="records-container">
+          <!-- 좌측 결과 및 기록 영역 -->
+          <div id="results">
+            <h3 data-text="result-title">테스트 결과</h3>
+            <div id="results-content"></div>
+          </div>
+          
+          <!-- 우측 반응 속도 측정 기록 -->
+          <div id="reaction-records" class="reaction-records">
+            <h3 data-text="records-title">기록</h3>
+            <div id="records-list"></div>
+          </div>
+        </div>
       </div>
       
       <!-- 접이식 게임 설명 영역 -->

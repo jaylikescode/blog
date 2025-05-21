@@ -151,13 +151,39 @@ nav a:hover {
 }
 
 #reaction-thumbnail {
-    background-image: url('./reaction_test/images/reaction_thumbnail.jpg');
+    /* 이미지 대신 그라디언트 배경 사용 */
+    background-image: linear-gradient(45deg, #2ecc71, #3498db);
     background-color: #2ecc71;
+    position: relative;
+}
+
+#reaction-thumbnail::after {
+    content: '반응 속도 테스트';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-weight: bold;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
 }
 
 #smoke-thumbnail {
-    background-image: url('./reaction_test/images/smoke_thumbnail.jpg');
+    /* 이미지 대신 그라디언트 배경 사용 */
+    background-image: linear-gradient(45deg, #34495e, #2c3e50);
     background-color: #34495e;
+    position: relative;
+}
+
+#smoke-thumbnail::after {
+    content: 'Smoke Game';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-weight: bold;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
 }
 
 .thumbnail-overlay {

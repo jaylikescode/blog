@@ -12,14 +12,81 @@ let times = []; // 각 라운드별 시간 기록
 let bestTime = Infinity; // 최고 기록
 const maxRounds = 5; // 최대 라운드 수
 
+// DOM 요소 참조 가넥성 향상
+// 공통으로 사용되는 요소들을 전역 변수로 설정
+let resultsContentDiv = null;
+let recordsListDiv = null;
+
+// DOM 요소 참조 초기화 함수
+function initDomReferences() {
+  // DOM 요소 선택
+  resultsContentDiv = document.getElementById('results-content');
+  recordsListDiv = document.getElementById('records-list');
+  
+  // 요소가 없는 경우 오류 방지를 위한 추가 로직
+  if (!resultsContentDiv) {
+    // results-content 엘리먼트가 없다면 생성
+    const resultsDiv = document.getElementById('results');
+    if (resultsDiv) {
+      console.log('[Game] results-content 요소 생성 중...');
+      // 원래 내용 보존
+      const originalContent = resultsDiv.innerHTML;
+      // 구조 생성
+      resultsDiv.innerHTML = '<h3 data-text="result-title">테스트 결과</h3><div id="results-content"></div>';
+      // 다시 참조 갱신
+      resultsContentDiv = document.getElementById('results-content');
+      // 원래 내용이 있다면 내용 복원
+      if (originalContent && originalContent.trim() !== '') {
+        resultsContentDiv.innerHTML = originalContent;
+      }
+    }
+  }
+  
+  if (!recordsListDiv) {
+    // records-list 엘리먼트가 없다면 생성
+    const recordsDiv = document.getElementById('reaction-records');
+    if (recordsDiv) {
+      console.log('[Game] records-list 요소 생성 중...');
+      // 원래 내용 보존
+      const originalContent = recordsDiv.innerHTML;
+      // 구조 생성
+      recordsDiv.innerHTML = '<h3 data-text="records-title">기록</h3><div id="records-list"></div>';
+      // 다시 참조 갱신
+      recordsListDiv = document.getElementById('records-list');
+      // 원래 내용이 있다면 내용 복원
+      if (originalContent && originalContent.trim() !== '') {
+        recordsListDiv.innerHTML = originalContent;
+      }
+    }
+  }
+  
+  // 초기화 결과 로그
+  console.log('[Game] DOM 참조 초기화 결과:', { 
+    resultsContent: !!resultsContentDiv,
+    recordsList: !!recordsListDiv
+  });
+  
+  // 요소가 여전히 없는 경우에는 비움 객체 생성
+  if (!resultsContentDiv) {
+    console.warn('[Game] results-content 요소를 찾을 수 없어 비움 객체 생성');
+    resultsContentDiv = { innerHTML: '' };
+  }
+  
+  if (!recordsListDiv) {
+    console.warn('[Game] records-list 요소를 찾을 수 없어 비움 객체 생성');
+    recordsListDiv = { appendChild: () => {}, innerHTML: '' };
+  }
+}
+
 /**
  * 테스트 시작 함수
  */
 function startTest() {
-  // DOM 요소 참조
+  // DOM 요소 재초기화
+  initDomReferences();
+  
+  // 추가 DOM 요소 참조
   const box = document.getElementById('signal-box');
-  const resultsDiv = document.getElementById('results');
-  const recordsDiv = document.getElementById('reaction-records');
   const instructions = document.getElementById('instructions');
   
   // UI 초기화
@@ -31,8 +98,19 @@ function startTest() {
   box.classList.add('waiting');
   box.classList.remove('clickable-start');
   
-  resultsDiv.innerHTML = '';
-  recordsDiv.innerHTML = ''; // 반응 기록 초기화
+  // 결과 및 기록 초기화 - 새 구조 반영
+  if (resultsContentDiv) {
+    resultsContentDiv.innerHTML = '';
+  } else {
+    document.getElementById('results').innerHTML = '<h3 data-text="result-title">테스트 결과</h3><div id="results-content"></div>';
+  }
+  
+  if (recordsListDiv) {
+    recordsListDiv.innerHTML = '';
+  } else {
+    document.getElementById('reaction-records').innerHTML = '<h3 data-text="records-title">기록</h3><div id="records-list"></div>';
+  }
+  
   instructions.style.display = 'none';
   
   // 변수 초기화
@@ -155,6 +233,9 @@ function handleBoxClick() {
     box.classList.remove('clicked');
   }, 100);
   
+  // DOM 참조 초기화 강제 실행 (오류 수정)
+  initDomReferences();
+  
   // 결과 기록
   recordReaction();
   
@@ -224,7 +305,10 @@ function handleEarlyClick() {
  * 반응 시간 기록 함수
  */
 function recordReaction() {
-  const recordsDiv = document.getElementById('reaction-records');
+  // DOM 요소 재초기화 (성능 문제가 있는 경우에만 활성화)
+  if (!resultsContentDiv || !recordsListDiv) {
+    initDomReferences();
+  }
   
   // 반응 시간 기록
   times.push(reactionTime);
@@ -234,70 +318,37 @@ function recordReaction() {
     bestTime = reactionTime;
   }
   
-  // 현재 라운드 결과 표시 - 오른쪽 탭에 추가
-  const resultItem = document.createElement('div');
-  resultItem.className = 'record-item';
-  // 더 좋은 시간이면 하이라이트
-  if (reactionTime === bestTime && times.length > 1) {
-    resultItem.classList.add('best-time');
-  }
-  resultItem.innerHTML = `<span class="round-number">${round}</span><span class="round-time">${reactionTime}ms</span>`;
-  recordsDiv.appendChild(resultItem);
-}
-
-/**
- * 결과 표시 함수
- */
-function showResults() {
-  const box = document.getElementById('signal-box');
-  const resultsDiv = document.getElementById('results');
-  const instructions = document.getElementById('instructions');
-  
-  // 게임 완료 표시
-  box.style.backgroundColor = '#E0E0E0';
-  box.textContent = window.gameTranslations.getText('completed');
-  
-  // 최종 결과 표시
-  resultsDiv.innerHTML = '';
-  
-  // 최고 기록 표시
-  const bestDiv = document.createElement('div');
-  bestDiv.className = 'average';
-  bestDiv.textContent = `${window.gameTranslations.getText('best')}: ${bestTime} ${window.gameTranslations.getText('ms')}`;
-  resultsDiv.appendChild(bestDiv);
-  
-  // 성과 메시지 결정
-  let message = '';
-  if (bestTime < 200) {
-    message = window.gameTranslations.getText('amazing');
-    if (window.gameAudio) window.gameAudio.playTone(880, 0.5);
-  } else if (bestTime < 250) {
-    message = window.gameTranslations.getText('very-fast');
-    if (window.gameAudio) window.gameAudio.playTone(783.99, 0.5);
-  } else if (bestTime < 300) {
-    message = window.gameTranslations.getText('excellent');
-    if (window.gameAudio) window.gameAudio.playTone(659.25, 0.5);
-  } else if (bestTime < 350) {
-    message = window.gameTranslations.getText('above-average');
+  // 현재 라운드 결과 표시
+  if (resultsContentDiv) {
+    resultsContentDiv.innerHTML = `<p>${window.gameTranslations.getText('round')} ${round}: <strong>${reactionTime} ms</strong></p>`;
+    resultsContentDiv.innerHTML += `<p>${window.gameTranslations.getText('best-time')}: <strong>${bestTime} ms</strong></p>`;
   } else {
-    message = window.gameTranslations.getText('keep-practicing');
+    // 하위호환성 유지
+    const resultsDiv = document.getElementById('results');
+    if (resultsDiv) {
+      resultsDiv.innerHTML = `<p>${window.gameTranslations.getText('round')} ${round}: <strong>${reactionTime} ms</strong></p>`;
+      resultsDiv.innerHTML += `<p>${window.gameTranslations.getText('best-time')}: <strong>${bestTime} ms</strong></p>`;
+    }
   }
   
-  // 성과 메시지 표시
-  const messageDiv = document.createElement('div');
-  messageDiv.className = 'message';
-  messageDiv.textContent = message;
-  resultsDiv.appendChild(messageDiv);
+  // 각 라운드 기록을 시각적으로 표시
+  const recordItem = document.createElement('div');
+  recordItem.className = 'record-item';
+  recordItem.textContent = `#${round}: ${reactionTime}ms`;
   
-  // 이름 입력 필드 및 점수 저장 UI 생성
-  createNameInputForm(bestTime);
+  // 새 구조에 맞게 요소 추가
+  if (recordsListDiv) {
+    recordsListDiv.appendChild(recordItem);
+  } else {
+    // 하위호환성 유지
+    const records = document.getElementById('reaction-records');
+    if (records) {
+      records.appendChild(recordItem);
+    }
+  }
   
-  // 게임 재시작 설정
-  box.classList.add('clickable-start');
-  box.textContent = window.gameTranslations.getText('click-to-start');
-  
-  // 인스트럭션 표시
-  instructions.style.display = 'block';
+  // 다음 라운드 시작
+  setTimeout(nextRound, 1500);
 }
 
 /**
@@ -305,27 +356,51 @@ function showResults() {
  * @param {number} score - 저장할 점수
  */
 function createNameInputForm(score) {
-  const resultsDiv = document.getElementById('results');
+  // 새 구조에 맞게 대상 요소 찾기
+  const resultsContentDiv = document.getElementById('results-content');
+  const targetDiv = resultsContentDiv || document.getElementById('results');
   
-  // 이름 입력 컨테이너 - 수평 레이아웃
+  if (!targetDiv) {
+    console.error('이름 입력 폼을 표시할 요소를 찾을 수 없습니다.');
+    return;
+  }
+  
+  // 이름 입력 영역 생성
   const nameDiv = document.createElement('div');
-  nameDiv.className = 'player-info horizontal-form';
+  nameDiv.className = 'player-info';
+  nameDiv.innerHTML = `
+    <div class="score-info">
+      <span data-text="best-score">최고 기록</span>: ${score} ms
+    </div>
+    <div class="horizontal-form">
+      <label for="player-name" data-text="your-name">이름:</label>
+    </div>
+  `;
   
-  // 간단한 설명
-  const scoreInfo = document.createElement('span');
-  scoreInfo.className = 'score-info';
-  scoreInfo.textContent = `${score}ms: `;
-  
-  // 이름 입력 필드 - 다른 요소와 한 줄에 표시
+  // 이름 입력 폼 요소
   const nameInput = document.createElement('input');
   nameInput.type = 'text';
+  nameInput.id = 'player-name';
   nameInput.className = 'player-name-input';
-  nameInput.placeholder = window.gameTranslations.getText('player-name-placeholder');
+  nameInput.placeholder = window.gameTranslations.getText('name-placeholder');
+  nameInput.maxLength = 15;
   
   // 저장 버튼
   const saveButton = document.createElement('button');
+  saveButton.type = 'button';
   saveButton.className = 'save-record-btn';
-  saveButton.textContent = window.gameTranslations.getText('save-score');
+  saveButton.textContent = window.gameTranslations.getText('save-record');
+  
+  // 이름 입력 후 엔터 키 처리
+  nameInput.addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const playerName = nameInput.value.trim();
+      if (playerName.length > 0) {
+        saveRecord(playerName, score);
+      }
+    }
+  });
   
   // 저장 버튼 클릭 이벤트
   saveButton.addEventListener('click', function() {
@@ -339,10 +414,8 @@ function createNameInputForm(score) {
     // 순위표에 기록 저장 (Promise 처리)
     window.gameLeaderboard.addScoreToLeaderboard(playerName, score)
       .then(rank => {
-        // 저장 성공 메시지 - 한 줄로 표시
+        // 저장 성공 메시지
         nameDiv.innerHTML = '';
-        nameDiv.className = 'player-info horizontal-form';
-        
         const successMsg = document.createElement('span');
         successMsg.className = 'save-success';
         successMsg.textContent = `${window.gameTranslations.getText('score-saved')} (${window.gameTranslations.getText('rank')}: ${rank})`;
@@ -350,8 +423,8 @@ function createNameInputForm(score) {
         
         // 다시하기 버튼
         const retryBtn = document.createElement('button');
-        retryBtn.id = 'retry';
-        retryBtn.textContent = window.gameTranslations.getText('retry');
+        retryBtn.className = 'retry-btn';
+        retryBtn.textContent = window.gameTranslations.getText('try-again');
         retryBtn.addEventListener('click', startTest);
         nameDiv.appendChild(retryBtn);
       })
@@ -392,6 +465,10 @@ function logGameDebug(message, data) {
  */
 function setupGameEvents() {
   logGameDebug('게임 이벤트 설정 시작');
+  
+  // DOM 요소 참조 초기화
+  initDomReferences();
+  
   const box = document.getElementById('signal-box');
   const gameContainer = document.getElementById('game-container');
   
@@ -500,5 +577,6 @@ function testClickHandling() {
 window.gameCore = {
   startTest,
   setupGameEvents,
-  getBestTime: () => bestTime
+  getBestTime: () => bestTime,
+  initDomReferences // DOM 요소 참조 초기화 함수 노출
 };

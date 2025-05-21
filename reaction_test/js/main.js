@@ -38,6 +38,12 @@ function initializeApp() {
   // UI 업데이트
   window.gameUI.updateLanguageButtons();
   
+  // DOM 참조 초기화
+  if (window.gameCore.initDomReferences) {
+    console.log('DOM 참조 초기화 시작...');
+    window.gameCore.initDomReferences();
+  }
+  
   // 게임 및 리더보드 이벤트 설정
   window.gameCore.setupGameEvents();
   window.gameLeaderboard.setupLeaderboardEvents();
