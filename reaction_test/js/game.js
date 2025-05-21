@@ -378,7 +378,6 @@ function recordReaction() {
       // 전역 참조 업데이트
       window.resultsDiv = newResultsDiv;
     }
-    }
   }
 
   // 다음 라운드로 이동
