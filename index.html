@@ -4,6 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Blog</title>
+    <link rel="stylesheet" href="styles.css">
+    <script type="module" src="js/translations.js"></script>
+    <script type="module" src="js/ui.js"></script>
+    <script type="module" src="js/game.js"></script>
+    <script type="module" src="js/audio.js"></script>
+    <script type="module" src="js/leaderboard.js"></script>
+    <script type="module" src="js/main.js"></script>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -803,7 +810,7 @@
                 'contact-instruction': '아래의 정보로 연락해주세요:',
                 'contact-email': '이메일: fromsnowman14@gmail.com',
                 'contact-sns': 'Blog: https://jaylikecodes.github.io/blog',
-                'footer-copyright': '© 2025 My Blog. 모든 권리 보유.'
+                'footer-copyright': ' 2025 My Blog. 모든 권리 보유.'
             },
             'en': {
                 'blog-title': 'My Blog',
@@ -903,257 +910,84 @@
                     changeLanguage(lang);
                 });
             });
-            
-            // 게임 버튼 클릭 이벤트
-            document.querySelectorAll('.play-game-btn').forEach(button => {
-                button.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const game = this.getAttribute('data-game');
-                    const gameIframe = document.getElementById('embedded-game-iframe');
-                    const gameContainer = document.getElementById('embedded-game-container');
-                    const gameTitle = document.getElementById('embedded-game-title');
-                    const gameCloseButton = document.getElementById('close-embedded-game');
+        });
+    </script>
+    
+    <script>
+        // Initialize language from localStorage
+        const savedLang = localStorage.getItem('selectedLanguage') || 'ko';
+        changeLanguage(savedLang);
 
-                    if (!gameContainer || !gameIframe) return;
-
-                    // 게임 유형에 따른 처리
-                    if (game === 'reaction') {
-                        gameIframe.src = 'reaction_test/react_test.html';
-                        gameTitle.textContent = translations[document.documentElement.lang]['reaction-game-title'] || 'Reaction Speed Test';
-                    } else if (game === 'smoke') {
-                        gameIframe.src = 'reaction_test/Smoke.html';
-                        gameTitle.textContent = 'Smoke Game';
-                    }
-
-                    // 모달 표시 및 로딩 표시
-                    gameContainer.classList.add('active', 'loading');
-                    
-                    // iframe 로드 완료 시 로딩 표시 제거
-                    gameIframe.onload = () => {
-                        gameContainer.classList.remove('loading');
-                    };
-
-                    // 스크롤 비활성화
-                    document.body.style.overflow = 'hidden';
-                });
+        // Language button click handler
+        document.querySelectorAll('.lang-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const lang = this.getAttribute('data-lang');
+                changeLanguage(lang);
             });
+        });
 
-            // 게임 닫기 이벤트
-            const gameCloseButton = document.getElementById('close-embedded-game');
-            const gameContainer = document.getElementById('embedded-game-container');
-            if (gameCloseButton && gameContainer) {
-                // ✕ 버튼 클릭
-                gameCloseButton.addEventListener('click', closeModal);
-                
-                // 배경 클릭
-                gameContainer.addEventListener('click', function(e) {
-                    if (e.target === this) closeModal();
-                });
-                
-                // ESC 키
-                document.addEventListener('keydown', function(e) {
-                    if (e.key === 'Escape') closeModal();
-                });
-            }
+        // Game button click handler
+        document.querySelectorAll('.play-game-btn').forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                const game = this.getAttribute('data-game');
+                const gameIframe = document.getElementById('embedded-game-iframe');
+                const gameContainer = document.getElementById('embedded-game-container');
+                const gameTitle = document.getElementById('embedded-game-title');
+                const gameCloseButton = document.getElementById('close-embedded-game');
 
-            // 모달 닫기 함수
-            function closeModal() {
-                if (!gameContainer) return;
-                
-                // 모달 숨기기
+                if (!gameContainer || !gameIframe) return;
+
+                // Set game source
+                if (game === 'reaction') {
+                    gameIframe.src = 'reaction_test/react_test.html';
+                    gameTitle.textContent = translations[document.documentElement.lang]['reaction-game-title'] || 'Reaction Speed Test';
+                } else if (game === 'smoke') {
+                    gameIframe.src = 'reaction_test/Smoke.html';
+                    gameTitle.textContent = 'Smoke Game';
+                }
+
+                // Show modal and handle loading
+                gameContainer.classList.add('active', 'loading');
+                gameIframe.onload = () => {
+                    gameContainer.classList.remove('loading');
+                };
+                document.body.style.overflow = 'hidden';
+            });
+        });
+
+        // Close button handler
+        const gameCloseButton = document.getElementById('close-embedded-game');
+        const gameContainer = document.getElementById('embedded-game-container');
+        if (gameCloseButton && gameContainer) {
+            const closeModal = () => {
                 gameContainer.classList.remove('active', 'loading');
-                
-                // iframe 초기화
                 const gameIframe = document.getElementById('embedded-game-iframe');
                 if (gameIframe) {
                     gameIframe.src = '';
                     gameIframe.onload = null;
                 }
-                
-                // 스크롤 활성화
                 document.body.style.overflow = '';
-            }
-            
-            // 모달 바깥쪽 클릭 시 닫기
-            gameModal.addEventListener('click', function(e) {
-                if (e.target === gameModal) {
-                    closeGameButton.click();
-                }
+            };
+
+            gameCloseButton.addEventListener('click', closeModal);
+            gameContainer.addEventListener('click', function(e) {
+                if (e.target === this) closeModal();
             });
-            
-            // Escape 키 누르면 모달 또는 임베디드 게임 닫기
             document.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape') {
-                    // 임베디드 게임이 표시되어 있으면 닫기
-                    if (embeddedGameContainer.style.display === 'block') {
-                        closeEmbeddedGameBtn.click();
-                    }
-                    // 모달이 표시되어 있으면 닫기 (사용하지 않음)
-                    else if (gameModal.classList.contains('active')) {
-                        closeGameButton.click();
-                    }
+                if (e.key === 'Escape') closeModal();
+            });
+        }
+
+        // Game card click event
+        const gameCards = document.querySelectorAll('.game-card');
+        gameCards.forEach(card => {
+            card.addEventListener('click', function(e) {
+                const playButton = this.querySelector('.play-game-btn');
+                if (playButton) {
+                    playButton.click();
                 }
             });
-            
-            // 게임 카드 버튼과 썸네일 클릭 이벤트 처리
-            const playButtons = document.querySelectorAll('.play-game-btn');
-            const gameCards = document.querySelectorAll('.game-card');
-            
-            // 게임 카드 클릭 이벤트
-            gameCards.forEach(card => {
-                // 마지막 카드(출시 예정 카드)는 제외
-                if (!card.classList.contains('game-placeholder')) {
-                    const thumbnail = card.querySelector('.game-thumbnail');
-                    if (thumbnail) {
-                        thumbnail.addEventListener('click', function() {
-                            const gameButton = card.querySelector('.play-game-btn');
-                            if (gameButton) {
-                                gameButton.click();
-                            }
-                        });
-                    }
-                }
-            });
-            
-            // 게임 플레이 버튼 이벤트
-            document.querySelectorAll('.play-game-btn').forEach(button => {
-                button.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const game = this.getAttribute('data-game');
-                    const embeddedGameTitle = document.getElementById('embedded-game-title');
-                    const embeddedGameIframe = document.getElementById('embedded-game-iframe');
-                    const embeddedGameContainer = document.getElementById('embedded-game-container');
-                    const closeGameButton = document.getElementById('close-embedded-game');
-
-                    if (!embeddedGameContainer || !embeddedGameIframe) return;
-
-                    // 게임 유형에 따른 처리
-                    if (game === 'reaction') {
-                        // 반응 속도 테스트 게임
-                        embeddedGameIframe.src = 'reaction_test/react_test.html';
-                        embeddedGameTitle.textContent = translations[document.documentElement.lang]['reaction-game-title'] || 'Reaction Speed Test';
-                    } 
-                    else if (game === 'smoke') {
-                        // Smoke 게임
-                        embeddedGameIframe.src = 'reaction_test/Smoke.html';
-                        embeddedGameTitle.textContent = 'Smoke Game';
-                    }
-
-                    // 게임 컨테이너 설정
-                    embeddedGameContainer.style.display = 'flex';
-                    embeddedGameContainer.style.visibility = 'visible';
-                    
-                    // 로딩 애니메이션
-                    embeddedGameContainer.classList.add('game-loading');
-                    setTimeout(() => {
-                        embeddedGameContainer.classList.remove('game-loading');
-                    }, 500);
-
-                    // 게임 카드 클릭 시 부드러운 스크롤
-                    const gameCard = this.closest('.game-card');
-                    if (gameCard) {
-                        gameCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }
-                });
-            });
-
-            // 게임 닫기 버튼
-            document.getElementById('close-embedded-game')?.addEventListener('click', function() {
-                const embeddedGameContainer = document.getElementById('embedded-game-container');
-                if (embeddedGameContainer) {
-                    embeddedGameContainer.style.display = 'none';
-                    embeddedGameContainer.style.visibility = 'hidden';
-                    embeddedGameContainer.classList.remove('game-loading');
-                    embeddedGameContainer.querySelector('iframe').src = '';
-                }
-            });
-
-            // 게임 카드 클릭 이벤트
-            document.querySelectorAll('.game-card').forEach(card => {
-                if (!card.classList.contains('game-placeholder')) {
-                    const gameButton = card.querySelector('.play-game-btn');
-                    if (gameButton) {
-                        card.addEventListener('click', function(e) {
-                            if (e.target.closest('button')) return;
-                            gameButton.click();
-                        });
-                    }
-                }
-            });
-
-            // 네비게이션 링크 클릭 이벤트
-            document.querySelectorAll('.nav-link').forEach(link => {
-                link.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const targetId = this.getAttribute('href').substring(1);
-                    const targetSection = document.getElementById(targetId);
-                    if (targetSection) {
-                        targetSection.scrollIntoView({ behavior: 'smooth' });
-                        document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
-                        this.classList.add('active');
-                    }
-                });
-            });    
-
-            // Add game loading animation styles
-            const gameLoadingStyles = `
-                .game-loading {
-                    opacity: 0.8;
-                    pointer-events: none;
-                }
-                .game-loading::after {
-                    content: '';
-                    position: absolute;
-                    top: 50%;
-                    left: 50%;
-                    transform: translate(-50%, -50%);
-                    width: 40px;
-                    height: 40px;
-                    border: 4px solid #4a89dc;
-                    border-radius: 50%;
-                    border-top-color: transparent;
-                    animation: spin 1s linear infinite;
-                }
-                @keyframes spin {
-                    to { transform: translate(-50%, -50%) rotate(360deg); }
-                }
-            `;
-            const style = document.createElement('style');
-            style.textContent = gameLoadingStyles;
-            document.head.appendChild(style);
-            
-            // 언어 버튼 클릭 이벤트 핸들러
-            function handleLanguageButtonClick(e) {
-                e.preventDefault();
-                const lang = this.getAttribute('data-lang');
-                changeLanguage(lang);
-                
-                // 언어 버튼 업데이트
-                document.querySelectorAll('.language-btn').forEach(btn => {
-                    if (btn.getAttribute('data-lang') === lang) {
-                        btn.classList.add('active');
-                    } else {
-                        btn.classList.remove('active');
-                    }
-                });
-            }
-            
-            // 언어 버튼에 이벤트 리스너 추가
-            document.querySelectorAll('.language-btn').forEach(btn => {
-                btn.removeEventListener('click', handleLanguageButtonClick);
-                btn.addEventListener('click', handleLanguageButtonClick);
-            });
-            
-            // 게임 섹션 하이라이트 효과
-            const gamesSection = document.getElementById('games');
-            if (gamesSection) {
-                setTimeout(() => {
-                    gamesSection.classList.add('highlight');
-                    setTimeout(() => {
-                        gamesSection.classList.remove('highlight');
-                    }, 1500);
-                }, 500);
-            }
         });
     </script>
 </body>
