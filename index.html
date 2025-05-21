@@ -5,11 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Blog</title>
     <link rel="stylesheet" href="styles.css">
-    <script type="module" src="reaction_test/js/translations.js"></script>
-    <script type="module" src="reaction_test/js/ui.js"></script>
-    <script type="module" src="reaction_test/js/game.js"></script>
-    <script type="module" src="reaction_test/js/audio.js"></script>
-    <script type="module" src="reaction_test/js/leaderboard.js"></script>
+    <!-- 필요한 스크립트만 불러오기 -->
     <script type="module" src="main.js"></script>
     <style>
         body {
@@ -479,11 +475,10 @@
                     <button id="close-embedded-game" class="game-close">&times;</button>
                     <h2 id="embedded-game-title"></h2>
                     <div id="embedded-game-wrapper">
-                        <iframe id="embedded-game-iframe" class="game-iframe" allowfullscreen></iframe>
+                        <iframe id="embedded-game-iframe" class="game-iframe" src="" allowfullscreen></iframe>
                     </div>
                 </div>
             </div>
-                </div>
                 
                 <!-- Additional game placeholder -->
                 <div class="game-card game-placeholder">
