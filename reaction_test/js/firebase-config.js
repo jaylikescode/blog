@@ -1,40 +1,24 @@
-// Firebase 구성 - 안전한 버전 (로컬 개발 용도)
-// 실제 API 키는 firebase-secrets.js 파일에 보관하고 .gitignore에 추가하여 GitHub에 업로드되지 않도록 함
+/**
+ * firebase-config.js - Firebase 구성 및 초기화
+ * 이 파일은 ES 모듈이 아닌 일반 스크립트로 로드됩니다.
+ */
 
-// 기본 Firebase 구성 객체 (아래 값들은 실제 API 키가 아니며 반드시 변경해야 함)
-let firebaseConfig = {
-  apiKey: "REPLACE_WITH_YOUR_API_KEY",
-  authDomain: "your-project-id.firebaseapp.com",
-  projectId: "your-project-id",
-  storageBucket: "your-project-id.appspot.com",
-  databaseURL: "https://your-project-id-default-rtdb.firebaseio.com",
-  messagingSenderId: "your-messaging-sender-id",
-  appId: "your-app-id",
-  measurementId: "your-measurement-id"
-};
+// 전역 변수로 구성 객체 선언
+// 이 값은 중복 선언을 방지하기 위해 window 객체에 저장
+// 다른 JS 파일에서 이 변수에 접근 가능
 
-// 실제 키가 있는 파일을 로드하려고 시도
-// 이 방식은 로컬 테스트에서만 작동하며, GitHub에는 이 파일을 제외하고 업로드해야 함
-try {
-  // 비밀 파일을 로드하고 성공하면 구성 대체
-  const scriptElement = document.createElement('script');
-  scriptElement.src = 'js/firebase-secrets.js';
-  scriptElement.onload = function() {
-    // firebase-secrets.js가 성공적으로 로드되면 내부 구성 대체
-    if (typeof firebaseSecrets !== 'undefined') {
-      firebaseConfig = firebaseSecrets;
-      // Firebase 초기화
-      initializeFirebase();
-    }
+// 기존 값이 있는지 확인하고 없으면 초기화
+if (!window.firebaseConfig) {
+  window.firebaseConfig = {
+    apiKey: "AIzaSyBdKiejBgTitVGFaZeNSnoh5ueQ134Uz3Y",
+    authDomain: "reaction-speed-test-e27db.firebaseapp.com",
+    projectId: "reaction-speed-test-e27db",
+    storageBucket: "reaction-speed-test-e27db.appspot.com",
+    databaseURL: "https://reaction-speed-test-e27db-default-rtdb.firebaseio.com",
+    messagingSenderId: "190376860464",
+    appId: "1:190376860464:web:25233ce11804d4e2b146f5",
+    measurementId: "G-0W1GHK01FM"
   };
-  scriptElement.onerror = function() {
-    console.warn('비밀 Firebase 구성을 로드할 수 없습니다. 기본 구성 사용');
-    initializeFirebase();
-  };
-  document.head.appendChild(scriptElement);
-} catch (e) {
-  console.warn('비밀 Firebase 구성을 로드할 수 없습니다. 기본 구성 사용:', e);
-  initializeFirebase();
 }
 
 /**
