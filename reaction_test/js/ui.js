@@ -22,28 +22,13 @@ function updateLanguageButtons() {
 function setupLanguageEvents() {
   const langButtons = document.querySelectorAll('.lang-btn');
   langButtons.forEach(btn => {
-    // Remove any existing click handlers to prevent duplicates
-    btn.removeEventListener('click', handleLanguageButtonClick);
-    // Add new click handler
-    btn.addEventListener('click', handleLanguageButtonClick);
+    btn.addEventListener('click', () => {
+      const lang = btn.getAttribute('data-lang');
+      window.gameTranslations.changeLanguage(lang);
+      updateLanguageButtons();
+      window.gameTranslations.updateAllText();
+    });
   });
-}
-
-/**
- * 언어 버튼 클릭 핸들러
- * @param {Event} event - 클릭 이벤트
- */
-function handleLanguageButtonClick(event) {
-  const btn = event.currentTarget;
-  const lang = btn.getAttribute('data-lang');
-  
-  // 언어 변경 및 UI 업데이트
-  window.gameTranslations.changeLanguage(lang);
-  updateLanguageButtons();
-  window.gameTranslations.updateAllText();
-  
-  // 저장된 언어 설정 업데이트
-  localStorage.setItem('selected_language', lang);
 }
 
 /**
@@ -92,27 +77,14 @@ function setupCollapsibleMenu() {
  * UI 모듈 초기화
  */
 function initUI() {
-  // Set up collapsible menu and language events
-  setupCollapsibleMenu();
-  setupLanguageEvents();
-  
-  // Update the language buttons to reflect the current language
   updateLanguageButtons();
-  
-  // Also update the active state when the page is fully loaded
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', updateLanguageButtons);
-  } else {
-    // In case the DOM is already loaded
-    updateLanguageButtons();
-  }
+  setupCollapsibleMenu();
 }
 
 // 모듈 내보내기
 window.gameUI = {
   updateLanguageButtons,
   setupLanguageEvents,
-  handleLanguageButtonClick,
   setupCollapsibleMenu,
   initUI
 };

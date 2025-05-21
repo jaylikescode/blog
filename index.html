@@ -4,9 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Blog</title>
-    <link rel="stylesheet" href="styles.css">
-    <!-- 필요한 스크립트만 불러오기 -->
-    <script type="module" src="main.js"></script>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -80,27 +77,23 @@
             right: 10px;
             display: flex;
             gap: 5px;
-            background: rgba(255, 255, 255, 0.2);
-            padding: 5px;
-            border-radius: 20px;
         }
         .language-btn {
-            background: none;
-            border: 1px solid white;
-            color: white;
-            padding: 5px 15px;
+            background-color: #fff;
+            color: #4a89dc;
+            border: 1px solid #4a89dc;
+            padding: 5px 10px;
             font-size: 14px;
             cursor: pointer;
-            border-radius: 15px;
+            border-radius: 3px;
             transition: all 0.3s ease;
         }
         .language-btn:hover {
-            background: rgba(255, 255, 255, 0.2);
+            background-color: #eef5ff;
         }
         .language-btn.active {
-            background: white;
-            color: #4a89dc;
-            font-weight: bold;
+            background-color: #4a89dc;
+            color: white;
         }
         
         /* 게임 관련 스타일 */
@@ -188,86 +181,79 @@
         }
         
         .game-card {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
             background-color: #fff;
-            padding: 20px;
-            margin-bottom: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            transition: all 0.3s ease;
-            cursor: pointer;
-            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
         }
+        
         .game-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 8px 15px rgba(0,0,0,0.15);
-            border-color: #4a89dc;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
         }
         
         .game-info {
+            padding: 20px;
             flex: 1;
-            padding-right: 20px;
         }
+        
         .game-info h3 {
-            margin: 0 0 10px 0;
-            color: #4a89dc;
-            font-size: 1.2em;
+            margin-top: 0;
+            font-size: 1.4rem;
         }
+        
         .game-info p {
-            margin: 0 0 15px 0;
             color: #666;
-            font-size: 0.9em;
-            line-height: 1.4;
-        }
-        .play-game-btn {
-            background-color: #4a89dc;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 0.9em;
-            transition: background-color 0.3s ease;
-        }
-        .play-game-btn:hover {
-            background-color: #3b78cc;
+            margin-bottom: 20px;
         }
         
         .game-preview {
-            width: 200px;
-            height: 150px;
-            background-color: #f8f8f8;
-            border-radius: 10px;
-            overflow: hidden;
             position: relative;
+            height: 180px;
         }
+        
         .game-thumbnail {
             width: 100%;
             height: 100%;
             background-size: cover;
             background-position: center;
-            transition: transform 0.3s ease;
+            background-repeat: no-repeat;
         }
-        .game-card:hover .game-thumbnail {
-            transform: scale(1.05);
-        }
-        .game-thumbnail.placeholder-thumbnail {
-            background-color: #f0f0f0;
+        
+        #reaction-thumbnail {
+            background-color: #4a89dc;
+            background-image: linear-gradient(45deg, #4a89dc, #5cb85c);
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #666;
-            font-size: 40px;
+            color: white;
+            font-weight: bold;
+            font-size: 24px;
         }
+        
+        .placeholder-thumbnail {
+            background-color: #f3f4f6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .placeholder-thumbnail span {
+            font-size: 48px;
+            color: #ccc;
+        }
+        
         .thumbnail-overlay {
             position: absolute;
             top: 0;
             left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.5);
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.4);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -331,50 +317,21 @@
     </header>
     
     <nav>
-        <a href="#home" class="nav-link" data-text="menu-home">홈</a>
-        <a href="#about" class="nav-link" data-text="menu-about">소개</a>
-        <a href="#thoughts" class="nav-link" data-text="menu-thoughts">생각/아이디어</a>
-        <a href="#games" class="nav-link" data-text="menu-games">내 게임들</a>
-        <a href="#contact" class="nav-link" data-text="menu-contact">연락처</a>
+        <a href="#home" data-text="menu-home">홈</a>
+        <a href="#about" data-text="menu-about">소개</a>
+        <a href="#thoughts" data-text="menu-thoughts">생각/아이디어</a>
+        <a href="#games" data-text="menu-games">내 게임들</a>
+        <a href="#contact" data-text="menu-contact">연락처</a>
     </nav>
-    
-    <style>
-        .nav-link {
-            text-decoration: none;
-            color: white;
-            padding: 14px 16px;
-            display: block;
-            transition: background-color 0.3s ease;
-        }
-        .nav-link:hover {
-            background-color: #555;
-        }
-        .nav-link.active {
-            background-color: #4a89dc;
-        }
-    </style>
-    
-    <script>
-        // Add smooth scrolling for navigation links
-        document.querySelectorAll('.nav-link').forEach(link => {
-            link.addEventListener('click', function(e) {
-                e.preventDefault();
-                const targetId = this.getAttribute('href').substring(1);
-                const targetSection = document.getElementById(targetId);
-                if (targetSection) {
-                    targetSection.scrollIntoView({ behavior: 'smooth' });
-                    // Update active state
-                    document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
-                    this.classList.add('active');
-                }
-            });
-        });
-    </script>
     
     <main>
         <section id="home">
             <h2 data-text="home-title">홈</h2>
             <p data-text="home-welcome">제 블로그에 오신 것을 환영합니다! 이곳에서 Jay에 대한 소개, 제 생각과 아이디어, 그리고 제가 공유하고 싶은 이미지들을 찾아보실 수 있습니다.</p>
+            
+            <div class="game-challenge">
+                <button id="play-reaction-game" class="game-button" data-text="game-challenge">Click faster than Jay</button>
+            </div>
         </section>
         
         <section id="about">
@@ -451,36 +408,7 @@
                     </div>
                 </div>
                 
-                <!-- Smoke Game -->
-                <div class="game-card">
-                    <div class="game-info">
-                        <h3 data-text="smoke-game-title">Smoke Game</h3>
-                        <p data-text="smoke-game-desc">화살표 키를 사용하여 이동하고 공격하세요. 체력이 다 떨어지기 전에 적을 물리쳐보세요!</p>
-                        <button class="play-game-btn" data-game="smoke" data-text="play-game">게임 하기</button>
-                    </div>
-                    <div class="game-preview">
-                        <div class="game-thumbnail" id="smoke-thumbnail">
-                            <div class="thumbnail-overlay">
-                                <span data-text="click-to-play">클릭하여 플레이</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Game Modal -->
-            <!-- 게임 모달 컨테이너 (여기에만 id="embedded-game-container" 사용) -->  
-            <div id="embedded-game-container" class="game-modal">
-                <div class="game-content">
-                    <button id="close-embedded-game" class="game-close">&times;</button>
-                    <h2 id="embedded-game-title"></h2>
-                    <div id="embedded-game-wrapper">
-                        <iframe id="embedded-game-iframe" class="game-iframe" src="" allowfullscreen></iframe>
-                    </div>
-                </div>
-            </div>
-                
-                <!-- Additional game placeholder -->
+                        <!-- 추가 게임을 위한 플레이스홀더 -->
                 <div class="game-card game-placeholder">
                     <div class="game-info">
                         <h3 data-text="coming-soon">곧 출시 예정</h3>
@@ -497,8 +425,7 @@
             </div>
             
             <!-- 임베디드 게임 컨테이너 -->
-            <!-- 이전 게임 컨테이너(사용되지 않음) --> 
-            <div class="old-game-container" style="display: none; margin-top: 30px; background-color: white; padding: 20px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+            <div id="embedded-game-container" style="display: none; margin-top: 30px; background-color: white; padding: 20px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
                 <div class="embedded-game-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                     <h3 id="embedded-game-title" data-text="reaction-game-title">반응 속도 테스트</h3>
                     <button id="close-embedded-game" style="background-color: #ff6b6b; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer;">✕</button>
@@ -523,255 +450,13 @@
         <p data-text="footer-copyright">&copy; 2025 My Blog. 모든 권리 보유.</p>
     </footer>
     
-    <!-- Game Container -->
-    <!-- 이전 게임 컨테이너(사용되지 않음) --> 
-    <div class="alternative-game-container">
+    <!-- 게임 모달 (사용되지 않음) -->
+    <div id="game-modal" class="game-modal" style="display: none;">
         <div class="game-content">
-            <button id="close-embedded-game" class="game-close">✕</button>
-            <div class="game-loading-spinner">
-                <div class="spinner"></div>
-            </div>
-            <iframe id="embedded-game-iframe" class="game-iframe" src="" frameborder="0" allowfullscreen></iframe>
+            <button id="close-game" class="game-close">✕</button>
+            <iframe id="game-iframe" class="game-iframe" src="" title="Reaction Test Game"></iframe>
         </div>
     </div>
-    
-    <style>
-        /* Game Modal Styles */
-        .game-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: rgba(0, 0, 0, 0.7);
-            z-index: 1000;
-            overflow: hidden;
-        }
-        
-        .game-modal.active {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        
-        .game-content {
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
-            width: 90vw;
-            max-width: 800px;
-            height: 70vh;
-            max-height: 600px;
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .game-close {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: none;
-            border: none;
-            color: #4a89dc;
-            font-size: 24px;
-            cursor: pointer;
-            padding: 10px;
-            border-radius: 50%;
-            transition: background-color 0.2s ease;
-            z-index: 10;
-        }
-        
-        .game-close:hover {
-            background: rgba(74, 137, 220, 0.1);
-        }
-        
-        .game-iframe {
-            flex: 1;
-            width: 100%;
-            border: none;
-            object-fit: contain;
-        }
-        
-        /* Loading Spinner */
-        .game-loading-spinner {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 5;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-        
-        .game-modal.loading .game-loading-spinner {
-            opacity: 1;
-        }
-        
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid #4a89dc;
-            border-radius: 50%;
-            border-top-color: transparent;
-            animation: spin 1s linear infinite;
-        }
-        
-        @keyframes spin {
-            to { transform: translate(-50%, -50%) rotate(360deg); }
-        }
-    </style>
-    
-    <style>
-        /* Embedded Game Container Styles */
-        .embedded-game-container {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            z-index: 1000;
-            width: 80vw;
-            max-width: 800px;
-            height: 80vh;
-            max-height: 600px;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-        
-        .game-header {
-            padding: 15px;
-            background: #4a89dc;
-            color: white;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-radius: 10px 10px 0 0;
-        }
-        
-        .game-header h3 {
-            margin: 0;
-            font-size: 1.2rem;
-        }
-        
-        .close-game-btn {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 1.5rem;
-            cursor: pointer;
-            padding: 5px 10px;
-            border-radius: 50%;
-            transition: background-color 0.3s;
-        }
-        
-        .close-game-btn:hover {
-            background: rgba(255, 255, 255, 0.2);
-        }
-        
-        .game-content {
-            flex: 1;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        #embedded-game-iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-        }
-        
-        /* Loading Animation */
-        .game-loading {
-            opacity: 0.8;
-            pointer-events: none;
-        }
-        
-        .game-loading::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 40px;
-            height: 40px;
-            border: 4px solid #4a89dc;
-            border-radius: 50%;
-            border-top-color: transparent;
-            animation: spin 1s linear infinite;
-        }
-        
-        @keyframes spin {
-            to { transform: translate(-50%, -50%) rotate(360deg); }
-        }
-        
-        /* Game Card Styles */
-        .game-card {
-            background: white;
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-        }
-        
-        .game-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-        }
-        
-        .game-thumbnail {
-            width: 100%;
-            max-width: 300px;
-            height: 200px;
-            object-fit: cover;
-            border-radius: 5px;
-            margin-bottom: 15px;
-            cursor: pointer;
-            transition: transform 0.3s ease;
-        }
-        
-        .game-thumbnail:hover {
-            transform: scale(1.05);
-        }
-        
-        .game-title {
-            font-size: 1.5rem;
-            margin-bottom: 10px;
-            color: #4a89dc;
-        }
-        
-        .game-description {
-            color: #666;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-        
-        .play-game-btn {
-            background: #4a89dc;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 1rem;
-            transition: background-color 0.3s, transform 0.3s;
-        }
-        
-        .play-game-btn:hover {
-            background: #3b78cc;
-            transform: translateY(-2px);
-        }
-    </style>
     
     <script>
         // 언어 데이터 객체
@@ -821,17 +506,17 @@
                 'contact-instruction': '아래의 정보로 연락해주세요:',
                 'contact-email': '이메일: fromsnowman14@gmail.com',
                 'contact-sns': 'Blog: https://jaylikecodes.github.io/blog',
-                'footer-copyright': ' 2025 My Blog. 모든 권리 보유.'
+                'footer-copyright': '© 2025 My Blog. 모든 권리 보유.'
             },
             'en': {
                 'blog-title': 'My Blog',
-                'blog-subtitle': 'Welcome to my personal space',
-                'game-challenge': 'try clicking faster than others!',
+                'blog-subtitle': 'Welcome to Jay personal space',
+                'game-challenge': 'Click faster than Jay',
                 'menu-games': 'My Games',
                 'games-title': 'My Games',
                 'games-intro': 'Play the games I created. Have fun!',
                 'reaction-game-title': 'Reaction Speed Test',
-                'reaction-game-desc': 'Test your reaction speed. Click when the screen turns green. Compete with others!',
+                'reaction-game-desc': 'Test your reaction speed. Click when the screen turns green. Compete with Jay!',
                 'play-game': 'Play Now',
                 'click-to-play': 'Click to Play',
                 'coming-soon': 'Coming Soon',
@@ -841,9 +526,9 @@
                 'menu-thoughts': 'Thoughts/Ideas',
                 'menu-contact': 'Contact',
                 'home-title': 'Home',
-                'home-welcome': 'Welcome to my blog! Here you can find information about me, games I made, and my thoughts and ideas.',
+                'home-welcome': 'Welcome to Jay blog! Here you can find information about me, my thoughts and ideas, and images I want to share.',
                 'about-title': 'About Me',
-                'about-greeting': 'Hello! My name is Jay.',
+                'about-greeting': 'Hello! I am Jay.',
                 'about-description': 'This is a space where you can write your self-introduction later. You can include your interests, professional field, hobbies, etc.',
                 'about-instruction': 'To add your self-introduction, replace this text with information about yourself.',
                 'thoughts-title': 'Thoughts and Ideas',
@@ -868,76 +553,37 @@
                 'contact-instruction': 'Contact me using the information below:',
                 'contact-email': 'Email: fromsnowman14@gmail.com',
                 'contact-sns': 'Blog: https://jaylikecodes.github.io/blog',
-                'footer-copyright': ' 2025 My Blog. All rights reserved.'
+                'footer-copyright': '© 2025 My Blog. All rights reserved.'
             }
         };
         
         // 언어 변경 함수
-        const blogTranslations = {
-            'ko': {
-                'home-title': '홈',
-                'about-title': '소개',
-                'thoughts-title': '생각 및 아이디어',
-                'games-title': '게임',
-                'reaction-game-title': '반응 속도 테스트',
-                'smoke-game-title': '스모크 게임',
-                'play-now': '지금 플레이',
-                'about-instruction': '자기소개를 추가하려면 이 텍스트를 Jay에 관한 정보로 대체하세요.'
-            },
-            'en': {
-                'home-title': 'Home',
-                'about-title': 'About',
-                'thoughts-title': 'Thoughts & Ideas',
-                'games-title': 'Games',
-                'reaction-game-title': 'Reaction Speed Test',
-                'smoke-game-title': 'Smoke Game',
-                'play-now': 'Play Now',
-                'about-instruction': 'To add an about section, replace this text with information about Jay.'
-            },
-            currentLang: 'ko'  // 기본 언어
-        };
-        
         function changeLanguage(lang) {
-            try {
-                console.log('언어 변경:', lang);
-                document.documentElement.lang = lang;
-                
-                // 단어 번역된 텍스트 업데이트
-                document.querySelectorAll('[data-text]').forEach(element => {
-                    const textKey = element.getAttribute('data-text');
-                    if (blogTranslations[lang] && blogTranslations[lang][textKey]) {
-                        element.textContent = blogTranslations[lang][textKey];
-                    }
-                });
-                
-                // 언어 버튼 활성화 상태 업데이트
-                document.querySelectorAll('.language-btn').forEach(btn => {
-                    if (btn.getAttribute('data-lang') === lang) {
-                        btn.classList.add('active');
-                    } else {
-                        btn.classList.remove('active');
-                    }
-                });
-                
-                // 현재 언어를 로컬 스토리지에 저장
-                localStorage.setItem('selectedLanguage', lang);
-                
-                // 로컬 언어 설정 업데이트
-                blogTranslations.currentLang = lang;
-                
-                // iframe이 있는 경우 언어 전달 시도
-                try {
-                    const gameIframe = document.getElementById('embedded-game-iframe');
-                    if (gameIframe && gameIframe.contentWindow && gameIframe.contentWindow.gameTranslations) {
-                        gameIframe.contentWindow.gameTranslations.changeLanguage(lang);
-                        console.log('iframe 언어 업데이트 성공');
-                    }
-                } catch (iframeError) {
-                    console.log('iframe 언어 업데이트 실패:', iframeError);
+            // HTML 언어 속성 변경
+            document.documentElement.lang = lang;
+            
+            // 데이터 속성을 가진 모든 요소 찾기
+            const elements = document.querySelectorAll('[data-text]');
+            
+            // 각 요소의 텍스트 내용 업데이트
+            elements.forEach(element => {
+                const textKey = element.getAttribute('data-text');
+                if (translations[lang] && translations[lang][textKey]) {
+                    element.textContent = translations[lang][textKey];
                 }
-            } catch (error) {
-                console.error('언어 변경 오류:', error);
-            }
+            });
+            
+            // 언어 버튼 활성화 상태 업데이트
+            document.querySelectorAll('.language-btn').forEach(btn => {
+                if (btn.getAttribute('data-lang') === lang) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+            
+            // 현재 언어를 로컬 스토리지에 저장
+            localStorage.setItem('selectedLanguage', lang);
         }
         
         // 언어 버튼 클릭 이벤트 리스너 설정
@@ -957,107 +603,125 @@
                     changeLanguage(lang);
                 });
             });
-        });
-    </script>
-    
-    <script>
-        // 이미 초기화되어 있으므로 여기서는 언어 초기화하지 않음
-        console.log('로드완료 후 시작');
-
-        // 언어 버튼 클릭 이벤트 처리기
-        document.querySelectorAll('.lang-btn').forEach(button => {
-            button.addEventListener('click', function() {
-                const lang = this.getAttribute('data-lang');
-                console.log('버튼 클릭으로 언어 변경:', lang);
-                changeLanguage(lang);
-            });
-        });
-
-        // Game button click handler
-        document.querySelectorAll('.play-game-btn').forEach(button => {
-            button.addEventListener('click', function(e) {
-                e.preventDefault();
-                const game = this.getAttribute('data-game');
-                const gameIframe = document.getElementById('embedded-game-iframe');
-                const gameContainer = document.getElementById('embedded-game-container'); // 게임 모달 컨테이너
-                const gameTitle = document.getElementById('embedded-game-title');
-                const gameCloseButton = document.getElementById('close-embedded-game');
-
-                if (!gameContainer || !gameIframe) return;
-
-                // 현재 언어 설정 가져오기
-                const currentLang = document.documentElement.lang || 'ko';
-                console.log('현재 언어 설정:', currentLang);
-                
-                // 게임 소스 설정
-                if (game === 'reaction') {
-                    // 언어 파라미터 추가
-                    gameIframe.src = `reaction_test/react_test.html?lang=${currentLang}`;
-                    gameTitle.textContent = translations[currentLang]['reaction-game-title'] || 'Reaction Speed Test';
-                    console.log('반응 속도 게임 로드:', gameIframe.src);
-                } else if (game === 'smoke') {
-                    gameIframe.src = 'reaction_test/Smoke.html';
-                    gameTitle.textContent = 'Smoke Game';
+            
+            // 게임 관련 요소 가져오기
+            const gameButton = document.getElementById('play-reaction-game');
+            const gameModal = document.getElementById('game-modal');
+            const gameIframe = document.getElementById('game-iframe');
+            const closeGameButton = document.getElementById('close-game');
+            const embeddedGameIframe = document.getElementById('embedded-game-iframe');
+            const embeddedGameContainer = document.getElementById('embedded-game-container');
+            
+            // 게임 버튼 클릭 이벤트
+            gameButton.addEventListener('click', function() {
+                // iframe에 게임 URL 설정
+                embeddedGameIframe.src = 'reaction_test/react_test.html';
+                // 게임 컨테이너 표시
+                embeddedGameContainer.style.display = 'block';
+                // 게임 섹션으로 스크롤
+                const gamesSection = document.getElementById('games');
+                if (gamesSection) {
+                    gamesSection.scrollIntoView({ behavior: 'smooth' });
+                    // 약간의 시간 후에 게임 컨테이너로 스크롤
+                    setTimeout(() => {
+                        embeddedGameContainer.scrollIntoView({ behavior: 'smooth' });
+                    }, 500);
                 }
-
-                // 모달 표시 및 로딩 처리
-                gameContainer.style.display = 'flex'; // flex로 표시해서 모달이 보이도록 설정
-                gameContainer.classList.add('active', 'loading');
-                
-                // iframe 로드가 완료되면 로딩 상태 제거
-                gameIframe.onload = () => {
-                    gameContainer.classList.remove('loading');
-                    console.log('게임 iframe 로드 완료');
-                    
-                    // iframe 로드 후 언어 설정을 한 번 더 전달 (중요: 일부 브라우저에서 필요)
-                    try {
-                        setTimeout(() => {
-                            const iframeWindow = gameIframe.contentWindow;
-                            if (iframeWindow && iframeWindow.gameTranslations) {
-                                console.log('iframe 내부 번역 객체 업데이트');
-                            }
-                        }, 500);
-                    } catch (e) {
-                        console.log('iframe 언어 설정 실패:', e);
-                    }
-                };
-                
-                document.body.style.overflow = 'hidden';
             });
-        });
-
-        // Close button handler
-        const gameCloseButton = document.getElementById('close-embedded-game');
-        const gameContainer = document.getElementById('embedded-game-container');
-        if (gameCloseButton && gameContainer) {
-            const closeModal = () => {
-                gameContainer.style.display = 'none'; // 모달 숨기기
-                gameContainer.classList.remove('active', 'loading');
-                const gameIframe = document.getElementById('embedded-game-iframe');
-                if (gameIframe) {
-                    gameIframe.src = '';
-                    gameIframe.onload = null;
+            
+            // 게임 닫기 버튼 클릭 이벤트 (사용하지 않음)
+            closeGameButton.addEventListener('click', function() {
+                // 모달 닫기
+                gameModal.classList.remove('active');
+                // iframe 소스 비우기
+                gameIframe.src = '';
+                // 스크롤 해제
+                document.body.style.overflow = 'auto';
+            });
+            
+            // 임베디드 게임 닫기 버튼 클릭 이벤트
+            const closeEmbeddedGameBtn = document.getElementById('close-embedded-game');
+            closeEmbeddedGameBtn.addEventListener('click', function() {
+                // 게임 컨테이너 숨기기
+                embeddedGameContainer.style.display = 'none';
+                // iframe 소스 비우기
+                embeddedGameIframe.src = '';
+            });
+            
+            // 모달 바깥쪽 클릭 시 닫기
+            gameModal.addEventListener('click', function(e) {
+                if (e.target === gameModal) {
+                    closeGameButton.click();
                 }
-                document.body.style.overflow = '';
-            };
-
-            gameCloseButton.addEventListener('click', closeModal);
-            gameContainer.addEventListener('click', function(e) {
-                if (e.target === this) closeModal();
             });
+            
+            // Escape 키 누르면 모달 또는 임베디드 게임 닫기
             document.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape') closeModal();
-            });
-        }
-
-        // Game card click event
-        const gameCards = document.querySelectorAll('.game-card');
-        gameCards.forEach(card => {
-            card.addEventListener('click', function(e) {
-                const playButton = this.querySelector('.play-game-btn');
-                if (playButton) {
-                    playButton.click();
+                if (e.key === 'Escape') {
+                    // 임베디드 게임이 표시되어 있으면 닫기
+                    if (embeddedGameContainer.style.display === 'block') {
+                        closeEmbeddedGameBtn.click();
+                    }
+                    // 모달이 표시되어 있으면 닫기 (사용하지 않음)
+                    else if (gameModal.classList.contains('active')) {
+                        closeGameButton.click();
+                    }
                 }
+            });
+            
+            // 게임 카드 버튼과 썸네일 클릭 이벤트 처리
+            const playButtons = document.querySelectorAll('.play-game-btn');
+            const gameCards = document.querySelectorAll('.game-card');
+            
+            // 게임 카드 클릭 이벤트
+            gameCards.forEach(card => {
+                // 마지막 카드(출시 예정 카드)는 제외
+                if (!card.classList.contains('game-placeholder')) {
+                    const thumbnail = card.querySelector('.game-thumbnail');
+                    if (thumbnail) {
+                        thumbnail.addEventListener('click', function() {
+                            const gameButton = card.querySelector('.play-game-btn');
+                            if (gameButton) {
+                                gameButton.click();
+                            }
+                        });
+                    }
+                }
+            });
+            
+            // 게임 플레이 버튼 이벤트
+            playButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const game = this.getAttribute('data-game');
+                    // 게임 유형에 따른 처리
+                    if (game === 'reaction') {
+                        // 임베디드 게임 표시
+                        embeddedGameIframe.src = 'reaction_test/react_test.html';
+                        embeddedGameContainer.style.display = 'block';
+                        // 게임 컨테이너로 부드럽게 스크롤
+                        embeddedGameContainer.scrollIntoView({ behavior: 'smooth' });
+                    }
+                    // 추후 다른 게임들을 추가할 수 있습니다.
+                });
+            });
+            
+            // 홈 섹션에서 게임 접근 후 베너 없애기
+            document.querySelectorAll('.game-challenge .game-button').forEach(button => {
+                button.addEventListener('click', function() {
+                    // 메뉴 항목을 클릭하지 않고 바로 게임 섹션으로 이동
+                    const gamesSection = document.getElementById('games');
+                    if (gamesSection) {
+                        gamesSection.scrollIntoView({ behavior: 'smooth' });
+                    }
+                    
+                    // 게임 섹션 하이라이트 효과
+                    setTimeout(() => {
+                        gamesSection.classList.add('highlight');
+                        setTimeout(() => {
+                            gamesSection.classList.remove('highlight');
+                        }, 1500);
+                    }, 500);
+                });
             });
         });
     </script>

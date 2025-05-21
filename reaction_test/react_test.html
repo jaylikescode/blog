@@ -23,19 +23,11 @@
           <div id="signal-box" class="clickable-start" data-text="click-to-start">화면을 클릭하여 시작하세요</div>
         </div>
         
-        <div class="records-container">
-          <!-- 좌측 결과 및 기록 영역 -->
-          <div id="results">
-            <h3 data-text="result-title">테스트 결과</h3>
-            <div id="results-content"></div>
-          </div>
-          
-          <!-- 우측 반응 속도 측정 기록 -->
-          <div id="reaction-records" class="reaction-records">
-            <h3 data-text="records-title">기록</h3>
-            <div id="records-list"></div>
-          </div>
-        </div>
+        <!-- 좌측 결과 및 기록 영역 -->
+        <div id="results"></div>
+        
+        <!-- 우측 반응 속도 측정 기록 -->
+        <div id="reaction-records" class="reaction-records"></div>
       </div>
       
       <!-- 접이식 게임 설명 영역 -->
@@ -83,135 +75,46 @@
     </div>
   </div>
   
-  <!-- Firebase 및 애플리케이션 스크립트 로드 -->
-  <!-- 1. Firebase 기본 스크립트 -->
+  <!-- 모듈화된 JavaScript 파일들 로드 -->
+  <!-- Firebase 스크립트 - 안전한 구성 적용 -->
+  <script type="module">
+    // Firebase 구성 보안 경고
+    console.info('주의: Firebase 구성을 사용하기 전에 firebase-config.js 파일을 반드시 설정하세요.');
+    console.info('firebase-config.template.js 파일을 firebase-config.js로 복사하고 실제 API 키와 프로젝트 정보를 입력하세요.');
+    
+    // Firebase SDK 동적 로드
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js';
+    import { getDatabase, ref, push, set, get, onValue, query, orderByChild, limitToLast } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js';
+    import { getAnalytics } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-analytics.js';
+    
+    // Firebase SDK를 전역 객체에 할당 (기존 코드와 호환성 유지)
+    window.firebaseModules = {
+      initializeApp,
+      getDatabase,
+      ref,
+      push,
+      set,
+      get,
+      onValue,
+      query,
+      orderByChild,
+      limitToLast,
+      getAnalytics
+    };
+  </script>
+  
+  <!-- 기존 Firebase API (호환성 유지) -->
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
   
-  <!-- 2. 핵심 틀 및 라이브러리 (처음에 로드) -->
+  <!-- 애플리케이션 스크립트 -->
+  <!-- Firebase 설정 파일을 가장 먼저 로드 -->
+  <script src="js/firebase-secrets.js"></script>
   <script src="js/translations.js"></script>
-  <script src="js/firebase-keys.js"></script>
-  <script src="js/firebase-config.js"></script>
-  
-  <!-- 3. 애플리케이션 스크립트 -->
   <script src="js/audio.js"></script>
   <script src="js/leaderboard.js"></script>
   <script src="js/game.js"></script>
   <script src="js/ui.js"></script>
-  
-  <!-- 4. 초기화 스크립트(가장 마지막에 로드) -->
   <script src="js/main.js"></script>
-  
-  <!-- 5. 게임 로드 확인 스크립트 -->
-  <script>
-    // 페이지 로드 완료 후 실행
-    window.addEventListener('load', function() {
-      console.log('페이지 완전히 로드됨');
-      
-      // 이미 생성된 시작 버튼 제거 (HTML에서 추가된 버튼)
-      setTimeout(function() {
-        const manualStartButton = document.getElementById('manual-start-button');
-        if (manualStartButton) {
-          console.log('시작 버튼 제거 중...', manualStartButton.id);
-          manualStartButton.remove();
-        }
-        
-        // signal-box가 클릭 가능한지 확인
-        const gameScreen = document.getElementById('signal-box');
-        if (gameScreen && !gameScreen.classList.contains('clickable-start')) {
-          gameScreen.className = '';
-          gameScreen.classList.add('clickable-start');
-          console.log('게임 화면 클릭 가능 상태로 설정');
-        }
-      }, 1000);
-    });
-  </script>
-  <!-- 추가 언어 관련 스크립트 (ES 모듈 대신 일반 스크립트로 변경) -->
-  <script>
-    // 이미 위에서 translations.js를 로드하였으며 전역변수로 사용 가능
-    
-    // URL에서 언어 가져오기
-    function getLanguageFromURL() {
-      const urlParams = new URLSearchParams(window.location.search);
-      const langParam = urlParams.get('lang');
-      return langParam && (langParam === 'en' || langParam === 'ko') ? langParam : 'ko'; // 기본값은 한국어
-    }
-
-    // 언어 초기화
-    function initializeLanguage() {
-      const lang = getLanguageFromURL();
-      document.documentElement.lang = lang;
-      
-      // Create global translation object for other modules to use
-      window.gameTranslations = {
-        translations: translations,
-        currentLang: lang,
-        
-        // Get text for current language
-        getText: function(key) {
-          return this.translations[this.currentLang][key] || key;
-        },
-        
-        // Change language
-        changeLanguage: function(lang) {
-          this.currentLang = lang;
-          document.documentElement.lang = lang;
-          
-          // Sync with parent if in iframe
-          if (window.parent && window.parent !== window) {
-            try {
-              if (window.parent.changeLanguage) {
-                window.parent.changeLanguage(lang);
-              }
-            } catch (e) {
-              console.log('Could not sync language with parent window', e);
-            }
-          }
-        },
-        
-        // Update all text content
-        updateAllText: function() {
-          document.querySelectorAll('[data-text]').forEach(element => {
-            const textKey = element.getAttribute('data-text');
-            if (this.translations[this.currentLang] && this.translations[this.currentLang][textKey]) {
-              element.textContent = this.translations[this.currentLang][textKey];
-            }
-          });
-          
-          // Update language button states
-          document.querySelectorAll('.lang-btn').forEach(btn => {
-            if (btn.getAttribute('data-lang') === this.currentLang) {
-              btn.classList.add('active');
-            } else {
-              btn.classList.remove('active');
-            }
-          });
-        }
-      };
-      
-      // Update all text content for initial rendering
-      window.gameTranslations.updateAllText();
-      
-      // Set up language buttons
-      document.querySelectorAll('.lang-btn').forEach(button => {
-        button.addEventListener('click', function() {
-          const lang = this.getAttribute('data-lang');
-          window.gameTranslations.changeLanguage(lang);
-          window.gameTranslations.updateAllText();
-          localStorage.setItem('selected_language', lang);
-        });
-      });
-    }
-    
-    // Initialize when DOM is loaded
-    document.addEventListener('DOMContentLoaded', function() {
-      initializeLanguage();
-    });
-    
-    // Call initialize immediately if document already loaded
-    if (document.readyState === 'complete' || document.readyState === 'interactive') {
-      initializeLanguage();
-    }
-  </script>
 </body>
 </html>
