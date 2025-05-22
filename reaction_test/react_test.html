@@ -77,23 +77,94 @@
     </div>
   </div>
   
-  <!-- JavaScript 파일들 로드 -->
+  <!-- JavaScript 순서 변경: Firebase SDK를 제일 먼저 로드하도록 수정 -->
+  <script>
+    // 추가 디버그 로그 추가
+    console.log('[DEBUG] Document loading started');
+  </script>
+
+  <!-- 1. Firebase SDK 스크립트 먼저 로드 -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  
+  <!-- Firebase SDK 로드 확인 -->
+  <script>
+    console.log('[DEBUG] Firebase SDK loaded check:', typeof firebase !== 'undefined');
+    if (typeof firebase === 'undefined') {
+      console.error('[ERROR] Firebase SDK not loaded correctly!');
+    } else {
+      console.log('[DEBUG] Firebase SDK version:', firebase.SDK_VERSION);
+    }
+  </script>
+  
+  <!-- 2. Firebase 구성 및 초기화 -->
+  <script src="js/firebase-config.js"></script>
+  
+  <!-- 3. 기본 모듈 로드 -->
   <script src="js/translations.js"></script>
   <script src="js/db.js"></script>
   <script src="js/audio.js"></script>
   <script src="js/leaderboard-core.js"></script>
   
-  <!-- Firebase SDK 모듈 -->
-  <script type="module" src="js/firebase-config.js"></script>
-  <script type="module" src="js/leaderboard-firebase.js"></script>
+  <!-- 4. Firebase 관련 모듈 로드 -->
+  <script src="js/leaderboard-firebase.js"></script>
+  <!-- 모듈 초기화 확인용 디버그 스크립트 -->
+  <script>
+    console.log('[DEBUG] Firebase modules loaded check:', !!window.leaderboardFirebase);
+    
+    // 페이지 로드 완료 후 추가 디버그
+    window.addEventListener('load', function() {
+      console.log('[DEBUG] Window load event fired');
+      console.log('[DEBUG] Checking signal-box state:');
+      
+      const box = document.getElementById('signal-box');
+      if (box) {
+        console.log('[DEBUG] signal-box found with classes:', box.className);
+        console.log('[DEBUG] Has clickable-start class:', box.classList.contains('clickable-start'));
+        console.log('[DEBUG] signal-box text content:', box.textContent);
+      } else {
+        console.error('[ERROR] signal-box element not found!');
+      }
+      
+      // 모듈 상태 확인
+      console.log('[DEBUG] Module check (load event):');
+      console.log('- gameTranslations:', !!window.gameTranslations);
+      console.log('- gameLeaderboard:', !!window.gameLeaderboard);
+      console.log('- gameCore:', !!window.gameCore);
+      console.log('- gameUI:', !!window.gameUI);
+      console.log('- gameDB:', !!window.gameDB);
+      console.log('- leaderboardFirebase:', !!window.leaderboardFirebase);
+    });
+  </script>
   
   <!-- 리더보드 모듈 -->
   <script src="js/leaderboard-storage.js"></script>
-  <script src="js/leaderboard.js"></script>
   
-  <!-- 게임 관련 스크립트 -->
+  <!-- 게임 관련 스크립트 (중요 코어 모듈 먼저 로드) -->
   <script src="js/game.js"></script>
   <script src="js/ui.js"></script>
+  
+  <!-- 리더보드 관련 스크립트 (추가 기능) -->
+  <script src="js/leaderboard.js"></script>
+  
+  <!-- 초기화 확인 및 모듈 점검 -->
+  <script>
+    console.log('[DEBUG] All modules loaded, checking availability:');
+    console.log('- gameTranslations:', !!window.gameTranslations);
+    console.log('- gameCore:', !!window.gameCore);
+    console.log('- gameUI:', !!window.gameUI);
+    console.log('- gameDB:', !!window.gameDB);
+    console.log('- gameLeaderboard:', !!window.gameLeaderboard);
+    console.log('- leaderboardFirebase:', !!window.leaderboardFirebase);
+    
+    // Firebase 기능이 없어도 기본 게임은 작동하도록 허용
+    if (!window.leaderboardFirebase) {
+      console.warn('[WARNING] Firebase 모듈이 없어 순위표 기능이 제한됩니다.');
+    }
+  </script>
+  
+  <!-- 마지막으로 메인 스크립트 로드 -->
   <script src="js/main.js"></script>
 </body>
 </html>

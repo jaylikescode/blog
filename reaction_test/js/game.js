@@ -16,18 +16,38 @@ const maxRounds = 5; // 최대 라운드 수
  * 테스트 시작 함수
  */
 function startTest() {
+  console.log('[DEBUG] Game startTest function called');
+  
   // DOM 요소 참조
   const box = document.getElementById('signal-box');
   const resultsDiv = document.getElementById('results');
   const instructions = document.getElementById('instructions');
   
+  console.log('[DEBUG] DOM elements:', {
+    box: box ? 'found' : 'not found',
+    resultsDiv: resultsDiv ? 'found' : 'not found',
+    instructions: instructions ? 'found' : 'not found'
+  });
+  
+  if (!box) {
+    console.error('[ERROR] Signal box element not found! Cannot start test.');
+    return;
+  }
+  
+  console.log('[DEBUG] Initial box state:', {
+    className: box.className,
+    display: box.style.display,
+    textContent: box.textContent
+  });
+  
   // UI 초기화
   box.style.display = 'flex';
-  box.textContent = window.gameTranslations.getText('waiting');
+  box.textContent = window.gameTranslations ? window.gameTranslations.getText('waiting') : 'Loading...';
   
   // Reset all classes and add waiting state
   box.className = '';
   box.classList.add('waiting');
+  console.log('[DEBUG] Box updated to waiting state:', box.className);
   
   resultsDiv.innerHTML = '';
   instructions.style.display = 'none';
@@ -36,9 +56,11 @@ function startTest() {
   round = 0;
   times = [];
   bestTime = Infinity;
+  console.log('[DEBUG] Game variables reset, starting first round');
   
   // 첫 라운드 시작 (약간의 딜레이를 주어 부드러운 전환)
   setTimeout(() => {
+    console.log('[DEBUG] Starting first round after delay');
     nextRound();
   }, 300);
 }
@@ -337,21 +359,35 @@ function createNameInputForm(score) {
  * 게임 관련 이벤트 설정
  */
 function setupGameEvents() {
-  const box = document.getElementById('signal-box');
+  console.log('[DEBUG] Setting up game events');
   
-  // signal-box 클릭 이벤트 - 게임 시작 또는 게임 중 클릭 처리
+  const box = document.getElementById('signal-box');
+  console.log('[DEBUG] Signal box element:', box ? 'found' : 'not found');
+  
   if (box) {
-    // 게임 시작 전에는 startTest 함수를, 게임 중에는 handleBoxClick 함수를 호출
-    box.addEventListener('click', function() {
+    console.log('[DEBUG] Current box classes:', box.className);
+    console.log('[DEBUG] Has clickable-start class:', box.classList.contains('clickable-start'));
+    
+    // signal-box 클릭 이벤트 - 게임 시작 또는 게임 중 클릭 처리
+    box.addEventListener('click', function(event) {
+      console.log('[DEBUG] Box clicked! Current classes:', box.className);
+      console.log('[DEBUG] Has clickable-start class on click:', box.classList.contains('clickable-start'));
+      
       if (box.classList.contains('clickable-start')) {
         // 시작 화면일 때는 게임 시작
+        console.log('[DEBUG] Starting game from clickable-start state');
         box.classList.remove('clickable-start');
         startTest();
       } else {
         // 게임 중일 때는 클릭 처리
+        console.log('[DEBUG] Handling click during game');
         handleBoxClick();
       }
     });
+    
+    console.log('[DEBUG] Click event listener added to signal box');
+  } else {
+    console.error('[ERROR] Signal box element not found! Game events cannot be set up.');
   }
 }
 

@@ -39,7 +39,7 @@ function saveLeaderboardToStorage(leaderboard) {
 }
 
 /**
- * 순위표 데이터 불러오기 (Firebase, GitHub Gist, IndexedDB 또는 localStorage 사용)
+ * 순위표 데이터 불러오기 (Firebase, IndexedDB 또는 localStorage 사용)
  * @param {Function} callback 데이터를 받아 처리할 콜백 함수
  */
 function fetchLeaderboard(callback) {
@@ -78,35 +78,6 @@ function fetchLeaderboard(callback) {
         fetchFromLocalStorage();
       }
       break;
-      
-    case STORAGE_METHOD.GIST:
-      // Gist에서 데이터 가져오기 (비동기)
-      if (window.leaderboardGist && window.leaderboardGist.fetchFromGist) {
-        window.leaderboardGist.fetchFromGist()
-          .then(gistData => {
-            if (gistData && gistData.length > 0) {
-              // 로컬 데이터와 병합
-              const localData = getLeaderboardFromStorage();
-              const mergedData = mergeLeaderboardData(localData, gistData);
-              
-              // 캐시 및 저장
-              leaderboardCache = mergedData;
-              saveLeaderboardToStorage(mergedData);
-              callback(mergedData);
-            } else {
-              // Gist 데이터가 없으면 로컬 데이터 사용
-              fetchFromLocalStorage();
-            }
-          })
-          .catch(error => {
-            console.error("Error fetching from Gist:", error);
-            fetchFromLocalStorage();
-          });
-      } else {
-        // Gist 모듈이 로드되지 않았으면 로컬 스토리지 사용
-        fetchFromLocalStorage();
-      }
-      break;
     
     case STORAGE_METHOD.INDEXEDDB:
       // IndexedDB에서 데이터 가져오기
@@ -136,7 +107,7 @@ function fetchLeaderboard(callback) {
 }
 
 /**
- * 새 점수 저장 (Firebase, GitHub Gist, IndexedDB 또는 localStorage)
+ * 새 점수 저장 (Firebase, IndexedDB 또는 localStorage)
  * @param {Object} record 저장할 레코드 객체
  * @param {Function} callback 저장 후 호출할 콜백 함수
  */
@@ -184,18 +155,18 @@ function saveRecord(record, callback) {
           }
           break;
           
-        case STORAGE_METHOD.GIST:
+        case STORAGE_METHOD.FIREBASE:
           // 로컬에 먼저 저장
           saveLeaderboardToStorage(currentData);
           
-          // GitHub Gist에 동기화
-          if (window.leaderboardGist && window.leaderboardGist.saveToGist) {
-            window.leaderboardGist.saveToGist(currentData)
+          // Firebase에 동기화
+          if (window.leaderboardFirebase && window.leaderboardFirebase.addRecord) {
+            window.leaderboardFirebase.addRecord(record)
               .then(() => {
                 callback(true);
               })
               .catch(error => {
-                console.error("Error saving to Gist:", error);
+                console.error("Error saving to Firebase:", error);
                 callback(true); // 로컬 저장은 성공했으므로 true 반환
               });
           } else {

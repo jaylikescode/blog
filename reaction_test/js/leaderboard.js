@@ -11,19 +11,21 @@ if (!STORAGE_METHOD.FIREBASE) {
   STORAGE_METHOD.FIREBASE = 'firebase';
 }
 
-// Firebase를 기본 저장소로 사용
-let primaryStorageMethod = STORAGE_METHOD.FIREBASE;
-let fallbackStorageMethod = STORAGE_METHOD.LOCALSTORAGE;
+// Firebase를 기본 저장소로 사용 (변수는 leaderboard-core.js에 이미 선언됨)
+// 전역 변수 사용 - 중복 선언 방지
+if (typeof primaryStorageMethod !== 'undefined') {
+  primaryStorageMethod = STORAGE_METHOD.FIREBASE;
+}
+if (typeof fallbackStorageMethod !== 'undefined') {
+  fallbackStorageMethod = STORAGE_METHOD.LOCALSTORAGE;
+}
 
-// 스토리지 관련 상수
-const LEADERBOARD_KEY = 'reaction_game_leaderboard';
+// 스토리지 관련 상수는 leaderboard-storage.js에서 이미 정의됨
+// 순위표 관련 상수와 변수는 leaderboard-core.js에서 정의됨
+// 여기에서는 그 변수들을 사용만 함
 
-// 순위표 관련 상수와 변수
-const visibleRecords = 20; // 초기 표시 기록 수
-const maxLeaderboardRank = 100; // 최대 순위 수
-let isMoreRecordsVisible = false; // 추가 기록 표시 여부
-let leaderboardCache = []; // 캐시된 리더보드 데이터
-let currentUserId = null;
+// 추가 순위표 관련 상수 - leaderboard-core.js에서 정의된 값 사용
+// 중복 선언 방지를 위해 새로 선언하지 않음
 
 // Firebase로 마이그레이션됨
 let hasAttemptedMigration = false; // 첫 로드 시 데이터 마이그레이션 여부
@@ -184,15 +186,14 @@ function initLeaderboard() {
   }
   
   // Firebase 익명 인증 상태 확인
-  if (window.firebaseHandler && window.firebaseHandler.isAuthenticated) {
+  if (window.leaderboardFirebase && window.leaderboardFirebase.initFirebase) {
     console.log('Firebase 익명 인증 상태 확인 중...');
-    if (window.firebaseHandler.isAuthenticated()) {
+    if (window.leaderboardFirebase.initFirebase()) {
       console.log('Firebase 익명 인증 상태: 로그인됨');
     } else {
       console.log('Firebase 익명 인증 상태: 로그인되지 않음, 자동 로그인 시도');
-      window.firebaseHandler.signInAnonymously().catch(error => {
-        console.error('Firebase 익명 로그인 오류:', error);
-      });
+      // Firebase 익명 인증은 initFirebase 함수 내에서 처리됩니다.
+      console.log('[DEBUG] Firebase 인증 시도');
     }
   }
   
@@ -209,9 +210,9 @@ function initLeaderboard() {
  */
 function fetchLeaderboard(callback) {
   // Firebase 사용 시 Firebase에서 데이터 가져오기
-  if (primaryStorageMethod === STORAGE_METHOD.FIREBASE && window.firebaseHandler) {
+  if (primaryStorageMethod === STORAGE_METHOD.FIREBASE && window.leaderboardFirebase) {
     console.log('Fetching leaderboard from Firebase...');
-    window.firebaseHandler.fetchLeaderboard()
+    window.leaderboardFirebase.fetchFromFirebase()
       .then(data => {
         callback(data);
       })
@@ -266,9 +267,9 @@ function saveRecord(record, callback) {
     leaderboardCache = trimmedData;
     
     // Firebase에 저장
-    if (primaryStorageMethod === STORAGE_METHOD.FIREBASE && window.firebaseHandler) {
+    if (primaryStorageMethod === STORAGE_METHOD.FIREBASE && window.leaderboardFirebase) {
       console.log('Saving record to Firebase...');
-      window.firebaseHandler.saveRecord(record)
+      window.leaderboardFirebase.addRecord(record)
         .then(() => {
           saveToLocalStorage(trimmedData);
           callback(true);
@@ -339,6 +340,9 @@ window.gameLeaderboard = {
 window.gameLeaderboard.setStorageMethod(STORAGE_METHOD.FIREBASE);
 
 // Firebase 사용 시작
-if (window.firebaseHandler) {
+console.log('[DEBUG] Firebase check: window.leaderboardFirebase =', !!window.leaderboardFirebase);
+if (window.leaderboardFirebase) {
   console.log('Firebase Realtime Database 초기화 완료');
+} else {
+  console.error('[ERROR] leaderboardFirebase 모듈을 찾을 수 없습니다.');
 }

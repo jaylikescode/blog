@@ -6,11 +6,11 @@
 const STORAGE_METHOD = {
   INDEXEDDB: 'indexeddb',
   LOCALSTORAGE: 'localstorage',
-  GIST: 'gist'
+  FIREBASE: 'firebase' // Gist에서 Firebase로 변경
 };
 
-// 기본적으로 GitHub Gist 사용, 그레도 부족하면 다른 저장소 사용
-let primaryStorageMethod = STORAGE_METHOD.GIST;
+// 기본적으로 Firebase 사용, 그레도 부족하면 다른 저장소 사용
+let primaryStorageMethod = STORAGE_METHOD.FIREBASE;
 let fallbackStorageMethod = STORAGE_METHOD.LOCALSTORAGE;
 
 // IndexedDB 지원 여부 확인
@@ -29,14 +29,14 @@ let currentUserId = null;
 let leaderboardCache = []; // 캐시된 리더보드 데이터
 
 /**
- * 리더보드 데이터 합치기 (Gist와 로컬 데이터 병합)
+ * 리더보드 데이터 합치기 (Firebase와 로컬 데이터 병합)
  * @param {Array} localData 로컬 데이터
- * @param {Array} gistData Gist 데이터
+ * @param {Array} firebaseData Firebase 데이터
  * @return {Array} 병합된 데이터
  */
-function mergeLeaderboardData(localData, gistData) {
+function mergeLeaderboardData(localData, firebaseData) {
   // 모든 레코드를 합치고 중복 제거
-  const allRecords = [...localData, ...gistData];
+  const allRecords = [...localData, ...firebaseData];
   
   // 중복 제거를 위한 맵 (ID 기준)
   const recordMap = new Map();
