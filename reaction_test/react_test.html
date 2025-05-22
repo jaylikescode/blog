@@ -78,14 +78,21 @@
   </div>
   
   <!-- JavaScript 파일들 로드 -->
-  <!-- Firebase SDK 대신 로컬 DB 모듈 사용 -->
   <script src="js/translations.js"></script>
   <script src="js/db.js"></script>
   <script src="js/audio.js"></script>
   <script src="js/leaderboard-core.js"></script>
+  
+  <!-- Firebase SDK 모듈 -->
+  <script type="module" src="js/firebase-config.js"></script>
+  <script type="module" src="js/leaderboard-firebase.js"></script>
+  
+  <!-- 기존 리더보드 모듈 -->
   <script src="js/leaderboard-storage.js"></script>
   <script src="js/leaderboard-gist.js"></script>
   <script src="js/leaderboard.js"></script>
+  
+  <!-- 게임 관련 스크립트 -->
   <script src="js/game.js"></script>
   <script src="js/ui.js"></script>
   <script src="js/main.js"></script>

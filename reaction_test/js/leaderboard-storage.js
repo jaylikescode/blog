@@ -39,7 +39,7 @@ function saveLeaderboardToStorage(leaderboard) {
 }
 
 /**
- * 순위표 데이터 불러오기 (GitHub Gist, IndexedDB 또는 localStorage 사용)
+ * 순위표 데이터 불러오기 (Firebase, GitHub Gist, IndexedDB 또는 localStorage 사용)
  * @param {Function} callback 데이터를 받아 처리할 콜백 함수
  */
 function fetchLeaderboard(callback) {
@@ -50,6 +50,35 @@ function fetchLeaderboard(callback) {
   
   // 스토리지 타입에 따라 적절한 방법으로 불러오기
   switch (primaryStorageMethod) {
+    case STORAGE_METHOD.FIREBASE:
+      // Firebase에서 데이터 가져오기 (비동기)
+      if (window.leaderboardFirebase && window.leaderboardFirebase.fetchFromFirebase) {
+        window.leaderboardFirebase.fetchFromFirebase()
+          .then(firebaseData => {
+            if (firebaseData && firebaseData.length > 0) {
+              // 로컬 데이터와 병합
+              const localData = getLeaderboardFromStorage();
+              const mergedData = window.leaderboardFirebase.mergeLeaderboardData(localData, firebaseData);
+              
+              // 캐시 및 저장
+              leaderboardCache = mergedData;
+              saveLeaderboardToStorage(mergedData);
+              callback(mergedData);
+            } else {
+              // Firebase 데이터가 없으면 로컬 데이터 사용
+              fetchFromLocalStorage();
+            }
+          })
+          .catch(error => {
+            console.error("Error fetching from Firebase:", error);
+            fetchFromLocalStorage();
+          });
+      } else {
+        // Firebase 모듈이 로드되지 않았으면 로컬 스토리지 사용
+        fetchFromLocalStorage();
+      }
+      break;
+      
     case STORAGE_METHOD.GIST:
       // Gist에서 데이터 가져오기 (비동기)
       if (window.leaderboardGist && window.leaderboardGist.fetchFromGist) {
@@ -107,7 +136,7 @@ function fetchLeaderboard(callback) {
 }
 
 /**
- * 새 점수 저장 (GitHub Gist, IndexedDB 또는 localStorage)
+ * 새 점수 저장 (Firebase, GitHub Gist, IndexedDB 또는 localStorage)
  * @param {Object} record 저장할 레코드 객체
  * @param {Function} callback 저장 후 호출할 콜백 함수
  */
@@ -136,6 +165,25 @@ function saveRecord(record, callback) {
       
       // 스토리지 타입에 따라 적절한 방법으로 저장
       switch (primaryStorageMethod) {
+        case STORAGE_METHOD.FIREBASE:
+          // 로컬에 먼저 저장
+          saveLeaderboardToStorage(currentData);
+          
+          // Firebase에 동기화
+          if (window.leaderboardFirebase && window.leaderboardFirebase.addRecord) {
+            window.leaderboardFirebase.addRecord(record)
+              .then(() => {
+                callback(true);
+              })
+              .catch(error => {
+                console.error("Error saving to Firebase:", error);
+                callback(true); // 로컬 저장은 성공했으므로 true 반환
+              });
+          } else {
+            callback(true);
+          }
+          break;
+          
         case STORAGE_METHOD.GIST:
           // 로컬에 먼저 저장
           saveLeaderboardToStorage(currentData);
@@ -198,6 +246,28 @@ function saveRecord(record, callback) {
  * 모듈 초기화
  */
 function initLeaderboardStorage() {
+  // Firebase 초기화 확인
+  if (window.leaderboardFirebase && window.leaderboardFirebase.initFirebase) {
+    window.leaderboardFirebase.initFirebase()
+      .then(success => {
+        console.log('Firebase initialized:', success ? 'success' : 'failed');
+      })
+      .catch(error => {
+        console.error('Firebase initialization error:', error);
+        // Firebase 초기화 실패 시 localStorage로 가는 여유 작업
+        if (primaryStorageMethod === STORAGE_METHOD.FIREBASE) {
+          console.log('Falling back to localStorage');
+          primaryStorageMethod = STORAGE_METHOD.LOCALSTORAGE;
+        }
+      });
+  } else {
+    // Firebase 모듈이 없으면 localStorage로 대체
+    if (primaryStorageMethod === STORAGE_METHOD.FIREBASE) {
+      console.log('Firebase module not available, falling back to localStorage');
+      primaryStorageMethod = STORAGE_METHOD.LOCALSTORAGE;
+    }
+  }
+  
   // IndexedDB 지원 여부 확인하고 필요시 fallback 설정
   if (window.gameDB && window.gameDB.isIndexedDBSupported()) {
     console.log('IndexedDB is supported');
