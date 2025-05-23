@@ -272,16 +272,22 @@ function saveRecord(record, callback) {
       window.leaderboardFirebase.addRecord(record)
         .then(() => {
           saveToLocalStorage(trimmedData);
+          // 기록 저장 직후 순위표 갱신 (즉시 UI 업데이트)
+          displayLeaderboard(isMoreRecordsVisible, trimmedData);
           callback(true);
         })
         .catch(error => {
           console.error('Error saving to Firebase:', error);
           saveToLocalStorage(trimmedData);
+          // 기록 저장 직후 순위표 갱신 (즉시 UI 업데이트)
+          displayLeaderboard(isMoreRecordsVisible, trimmedData);
           callback(true);
         });
     } else {
       // Firebase가 아닌 경우 로컬 저장소에 저장
       saveToLocalStorage(trimmedData);
+      // 기록 저장 직후 순위표 갱신 (즉시 UI 업데이트)
+      displayLeaderboard(isMoreRecordsVisible, trimmedData);
       callback(true);
     }
   });
