@@ -11,6 +11,30 @@
 - 필요한 Firebase 모듈 확인 (database, auth)
 - 기존 SDK 코드 재사용 및 확장
 - Firebase 초기화 코드 작성
+```
+// Firebase SDK snippet
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyCinlrgQvNZu4OzIkEzVibffi7yUofoeh4",
+  authDomain: "jay-blog-comment.firebaseapp.com",
+  projectId: "jay-blog-comment",
+  storageBucket: "jay-blog-comment.firebasestorage.app",
+  messagingSenderId: "89428938336",
+  appId: "1:89428938336:web:651098e8adbf2c8b873d05",
+  measurementId: "G-E6GGXP1Y1H"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
+```
 
 ### 1.3 데이터 모델 설계
 ```javascript
