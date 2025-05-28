@@ -23,16 +23,56 @@ class CommentView {
    * @param {Object} config - 설정 객체
    */
   init(config) {
+    debugLog('CommentView', '뷰 초기화 시작', config);
+    
     // 컨테이너 요소 설정
     this.container = config.container || document.getElementById('comments');
     if (!this.container) {
       console.error('댓글 컨테이너를 찾을 수 없습니다.');
+      debugLog('CommentView', '댓글 컨테이너를 찾을 수 없음');
       return false;
     }
+    
+    debugLog('CommentView', '댓글 컨테이너 찾음', { containerId: this.container.id });
 
     // 폼 및 목록 컨테이너 찾기
     this.formContainer = this.container.querySelector('.comment-form');
     this.listContainer = this.container.querySelector('.comments-list');
+    
+    debugLog('CommentView', '컨테이너 참조', { 
+      formContainer: this.formContainer ? true : false, 
+      listContainer: this.listContainer ? true : false 
+    });
+    
+    // 폼 컨테이너가 없는 경우 생성
+    if (!this.formContainer) {
+      debugLog('CommentView', '폼 컨테이너 없음, 생성 시작');
+      this.formContainer = document.createElement('div');
+      this.formContainer.className = 'comment-form';
+      
+      const formTitle = document.createElement('h3');
+      formTitle.setAttribute('data-text', 'comments-form-title');
+      formTitle.textContent = this.getText('comments-form-title') || '댓글 남기기';
+      
+      this.formContainer.appendChild(formTitle);
+      this.container.insertBefore(this.formContainer, this.container.firstChild);
+      debugLog('CommentView', '폼 컨테이너 생성 완료');
+    }
+    
+    // 목록 컨테이너가 없는 경우 생성
+    if (!this.listContainer) {
+      debugLog('CommentView', '목록 컨테이너 없음, 생성 시작');
+      this.listContainer = document.createElement('div');
+      this.listContainer.className = 'comments-list';
+      
+      const listTitle = document.createElement('h3');
+      listTitle.setAttribute('data-text', 'comments-list-title');
+      listTitle.textContent = this.getText('comments-list-title') || '댓글 목록';
+      
+      this.listContainer.appendChild(listTitle);
+      this.container.appendChild(this.listContainer);
+      debugLog('CommentView', '목록 컨테이너 생성 완료');
+    }
 
     // 번역 데이터 설정
     this.translations = config.translations || window.translations || {};
@@ -48,17 +88,22 @@ class CommentView {
    * UI 초기 설정
    */
   setupUI() {
+    debugLog('CommentView', 'UI 초기 설정 시작');
+    
     // 댓글 폼 UI 생성
     this.renderCommentForm();
+    debugLog('CommentView', '폼 UI 생성 완료');
     
     // 댓글 목록 컨테이너 초기화
     if (this.listContainer) {
+      debugLog('CommentView', '댓글 목록 컨테이너 초기화');
       const commentsList = this.listContainer.querySelector('.comments-container') || document.createElement('div');
       commentsList.className = 'comments-container';
       if (!this.listContainer.contains(commentsList)) {
         this.listContainer.appendChild(commentsList);
       }
       this.commentsContainer = commentsList;
+      debugLog('CommentView', '댓글 목록 컨테이너 초기화 완료');
     }
     
     // 로딩 인디케이터 생성
@@ -66,12 +111,100 @@ class CommentView {
     
     // "더 보기" 버튼 생성
     this.createLoadMoreButton();
+    
+    debugLog('CommentView', 'UI 초기 설정 완료');
   }
 
   /**
-   * 댓글 폼 UI 렌더링
+   * 댓글 폼 렌더링
    */
   renderCommentForm() {
+    debugLog('CommentView', '댓글 폼 렌더링 시작');
+    
+    if (!this.formContainer) {
+      debugLog('CommentView', '폼 컨테이너가 없음');
+      return false;
+    }
+    
+    // 기존 폼이 있는지 확인
+    const existingForm = this.formContainer.querySelector('form');
+    if (existingForm) {
+      debugLog('CommentView', '폼이 이미 있음, 새로 생성하지 않음');
+      return true;
+    }
+    
+    debugLog('CommentView', '새 폼 생성 시작');
+    
+    // 폼 생성
+    const form = document.createElement('form');
+    form.className = 'comment-form';
+    
+    // 이름 입력 필드
+    const nameGroup = document.createElement('div');
+    nameGroup.className = 'form-group';
+    
+    const nameLabel = document.createElement('label');
+    nameLabel.setAttribute('for', 'commenter-name');
+    nameLabel.className = 'input-label';
+    nameLabel.textContent = 'Name: ';
+    
+    const nameInput = document.createElement('input');
+    nameInput.type = 'text';
+    nameInput.id = 'commenter-name';
+    nameInput.name = 'commenter-name';
+    nameInput.required = true;
+    
+    nameGroup.appendChild(nameLabel);
+    nameGroup.appendChild(nameInput);
+    
+    // 내용 입력 필드
+    const contentGroup = document.createElement('div');
+    contentGroup.className = 'form-group';
+    
+    const contentLabel = document.createElement('label');
+    contentLabel.setAttribute('for', 'comment-content');
+    contentLabel.className = 'input-label';
+    contentLabel.textContent = 'Comment: ';
+    
+    const contentTextarea = document.createElement('textarea');
+    contentTextarea.id = 'comment-content';
+    contentTextarea.name = 'comment-content';
+    contentTextarea.required = true;
+    contentTextarea.maxLength = this.charLimit;
+    
+    contentGroup.appendChild(contentLabel);
+    contentGroup.appendChild(contentTextarea);
+    
+    // 제출 버튼
+    const submitButton = document.createElement('button');
+    submitButton.type = 'submit';
+    submitButton.setAttribute('data-text', 'comments-submit-button');
+    submitButton.textContent = this.getText('comments-submit-button') || '댓글 작성';
+    
+    // 부모 ID (댓글 용)
+    const parentIdInput = document.createElement('input');
+    parentIdInput.type = 'hidden';
+    parentIdInput.name = 'parent-id';
+    parentIdInput.value = '';
+    
+    // 폼에 요소 추가
+    form.appendChild(nameGroup);
+    form.appendChild(contentGroup);
+    form.appendChild(parentIdInput);
+    form.appendChild(submitButton);
+    
+    // 폼을 컨테이너에 추가
+    this.formContainer.appendChild(form);
+    
+    debugLog('CommentView', '폼 생성 완료');
+    return true;
+  }
+  
+  /**
+   * 댓글 폼 초기화
+   */
+  resetCommentForm() {
+    debugLog('CommentView', '댓글 폼 초기화 시작');
     if (!this.formContainer) return;
     
     // 기존 폼이 있는지 확인
@@ -93,145 +226,77 @@ class CommentView {
       this.formContainer.appendChild(form);
     }
     
-    // 글자 수 제한 이벤트 설정
-    const textarea = form.querySelector('textarea');
-    const charCount = form.querySelector('.char-count');
+    // 폼 초기화
+    form.reset();
+    debugLog('CommentView', '폼 reset 완료');
     
-    if (textarea && charCount) {
-      textarea.addEventListener('input', () => {
-        const count = textarea.value.length;
-        charCount.textContent = `${count}/${this.charLimit}`;
-        
-        // 글자 수 초과 시 시각적 피드백
-        if (count > this.charLimit) {
-          charCount.classList.add('exceeded');
-          textarea.classList.add('exceeded');
-        } else {
-          charCount.classList.remove('exceeded');
-          textarea.classList.remove('exceeded');
-        }
-      });
+    // 부모 ID 제거 (대댓글 모드 해제)
+    const parentIdInput = form.querySelector('[name="parent-id"]');
+    if (parentIdInput) {
+      parentIdInput.value = '';
+      debugLog('CommentView', '부모 ID 입력 필드 초기화');
     }
   }
 
   /**
-   * 입력 필드 생성 헬퍼 함수
-   * @param {string} type - 입력 타입
-   * @param {string} id - 요소 ID
-   * @param {string} labelText - 라벨 텍스트
-   * @param {boolean} required - 필수 입력 여부
-   * @returns {HTMLElement} 입력 필드 컨테이너
+   * 댓글 폼 데이터 가져오기
+   * @returns {Object|null} 폼 데이터 객체
    */
-  createInput(type, id, labelText, required = false) {
-    const container = document.createElement('div');
-    container.className = 'input-group';
+  getFormData() {
+    debugLog('CommentView', '폼 데이터 가져오기 시작');
+    if (!this.formContainer) return null;
     
-    const label = document.createElement('label');
-    label.setAttribute('for', id);
-    label.textContent = labelText;
-    label.setAttribute('data-text', id + '-label');
+    // 기존 폼이 있는지 확인
+    let form = this.formContainer.querySelector('form');
     
-    const input = document.createElement('input');
-    input.type = type;
-    input.id = id;
-    input.required = required;
-    input.maxLength = type === 'text' ? 30 : null; // 이름 입력 길이 제한
-    
-    container.appendChild(label);
-    container.appendChild(input);
-    
-    return container;
-  }
-
-  /**
-   * 텍스트영역 생성 헬퍼 함수
-   * @param {string} id - 요소 ID
-   * @param {string} labelText - 라벨 텍스트
-   * @param {number} maxLength - 최대 길이
-   * @returns {HTMLElement} 텍스트영역 컨테이너
-   */
-  createTextarea(id, labelText, maxLength) {
-    const container = document.createElement('div');
-    container.className = 'input-group';
-    
-    const label = document.createElement('label');
-    label.setAttribute('for', id);
-    label.textContent = labelText;
-    label.setAttribute('data-text', id + '-label');
-    
-    const textarea = document.createElement('textarea');
-    textarea.id = id;
-    textarea.required = true;
-    textarea.rows = 4;
-    textarea.placeholder = this.getText('comment-placeholder');
-    textarea.maxLength = maxLength * 2; // 실제로는 JS로 제한하므로 HTML 제한은 더 크게 설정
-    
-    container.appendChild(label);
-    container.appendChild(textarea);
-    
-    return container;
-  }
-
-  /**
-   * 폼 푸터 (글자 수, 제출 버튼) 생성
-   * @returns {HTMLElement} 폼 푸터 요소
-   */
-  createFormFooter() {
-    const footer = document.createElement('div');
-    footer.className = 'comment-form-footer';
-    
-    const charCount = document.createElement('span');
-    charCount.className = 'char-count';
-    charCount.textContent = `0/${this.charLimit}`;
-    
-    const submitButton = document.createElement('button');
-    submitButton.type = 'submit';
-    submitButton.textContent = this.getText('comments-submit-button');
-    submitButton.setAttribute('data-text', 'comments-submit-button');
-    
-    footer.appendChild(charCount);
-    footer.appendChild(submitButton);
-    
-    return footer;
-  }
-
-  /**
-   * 로딩 인디케이터 생성
-   */
-  createLoadingIndicator() {
-    const loading = document.createElement('div');
-    loading.className = 'comments-loading hidden';
-    loading.textContent = this.getText('loading');
-    loading.setAttribute('data-text', 'loading');
-    
-    if (this.listContainer) {
-      this.listContainer.appendChild(loading);
-      this.loadingIndicator = loading;
+    // 폼이 없으면 새로 생성
+    if (!form) {
+      form = document.createElement('form');
+      form.className = 'comment-input-form';
+      
+      const nameInput = this.createInput('text', 'comment-author', this.getText('comments-name-label'), true);
+      const contentTextarea = this.createTextarea('comment-content', this.getText('comments-content-label'), this.charLimit);
+      const formFooter = this.createFormFooter();
+      
+      form.appendChild(nameInput);
+      form.appendChild(contentTextarea);
+      form.appendChild(formFooter);
+      
+      this.formContainer.appendChild(form);
     }
-  }
-
-  /**
-   * "더 보기" 버튼 생성
-   */
-  createLoadMoreButton() {
-    const loadMoreBtn = document.createElement('button');
-    loadMoreBtn.className = 'load-more-comments hidden';
-    loadMoreBtn.textContent = this.getText('load-more');
-    loadMoreBtn.setAttribute('data-text', 'load-more');
     
-    if (this.listContainer) {
-      this.listContainer.appendChild(loadMoreBtn);
-      this.loadMoreButton = loadMoreBtn;
+    // 입력값 가져오기
+    const nameInput = form.querySelector('input[name="comment-author"]');
+    const contentTextarea = form.querySelector('textarea[name="comment-content"]');
+    const parentIdInput = form.querySelector('input[name="parent-id"]');
+    
+    const name = nameInput ? nameInput.value.trim() : '';
+    const content = contentTextarea ? contentTextarea.value.trim() : '';
+    const parentId = parentIdInput ? parentIdInput.value : null;
+    
+    debugLog('CommentView', '폼 입력값', { name, content, parentId });
+    
+    // 필수 필드 검증
+    if (!name || !content) {
+      debugLog('CommentView', '필수 필드 유효성 검증 실패');
+      return null;
     }
+    
+    // 사용자 ID 생성 (실제 서비스에서는 인증 시스템 사용 권장)
+    debugLog('CommentView', '사용자 ID 생성 시작');
+    const userId = this._generateUserId(name);
+    
+    return { name, content, parentId, userId };
   }
 
   /**
-   * 로딩 인디케이터 표시/숨김
-   * @param {boolean} show - 표시 여부
+   * 제출 버튼 로딩 상태 설정
+   * @param {boolean} isLoading - 로딩 상태 여부
    */
-  showLoading(show) {
+  setSubmitLoading(isLoading) {
+    debugLog('CommentView', '제출 버튼 로딩 상태 설정', { isLoading });
     if (this.loadingIndicator) {
-      if (show) {
+      if (isLoading) {
         this.loadingIndicator.classList.remove('hidden');
       } else {
         this.loadingIndicator.classList.add('hidden');
@@ -240,394 +305,185 @@ class CommentView {
   }
 
   /**
-   * "더 보기" 버튼 표시/숨김
+   * 댓글 목록 컨테이너 참조 설정
+   */
+  initCommentsContainer() {
+    debugLog('CommentView', '댓글 목록 컨테이너 초기화');
+    this.commentsContainer = this.listContainer?.querySelector('.comments-content') || this.listContainer;
+    
+    if (!this.commentsContainer) {
+      debugLog('CommentView', '댓글 목록 컨테이너를 찾을 수 없음, 생성 시도');
+      if (this.listContainer) {
+        this.commentsContainer = document.createElement('div');
+        this.commentsContainer.className = 'comments-content';
+        this.listContainer.appendChild(this.commentsContainer);
+        debugLog('CommentView', '댓글 목록 컨테이너 생성됨');
+      } else {
+        debugLog('CommentView', '댓글 목록 컨테이너를 생성할 수 없음');
+      }
+    }
+    
+    return !!this.commentsContainer;
+  }
+  
+  /**
+   * 로딩 인디케이터 생성
+   */
+  createLoadingIndicator() {
+    debugLog('CommentView', '로딩 인디케이터 생성 시작');
+    
+    if (!this.listContainer) {
+      debugLog('CommentView', '로딩 인디케이터를 생성할 컨테이너가 없음');
+      return;
+    }
+    
+    // 기존 로딩 인디케이터 찾기
+    let loadingIndicator = this.listContainer.querySelector('.comments-loading');
+    
+    // 없으면 생성
+    if (!loadingIndicator) {
+      loadingIndicator = document.createElement('div');
+      loadingIndicator.className = 'comments-loading hidden';
+      loadingIndicator.setAttribute('data-text', 'loading');
+      loadingIndicator.textContent = this.getText('loading') || '로딩 중...';
+      
+      this.listContainer.appendChild(loadingIndicator);
+      debugLog('CommentView', '로딩 인디케이터 생성됨');
+    }
+    
+    this.loadingIndicator = loadingIndicator;
+  }
+  
+  /**
+   * "더 보기" 버튼 생성
+   */
+  createLoadMoreButton() {
+    debugLog('CommentView', '더보기 버튼 생성 시작');
+    
+    if (!this.listContainer) {
+      debugLog('CommentView', '더보기 버튼을 생성할 컨테이너가 없음');
+      return;
+    }
+    
+    // 기존 버튼 찾기
+    let loadMoreButton = this.listContainer.querySelector('.load-more-comments');
+    
+    // 없으면 생성
+    if (!loadMoreButton) {
+      loadMoreButton = document.createElement('button');
+      loadMoreButton.className = 'load-more-comments hidden';
+      loadMoreButton.setAttribute('data-text', 'load-more');
+      loadMoreButton.textContent = this.getText('load-more') || '더 보기';
+      
+      this.listContainer.appendChild(loadMoreButton);
+      debugLog('CommentView', '더보기 버튼 생성됨');
+    }
+    
+    this.loadMoreButton = loadMoreButton;
+  }
+  
+  /**
+   * 로딩 상태 설정
+   * @param {boolean} isLoading - 로딩 상태 여부
+   */
+  setCommentsLoading(isLoading) {
+    debugLog('CommentView', '댓글 로딩 상태 설정', { isLoading });
+    
+    if (!this.loadingIndicator) {
+      debugLog('CommentView', '로딩 인디케이터가 없음');
+      return;
+    }
+    
+    if (isLoading) {
+      this.loadingIndicator.classList.remove('hidden');
+    } else {
+      this.loadingIndicator.classList.add('hidden');
+    }
+  }
+  
+  /**
+   * 로딩 표시/숨김 - CommentController에서 호출하는 메서드
+   * @param {boolean} show - 로딩 표시 여부
+   */
+  showLoading(show) {
+    debugLog('CommentView', '로딩 표시/숨김 설정', { show });
+    
+    // 기존의 setCommentsLoading 메서드 활용
+    this.setCommentsLoading(show);
+  }
+  
+  /**
+   * 더보기 버튼 상태 업데이트
+   * @param {boolean} visible - 표시 여부
+   */
+  updateLoadMoreButton(visible) {
+    debugLog('CommentView', '더보기 버튼 상태 업데이트', { visible });
+    
+    if (!this.loadMoreButton) {
+      debugLog('CommentView', '더보기 버튼이 없음');
+      return;
+    }
+    
+    if (visible) {
+      this.loadMoreButton.classList.remove('hidden');
+    } else {
+      this.loadMoreButton.classList.add('hidden');
+    }
+  }
+  
+  /**
+   * 더보기 버튼 표시/숨김 - CommentController에서 호출하는 메서드
    * @param {boolean} show - 표시 여부
    */
   showLoadMoreButton(show) {
-    if (this.loadMoreButton) {
-      if (show) {
-        this.loadMoreButton.classList.remove('hidden');
-      } else {
-        this.loadMoreButton.classList.add('hidden');
-      }
-    }
+    debugLog('CommentView', '더보기 버튼 표시/숨김', { show });
+    
+    // 기존의 updateLoadMoreButton 메서드 활용
+    this.updateLoadMoreButton(show);
   }
-
+  
   /**
-   * 댓글 목록 렌더링
-   * @param {Array} comments - 댓글 데이터 배열
+   * 댓글 렌더링
+   * @param {Array} comments - 댓글 목록
    * @param {boolean} append - 기존 목록에 추가 여부
    */
   renderComments(comments, append = false) {
-    if (!this.commentsContainer) return;
+    debugLog('CommentView', '댓글 렌더링 시작', { commentCount: comments?.length || 0, append });
+    
+    if (!this.commentsContainer) {
+      debugLog('CommentView', '댓글 컨테이너를 찾을 수 없음');
+      return;
+    }
     
     // 로딩 인디케이터 숨김
-    this.showLoading(false);
+    this.setCommentsLoading(false);
     
     // 댓글이 없는 경우
     if (!comments || comments.length === 0) {
+      debugLog('CommentView', '댓글이 없음');
       if (!append) {
-        this.commentsContainer.innerHTML = `<div class="no-comments">${this.getText('no-comments')}</div>`;
+        this.commentsContainer.innerHTML = `<div class="no-comments">${this.getText('no-comments') || '댓글이 없습니다. 처음으로 댓글을 남겨보세요!'}</div>`;
       }
-      this.showLoadMoreButton(false);
+      
+      // 더보기 버튼 숨김
+      this.updateLoadMoreButton(false);
       return;
     }
     
-    // 기존 목록 유지 또는 초기화
+    // 기존 목록 초기화 또는 유지
     if (!append) {
+      debugLog('CommentView', '기존 댓글 목록 초기화');
       this.commentsContainer.innerHTML = '';
     }
     
-    // 댓글 카드 생성 및 추가
+    // 댓글 추가
     comments.forEach(comment => {
-      if (comment.depth === 0) { // 최상위 댓글만 처리
-        const commentCard = this.createCommentCard(comment);
-        this.commentsContainer.appendChild(commentCard);
-      }
+      debugLog('CommentView', '댓글 카드 생성', { commentId: comment.id });
+      const commentCard = this.createCommentCard(comment);
+      this.commentsContainer.appendChild(commentCard);
     });
-  }
-
-  /**
-   * 댓글 카드 생성
-   * @param {Object} comment - 댓글 데이터
-   * @returns {HTMLElement} 댓글 카드 요소
-   */
-  createCommentCard(comment) {
-    const card = document.createElement('div');
-    card.className = 'comment-card';
-    card.dataset.id = comment.id;
-    card.dataset.depth = comment.depth || 0;
     
-    // 헤더 (작성자, 날짜)
-    const header = document.createElement('div');
-    header.className = 'comment-header';
-    
-    const author = document.createElement('span');
-    author.className = 'comment-author';
-    author.textContent = comment.author;
-    
-    const date = document.createElement('span');
-    date.className = 'comment-date';
-    date.textContent = this.formatDate(comment.timestamp);
-    
-    header.appendChild(author);
-    header.appendChild(date);
-    
-    // 본문
-    const body = document.createElement('div');
-    body.className = 'comment-body';
-    
-    const content = document.createElement('p');
-    content.className = 'comment-content';
-    content.innerHTML = this.processContent(comment.content);
-    
-    body.appendChild(content);
-    
-    // 미디어가 있는 경우 처리
-    const mediaUrls = this.extractMediaUrls(comment.content);
-    if (mediaUrls.length > 0) {
-      const mediaContainer = document.createElement('div');
-      mediaContainer.className = 'comment-media';
-      
-      mediaUrls.forEach(url => {
-        const mediaElement = this.createMediaElement(url);
-        if (mediaElement) {
-          mediaContainer.appendChild(mediaElement);
-        }
-      });
-      
-      if (mediaContainer.children.length > 0) {
-        body.appendChild(mediaContainer);
-      }
-    }
-    
-    // 푸터 (답글, 수정, 삭제 버튼)
-    const footer = document.createElement('div');
-    footer.className = 'comment-footer';
-    
-    const replyButton = document.createElement('button');
-    replyButton.className = 'reply-button';
-    replyButton.textContent = this.getText('reply-button');
-    replyButton.setAttribute('data-text', 'reply-button');
-    
-    footer.appendChild(replyButton);
-    
-    // 현재 사용자의 댓글인 경우 수정/삭제 버튼 표시
-    if (comment.user_id === this.getCurrentUserId()) {
-      const editButton = document.createElement('button');
-      editButton.className = 'edit-button';
-      editButton.textContent = this.getText('edit-button');
-      editButton.setAttribute('data-text', 'edit-button');
-      
-      const deleteButton = document.createElement('button');
-      deleteButton.className = 'delete-button';
-      deleteButton.textContent = this.getText('delete-button');
-      deleteButton.setAttribute('data-text', 'delete-button');
-      
-      footer.appendChild(editButton);
-      footer.appendChild(deleteButton);
-    }
-    
-    // 대댓글 컨테이너
-    const repliesContainer = document.createElement('div');
-    repliesContainer.className = 'replies-container';
-    
-    // 대댓글 입력 폼 (기본적으로 숨김)
-    const replyForm = document.createElement('div');
-    replyForm.className = 'reply-form hidden';
-    
-    // 카드에 모든 요소 추가
-    card.appendChild(header);
-    card.appendChild(body);
-    card.appendChild(footer);
-    card.appendChild(repliesContainer);
-    card.appendChild(replyForm);
-    
-    return card;
-  }
-
-  /**
-   * 대댓글 렌더링
-   * @param {Array} replies - 대댓글 데이터 배열
-   * @param {string} parentId - 부모 댓글 ID
-   */
-  renderReplies(replies, parentId) {
-    const parentCard = this.commentsContainer.querySelector(`.comment-card[data-id="${parentId}"]`);
-    if (!parentCard) return;
-    
-    const repliesContainer = parentCard.querySelector('.replies-container');
-    if (!repliesContainer) return;
-    
-    // 기존 대댓글 초기화
-    repliesContainer.innerHTML = '';
-    
-    // 대댓글이 없는 경우
-    if (!replies || replies.length === 0) {
-      return;
-    }
-    
-    // 대댓글 카드 생성 및 추가
-    replies.forEach(reply => {
-      const replyCard = this.createCommentCard(reply);
-      replyCard.classList.add('reply');
-      repliesContainer.appendChild(replyCard);
-    });
-  }
-
-  /**
-   * 대댓글 폼 렌더링
-   * @param {string} parentId - 부모 댓글 ID
-   * @param {number} depth - 댓글 깊이
-   */
-  renderReplyForm(parentId, depth) {
-    const parentCard = this.commentsContainer.querySelector(`.comment-card[data-id="${parentId}"]`);
-    if (!parentCard) return;
-    
-    const replyFormContainer = parentCard.querySelector('.reply-form');
-    if (!replyFormContainer) return;
-    
-    // 이미 폼이 있는 경우 토글
-    if (replyFormContainer.children.length > 0) {
-      replyFormContainer.classList.toggle('hidden');
-      return;
-    }
-    
-    // 새 폼 생성
-    const form = document.createElement('form');
-    form.className = 'comment-input-form reply-input-form';
-    
-    const nameInput = this.createInput('text', `reply-author-${parentId}`, this.getText('comments-name-label'), true);
-    const contentTextarea = this.createTextarea(`reply-content-${parentId}`, this.getText('comments-content-label'), this.charLimit);
-    const formFooter = this.createFormFooter();
-    
-    // 취소 버튼 추가
-    const cancelButton = document.createElement('button');
-    cancelButton.type = 'button';
-    cancelButton.className = 'cancel-reply-button';
-    cancelButton.textContent = this.getText('cancel-button');
-    cancelButton.setAttribute('data-text', 'cancel-button');
-    formFooter.insertBefore(cancelButton, formFooter.lastChild);
-    
-    // 부모 ID 및 깊이 정보 저장
-    const hiddenParentId = document.createElement('input');
-    hiddenParentId.type = 'hidden';
-    hiddenParentId.name = 'parent_id';
-    hiddenParentId.value = parentId;
-    
-    const hiddenDepth = document.createElement('input');
-    hiddenDepth.type = 'hidden';
-    hiddenDepth.name = 'depth';
-    hiddenDepth.value = depth + 1;
-    
-    form.appendChild(nameInput);
-    form.appendChild(contentTextarea);
-    form.appendChild(hiddenParentId);
-    form.appendChild(hiddenDepth);
-    form.appendChild(formFooter);
-    
-    replyFormContainer.innerHTML = '';
-    replyFormContainer.appendChild(form);
-    replyFormContainer.classList.remove('hidden');
-    
-    // 자동 포커스
-    setTimeout(() => {
-      const authorInput = form.querySelector('input[type="text"]');
-      if (authorInput) authorInput.focus();
-    }, 100);
-    
-    // 글자 수 제한 이벤트 설정
-    const textarea = form.querySelector('textarea');
-    const charCount = form.querySelector('.char-count');
-    
-    if (textarea && charCount) {
-      textarea.addEventListener('input', () => {
-        const count = textarea.value.length;
-        charCount.textContent = `${count}/${this.charLimit}`;
-        
-        if (count > this.charLimit) {
-          charCount.classList.add('exceeded');
-          textarea.classList.add('exceeded');
-        } else {
-          charCount.classList.remove('exceeded');
-          textarea.classList.remove('exceeded');
-        }
-      });
-    }
-    
-    // 취소 버튼 이벤트
-    cancelButton.addEventListener('click', (e) => {
-      e.preventDefault();
-      replyFormContainer.classList.add('hidden');
-    });
-  }
-
-  /**
-   * 댓글 내용 처리 (링크, 이모지 등)
-   * @param {string} content - 댓글 내용
-   * @returns {string} 처리된 HTML
-   */
-  processContent(content) {
-    if (!content) return '';
-    
-    // XSS 방지를 위한 이스케이프
-    let processedContent = this.escapeHtml(content);
-    
-    // URL을 링크로 변환
-    processedContent = this.convertUrlsToLinks(processedContent);
-    
-    // 줄바꿈 처리
-    processedContent = processedContent.replace(/\n/g, '<br>');
-    
-    return processedContent;
-  }
-
-  /**
-   * HTML 이스케이프
-   * @param {string} html - 원본 텍스트
-   * @returns {string} 이스케이프된 텍스트
-   */
-  escapeHtml(html) {
-    const div = document.createElement('div');
-    div.textContent = html;
-    return div.innerHTML;
-  }
-
-  /**
-   * URL을 링크로 변환
-   * @param {string} text - 원본 텍스트
-   * @returns {string} 링크가 포함된 텍스트
-   */
-  convertUrlsToLinks(text) {
-    const urlPattern = /(\b(https?|ftp):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/gi;
-    return text.replace(urlPattern, '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>');
-  }
-
-  /**
-   * 미디어 URL 추출
-   * @param {string} content - 댓글 내용
-   * @returns {Array} 미디어 URL 배열
-   */
-  extractMediaUrls(content) {
-    if (!content) return [];
-    
-    const imageUrlPattern = /https?:\/\/\S+\.(jpg|jpeg|png|gif|webp)(\?[^"'\s]*)?/gi;
-    const matches = content.match(imageUrlPattern) || [];
-    
-    // 중복 제거 및 최대 3개로 제한
-    return [...new Set(matches)].slice(0, 3);
-  }
-
-  /**
-   * 미디어 요소 생성
-   * @param {string} url - 미디어 URL
-   * @returns {HTMLElement} 미디어 요소
-   */
-  createMediaElement(url) {
-    const isImage = /\.(jpg|jpeg|png|webp)(\?[^"'\s]*)?$/i.test(url);
-    const isGif = /\.gif(\?[^"'\s]*)?$/i.test(url);
-    
-    if (isImage || isGif) {
-      const img = document.createElement('img');
-      img.src = url;
-      img.alt = 'Comment media';
-      img.className = 'comment-media-item';
-      
-      // 로딩 오류 처리
-      img.onerror = function() {
-        this.style.display = 'none';
-      };
-      
-      return img;
-    }
-    
-    return null;
-  }
-
-  /**
-   * 날짜 형식화
-   * @param {number} timestamp - 타임스탬프
-   * @returns {string} 형식화된 날짜
-   */
-  formatDate(timestamp) {
-    if (!timestamp) return '';
-    
-    const date = new Date(timestamp);
-    const now = new Date();
-    const diffMs = now - date;
-    const diffSec = Math.floor(diffMs / 1000);
-    const diffMin = Math.floor(diffSec / 60);
-    const diffHour = Math.floor(diffMin / 60);
-    const diffDay = Math.floor(diffHour / 24);
-    
-    // 상대적 시간 표시
-    if (diffDay === 0) {
-      if (diffHour === 0) {
-        if (diffMin === 0) {
-          return this.getText('just-now');
-        }
-        return `${diffMin}${this.getText('minutes-ago')}`;
-      }
-      return `${diffHour}${this.getText('hours-ago')}`;
-    } else if (diffDay === 1) {
-      return this.getText('yesterday');
-    } else if (diffDay < 7) {
-      return `${diffDay}${this.getText('days-ago')}`;
-    }
-    
-    // 절대 날짜 표시
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    
-    return `${year}-${month}-${day}`;
-  }
-
-  /**
-   * 현재 사용자 ID 가져오기
-   * @returns {string} 사용자 ID
-   */
-  getCurrentUserId() {
-    return localStorage.getItem('comment_user_id') || '';
+    debugLog('CommentView', '댓글 렌더링 완료');
   }
 
   /**
@@ -641,6 +497,115 @@ class CommentView {
       return this.translations[lang][key];
     }
     return key;
+  }
+  
+  /**
+   * 답글 폼 표시
+   * @param {string} parentId - 부모 댓글 ID
+   * @param {HTMLElement} parentCard - 부모 댓글 카드 요소
+   */
+  showReplyForm(parentId, parentCard) {
+    debugLog('CommentView', '답글 폼 표시', { parentId });
+    
+    // 이미 열려있는 답글 폼 제거
+    const existingReplyForms = document.querySelectorAll('.reply-form-container');
+    existingReplyForms.forEach(form => form.remove());
+    
+    // 답글 폼 컨테이너 생성
+    const replyFormContainer = document.createElement('div');
+    replyFormContainer.className = 'reply-form-container';
+    
+    // 답글 폼 생성
+    const replyForm = this.renderReplyForm(parentId);
+    
+    replyFormContainer.appendChild(replyForm);
+    
+    // 부모 댓글 다음에 답글 폼 삽입
+    parentCard.after(replyFormContainer);
+  }
+  
+  /**
+   * 답글 폼 렌더링
+   * @param {string} parentId - 부모 댓글 ID
+   * @returns {HTMLElement} - 생성된 폼 요소
+   */
+  renderReplyForm(parentId) {
+    debugLog('CommentView', '답글 폼 렌더링', { parentId });
+    
+    // 기본 폼 생성
+    const form = document.createElement('form');
+    form.className = 'comment-form reply-form';
+    
+    // 이름 입력 필드
+    const nameGroup = document.createElement('div');
+    nameGroup.className = 'form-group';
+    
+    const nameLabel = document.createElement('label');
+    nameLabel.setAttribute('for', 'reply-author');
+    nameLabel.setAttribute('data-text', 'comments-name-label');
+    nameLabel.textContent = this.getText('comments-name-label') || '이름:';
+    
+    const nameInput = document.createElement('input');
+    nameInput.type = 'text';
+    nameInput.name = 'commenter-name';
+    nameInput.id = 'comment-author'; // 동일한 ID 사용
+    nameInput.required = true;
+    nameInput.placeholder = this.getText('comments-name-placeholder') || '이름을 입력하세요';
+    
+    nameGroup.appendChild(nameLabel);
+    nameGroup.appendChild(nameInput);
+    
+    // 내용 입력 필드
+    const contentGroup = document.createElement('div');
+    contentGroup.className = 'form-group';
+    
+    const contentLabel = document.createElement('label');
+    contentLabel.setAttribute('for', 'reply-content');
+    contentLabel.setAttribute('data-text', 'comments-content-label');
+    contentLabel.textContent = this.getText('comments-content-label') || '내용:';
+    
+    const contentTextarea = document.createElement('textarea');
+    contentTextarea.name = 'comment-content';
+    contentTextarea.id = 'comment-content'; // 동일한 ID 사용
+    contentTextarea.required = true;
+    contentTextarea.rows = 3; // 답글은 좌식 수 적게
+    contentTextarea.placeholder = this.getText('comments-content-placeholder') || '내용을 입력하세요';
+    
+    contentGroup.appendChild(contentLabel);
+    contentGroup.appendChild(contentTextarea);
+    
+    // 부모 ID 설정 (중요!)
+    const parentIdInput = document.createElement('input');
+    parentIdInput.type = 'hidden';
+    parentIdInput.name = 'parent-id';
+    parentIdInput.value = parentId;
+    
+    // 제출 버튼
+    const submitButton = document.createElement('button');
+    submitButton.type = 'submit';
+    submitButton.setAttribute('data-text', 'reply-submit-button');
+    submitButton.className = 'submit-reply-button';
+    submitButton.textContent = this.getText('reply-button') || '답글 등록';
+    
+    // 취소 버튼
+    const cancelButton = document.createElement('button');
+    cancelButton.type = 'button';
+    cancelButton.className = 'cancel-reply-button';
+    cancelButton.textContent = this.getText('cancel-button') || '취소';
+    
+    // 버튼 그룹
+    const buttonGroup = document.createElement('div');
+    buttonGroup.className = 'button-group';
+    buttonGroup.appendChild(submitButton);
+    buttonGroup.appendChild(cancelButton);
+    
+    // 폼에 요소 추가
+    form.appendChild(nameGroup);
+    form.appendChild(contentGroup);
+    form.appendChild(parentIdInput);
+    form.appendChild(buttonGroup);
+    
+    return form;
   }
 
   /**

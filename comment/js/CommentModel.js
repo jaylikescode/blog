@@ -27,7 +27,8 @@ class CommentModel {
     }
 
     try {
-      // 댓글 데이터베이스 참조 생성
+      debugLog('CommentModel', '댓글 데이터 검증 및 준비 시작');
+      // 댓글 데이터 검증 및 준비참조 생성
       this.dbRef = firebase.database().ref('comments');
       
       // 모더레이션 설정 참조
@@ -41,8 +42,9 @@ class CommentModel {
       
       return true;
     } catch (error) {
-      console.error('댓글 모델 초기화 중 오류:', error);
-      return false;
+      debugLog('CommentModel', '댓글 추가 중 오류 발생', error);
+      console.error('댓글 추가 중 오류:', error);
+      throw error;
     }
   }
 
@@ -102,35 +104,41 @@ class CommentModel {
   }
 
   /**
-   * 댓글 가져오기
-   * @param {number} limit - 가져올 댓글 수
-   * @param {string} startAt - 시작 지점 (페이지네이션)
-   * @returns {Promise} 댓글 데이터 프로미스
+   * 댓글 목록 가져오기
+   * @param {number} limit - 가져올 댓글 개수
+   * @param {string} startAt - 이 키 이후부터 가져오기 (페이지네이션)
+   * @returns {Promise<Array>} 댓글 목록
    */
-  getComments(limit = 10, startAt = null) {
+  async getComments(limit = 10, startAt = null) {
+    debugLog('CommentModel', '댓글 목록 조회 시작', { limit, startAt });
     let query = this.dbRef.orderByChild('timestamp').limitToLast(limit);
     
     if (startAt) {
       query = query.endAt(startAt);
     }
     
-    return query.once('value')
-      .then(snapshot => {
-        const comments = [];
-        snapshot.forEach(childSnapshot => {
-          const comment = childSnapshot.val();
-          comment.id = childSnapshot.key;
-          // 최상위 댓글만 가져오기 (depth === 0)
-          if (comment.depth === 0) {
-            comments.push(comment);
-          }
-        });
-        
-        // 시간순 정렬 (최신순)
-        comments.sort((a, b) => b.timestamp - a.timestamp);
-        
-        return comments;
+    debugLog('CommentModel', 'Firebase 데이터 조회 시작');
+    const snapshot = await query.once('value');
+    debugLog('CommentModel', 'Firebase 데이터 조회 완료', { dataExists: snapshot.exists() });
+    
+    const comments = [];
+    
+    snapshot.forEach((childSnapshot) => {
+        const comment = childSnapshot.val();
+        comment.id = childSnapshot.key;
+        // 최상위 댓글만 가져오기 (depth === 0)
+        if (comment.depth === 0) {
+          comments.push(comment);
+        }
       });
+    
+    debugLog('CommentModel', '가져온 댓글 수', comments.length);
+    
+    // 댓글 시간순 정렬
+    comments.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    
+    debugLog('CommentModel', '댓글 목록 조회 완료', comments);
+    return comments;
   }
 
   /**
@@ -156,11 +164,12 @@ class CommentModel {
   }
 
   /**
-   * 댓글 추가
+   * 새 댓글 추가
    * @param {Object} commentData - 댓글 데이터
-   * @returns {Promise} 저장 프로미스
+   * @returns {Promise<string>} 생성된 댓글 ID
    */
-  addComment(commentData) {
+  async addComment(commentData) {
+    debugLog('CommentModel', '댓글 추가 시작', commentData);
     // 새 댓글 ID 생성
     const newCommentRef = this.dbRef.push();
     
@@ -176,12 +185,12 @@ class CommentModel {
     };
     
     // Firebase에 저장
-    return newCommentRef.set(comment)
-      .then(() => {
-        // 저장된 댓글에 ID 추가
-        comment.id = newCommentRef.key;
-        return comment;
-      });
+    const processedData = { ...comment };
+    debugLog('CommentModel', 'Firebase 댓글 저장 중', { refKey: newCommentRef.key, data: processedData });
+    await newCommentRef.set(processedData);
+    
+    debugLog('CommentModel', 'Firebase 댓글 저장 완료', newCommentRef.key);
+    return newCommentRef.key;
   }
 
   /**
@@ -194,6 +203,11 @@ class CommentModel {
     // 수정할 수 있는 필드만 선택
     const updates = {};
     if (updatedData.content) updates.content = updatedData.content;
+    
+    // 금지어 필터링
+    debugLog('CommentModel', '금지어 필터링 전', updatedData.content);
+    updates.content = this._filterBannedWords(updatedData.content);
+    debugLog('CommentModel', '금지어 필터링 후', updates.content);
     
     // 수정 시간 추가
     updates.edited_timestamp = firebase.database.ServerValue.TIMESTAMP;

@@ -34,6 +34,46 @@
   color: #555;
 }
 
+/* Input label styles */
+.input-label {
+  display: inline-block;
+  margin-bottom: 5px;
+  font-weight: 600;
+  color: #444;
+  min-width: 80px;
+}
+
+/* Form group layout */
+.form-group {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+/* Input and textarea styles */
+.input-group input[type="text"],
+.input-group textarea {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  background-color: #fff;
+  transition: border-color 0.2s ease;
+}
+
+.input-group input[type="text"]:focus,
+.input-group textarea:focus {
+  border-color: #4a89dc;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(74, 137, 220, 0.2);
+}
+
+.input-group textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
 .input-group input[type="text"] {
   width: 100%;
   padding: 10px;
@@ -160,6 +200,45 @@
   border-color: #ccc;
 }
 
+/* 답글 버튼 스타일 */
+.comment-actions {
+  margin-top: 10px;
+  display: flex;
+  gap: 10px;
+}
+
+.reply-button {
+  background-color: transparent;
+  border: none;
+  color: #4a89dc;
+  cursor: pointer;
+  font-size: 0.9em;
+  padding: 5px 10px;
+  border-radius: 4px;
+}
+
+.reply-button:hover {
+  background-color: #f0f7ff;
+  text-decoration: underline;
+}
+
+.cancel-reply-button {
+  background-color: #f1f3f4;
+  border: 1px solid #dadce0;
+  color: #202124;
+  border-radius: 4px;
+  padding: 8px 12px;
+}
+
+.submit-reply-button {
+  background-color: #4a89dc;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
 /* 대댓글 스타일 */
 .replies-container {
   margin-top: 15px;
@@ -176,17 +255,25 @@
 }
 
 /* 대댓글 폼 스타일 */
-.reply-form {
+.reply-form-container {
   margin-top: 15px;
   margin-left: 25px;
   border-left: 2px solid #eee;
   padding-left: 15px;
+  margin-bottom: 20px;
 }
 
-.reply-form form {
+.comment-form.reply-form {
   background-color: #f9f9f9;
   padding: 15px;
   border-radius: 4px;
+  margin-bottom: 10px;
+}
+
+.button-group {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
 }
 
 .reply-input-form .input-group {

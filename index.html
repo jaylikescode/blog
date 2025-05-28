@@ -1,9 +1,17 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Blog</title>
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-analytics.js"></script>
+    
+    <!-- 댓글 시스템 스타일 및 스크립트 -->
+    <link rel="stylesheet" href="comment/css/comment-styles.css">
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -309,25 +317,25 @@
 <body>
     <header>
         <div class="language-selector">
-            <button class="language-btn" data-lang="ko">한국어</button>
-            <button class="language-btn" data-lang="en">English</button>
+            <button class="language-btn" data-lang="ko" style="display:none">한국어</button>
+            <button class="language-btn" data-lang="en" style="display:none">English</button>
         </div>
         <h1 data-text="blog-title">My Blog</h1>
         <p data-text="blog-subtitle">Welcome to my personal space</p>
     </header>
     
     <nav>
-        <a href="#home" data-text="menu-home">홈</a>
-        <a href="#about" data-text="menu-about">소개</a>
-        <a href="#thoughts" data-text="menu-thoughts">생각/아이디어</a>
-        <a href="#games" data-text="menu-games">내 게임들</a>
-        <a href="#contact" data-text="menu-contact">연락처</a>
+        <a href="#home" data-text="menu-home">Home</a>
+        <a href="#about" data-text="menu-about">About</a>
+        <a href="#thoughts" data-text="menu-thoughts">Thoughts/Ideas</a>
+        <a href="#games" data-text="menu-games">My Games</a>
+        <a href="#contact" data-text="menu-contact">Contact</a>
     </nav>
     
     <main>
         <section id="home">
-            <h2 data-text="home-title">홈</h2>
-            <p data-text="home-welcome">제 블로그에 오신 것을 환영합니다! 이곳에서 Jay에 대한 소개, 제 생각과 아이디어, 그리고 제가 공유하고 싶은 이미지들을 찾아보실 수 있습니다.</p>
+            <h2 data-text="home-title">Home</h2>
+            <p data-text="home-welcome">Welcome to my blog! Here you can find an introduction about Jay, my thoughts and ideas, and images I want to share.</p>
             
             <div class="game-challenge">
                 <button id="play-reaction-game" class="game-button" data-text="game-challenge">Click faster than Jay</button>
@@ -335,74 +343,45 @@
         </section>
         
         <section id="about">
-            <h2 data-text="about-title">자기소개</h2>
-            <p data-text="about-greeting">안녕하세요! 저는 Jay입니다.</p>
-            <p data-text="about-description">이곳은 나중에 Jay의 자기소개를 작성할 수 있는 공간입니다. Jay의 관심사, 전문 분야, 취미 등을 포함할 수 있습니다.</p>
-            <p data-text="about-instruction">자기소개를 추가하려면 이 텍스트를 Jay에 관한 정보로 대체하세요.</p>
+            <h2 data-text="about-title">About Me</h2>
+            <p data-text="about-greeting">Hello! I'm Jay.</p>
+            <p data-text="about-description">This is a space for Jay's introduction. You can include Jay's interests, expertise, hobbies, and more.</p>
+            <p data-text="about-instruction">To add an introduction, replace this text with information about Jay.</p>
         </section>
         
         <section id="thoughts">
-            <h2 data-text="thoughts-title">생각 및 아이디어</h2>
+            <h2 data-text="thoughts-title">Thoughts & Ideas</h2>
             <article>
-                <h3 data-text="thought-1-title">첫 번째 생각</h3>
-                <p data-text="thought-1-content-1">여기에 Jay의 첫 번째 생각이나 아이디어에 대한 내용을 작성하세요.</p>
-                <p data-text="thought-1-content-2">이것은 블로그 포스트, 생각, 아이디어 또는 Jay가 공유하고 싶은 내용이 될 수 있습니다.</p>
-                <small data-text="thought-1-date">작성일: 2025년 5월 18일</small>
+                <h3 data-text="thought-1-title">First Thought</h3>
+                <p data-text="thought-1-content-1">Write Jay's first thought or idea here.</p>
+                <p data-text="thought-1-content-2">This can be a blog post, thought, idea, or anything Jay wants to share.</p>
+                <small data-text="thought-1-date">Posted: May 18, 2025</small>
             </article>
             
             <article>
-                <h3 data-text="thought-2-title">두 번째 생각</h3>
-                <p data-text="thought-2-content-1">여기에 Jay의 두 번째 생각이나 아이디어에 대한 내용을 작성하세요.</p>
-                <p data-text="thought-2-content-2">당신의 생각과 아이디어를 자유롭게 추가하세요.</p>
-                <small data-text="thought-2-date">작성일: 2025년 5월 18일</small>
+                <h3 data-text="thought-2-title">Second Thought</h3>
+                <p data-text="thought-2-content-1">Write Jay's second thought or idea here.</p>
+                <p data-text="thought-2-content-2">Feel free to add your thoughts and ideas.</p>
+                <small data-text="thought-2-date">Posted: May 18, 2025</small>
             </article>
         </section>
-        
 
-        
-        <section id="comments">
-            <h2 data-text="comments-title">댓글</h2>
-            <div class="comment-form">
-                <h3 data-text="comments-form-title">댓글 남기기</h3>
-                <form>
-                    <div>
-                        <label for="name" data-text="comments-name-label">이름:</label>
-                        <input type="text" id="name" required>
-                    </div>
-                    <div>
-                        <label for="comment" data-text="comments-content-label">댓글:</label>
-                        <textarea id="comment" rows="4" required></textarea>
-                    </div>
-                    <button type="submit" data-text="comments-submit-button">댓글 작성</button>
-                </form>
-            </div>
-            
-            <div class="comments-list">
-                <h3 data-text="comments-list-title">댓글 목록</h3>
-                <div class="comment">
-                    <strong data-text="comments-visitor">방문자</strong>
-                    <p data-text="comments-example">첫 번째 댓글 예시입니다. Jay의 블로그가 정말 멋져요!</p>
-                    <small data-text="comments-date">2025년 5월 18일</small>
-                </div>
-            </div>
-        </section>
-        
         <section id="games">
-            <h2 data-text="games-title">내 게임들</h2>
-            <p data-text="games-intro">제가 직접 만든 게임들을 플레이해보세요. 즐거운 시간 보내세요!</p>
+            <h2 data-text="games-title">Jay's Games</h2>
+            <p data-text="games-intro">Try playing the games I made. Have fun!</p>
             
             <div class="games-container">
                 <!-- 게임 카드 1: 반응 속도 게임 -->
                 <div class="game-card">
                     <div class="game-info">
-                        <h3 data-text="reaction-game-title">반응 속도 테스트</h3>
-                        <p data-text="reaction-game-desc">반응 속도를 테스트하는 게임입니다. 화면이 녹색으로 변할 때 클릭하세요. Jay와 경쟁해보세요!</p>
-                        <button class="play-game-btn" data-game="reaction" data-text="play-game">게임 하기</button>
+                        <h3 data-text="reaction-game-title">Reaction Speed Test</h3>
+                        <p data-text="reaction-game-desc">A game to test your reaction speed. Click when the screen turns green. Compete with Jay!</p>
+                        <button class="play-game-btn" data-game="reaction" data-text="play-game">Play Game</button>
                     </div>
                     <div class="game-preview">
                         <div class="game-thumbnail" id="reaction-thumbnail">
                             <div class="thumbnail-overlay">
-                                <span data-text="click-to-play">클릭하여 플레이</span>
+                                <span data-text="click-to-play">Click to Play</span>
                             </div>
                         </div>
                     </div>
@@ -411,15 +390,15 @@
                 <!-- 게임 카드 2: 스모크 게임 -->
                 <div class="game-card">
                     <div class="game-info">
-                        <h3 data-text="smoke-game-title">스모크 게임</h3>
-                        <p data-text="smoke-game-desc">warrior를 선택해 모험을 떠나 몬스터들을 만나는 흥미진진한 액션 게임!</p>
-                        <button class="play-game-btn" data-game="smoke" data-text="play-game">소개 보기</button>
+                        <h3 data-text="smoke-game-title">Smoke Game</h3>
+                        <p data-text="smoke-game-desc">Choose your warrior and embark on an exciting action adventure to meet monsters!</p>
+                        <button class="play-game-btn" data-game="smoke" data-text="play-game">Show Intro</button>
                     </div>
                     <div class="game-preview">
                         <div class="game-thumbnail" id="smoke-thumbnail" style="background-color: #333; background-image: linear-gradient(45deg, #333, #555);">
                             <div style="font-size: 40px; color: white; text-align: center; padding-top: 65px;">🎮💨</div>
                             <div class="thumbnail-overlay">
-                                <span data-text="click-to-play">클릭하여 소개 보기</span>
+                                <span data-text="click-to-play">Click to Show Intro</span>
                             </div>
                         </div>
                     </div>
@@ -428,8 +407,8 @@
                 <!-- 추가 게임을 위한 플레이스홀더 -->
                 <div class="game-card game-placeholder">
                     <div class="game-info">
-                        <h3 data-text="coming-soon">곧 출시 예정</h3>
-                        <p data-text="new-games-coming">새로운 게임이 공개될 예정입니다. 기대하세요!</p>
+                        <h3 data-text="coming-soon">Coming Soon</h3>
+                        <p data-text="new-games-coming">New games will be released soon. Stay tuned!</p>
                     </div>
                     <div class="game-preview">
                         <div class="game-thumbnail placeholder-thumbnail">
@@ -453,6 +432,18 @@
             </div>
         </section>
         
+        <section id="comments" class="comment-section">
+            <h2 data-text="comments-title">댓글</h2>
+            <div class="comment-form">
+                <h3 data-text="comments-form-title">댓글 남기기</h3>
+                <!-- 댓글 폼은 JavaScript로 동적 생성됩니다 -->
+            </div>
+            
+            <div class="comments-list">
+                <h3 data-text="comments-list-title">댓글 목록</h3>
+                <!-- 댓글 목록은 JavaScript로 동적 로드됩니다 -->
+            </div>
+        </section>
         <section id="contact">
             <h2 data-text="contact-title">연락처</h2>
             <p data-text="contact-instruction">아래의 정보로 연락해주세요:</p>
@@ -474,6 +465,67 @@
             <iframe id="game-iframe" class="game-iframe" src="" title="Reaction Test Game"></iframe>
         </div>
     </div>
+    
+    <!-- 댓글 시스템 스크립트 -->
+    <script src="comment/firebase-init.js"></script>
+    <script src="comment/js/CommentModel.js"></script>
+    <script src="comment/js/CommentView.js"></script>
+    <script src="comment/js/CommentController.js"></script>
+    <script src="comment/js/CommentSystem.js"></script>
+    
+    <!-- 댓글 시스템 패치 스크립트 -->
+    <script>
+    (function() {
+        console.log('댓글 시스템 패치 스크립트 실행');
+        
+        // CommentView 프로토타입에 누락된 메서드 추가
+        if (typeof CommentView !== 'undefined') {
+            console.log('CommentView 클래스 발견, 메서드 패치 시작');
+            
+            // showLoading 메서드 추가
+            if (typeof CommentView.prototype.showLoading !== 'function') {
+                console.log('showLoading 메서드 추가');
+                CommentView.prototype.showLoading = function(show) {
+                    console.log('showLoading 호출됨:', show);
+                    if (typeof this.setCommentsLoading === 'function') {
+                        this.setCommentsLoading(show);
+                    } else {
+                        console.log('setCommentsLoading 메서드도 없음, 직접 로딩 표시 구현');
+                        // 기본 구현
+                        const loadingIndicator = this.commentsContainer && this.commentsContainer.querySelector('.loading-indicator');
+                        if (loadingIndicator) {
+                            loadingIndicator.style.display = show ? 'block' : 'none';
+                        }
+                    }
+                };
+            }
+            
+            // showLoadMoreButton 메서드 추가
+            if (typeof CommentView.prototype.showLoadMoreButton !== 'function') {
+                console.log('showLoadMoreButton 메서드 추가');
+                CommentView.prototype.showLoadMoreButton = function(show) {
+                    console.log('showLoadMoreButton 호출됨:', show);
+                    if (typeof this.updateLoadMoreButton === 'function') {
+                        this.updateLoadMoreButton(show);
+                    } else {
+                        console.log('updateLoadMoreButton 메서드도 없음, 직접 버튼 표시 구현');
+                        // 기본 구현
+                        const loadMoreButton = this.loadMoreButton || 
+                            (this.listContainer && this.listContainer.querySelector('.load-more-comments'));
+                            
+                        if (loadMoreButton) {
+                            loadMoreButton.style.display = show ? 'block' : 'none';
+                        }
+                    }
+                };
+            }
+            
+            console.log('CommentView 패치 완료');
+        } else {
+            console.error('CommentView 클래스를 찾을 수 없음, 패치 실패');
+        }
+    })();
+    </script>
     
     <script>
         // 언어 데이터 객체
