@@ -1,8 +1,5 @@
-/**
- * translations.js - 언어 번역 관련 모듈
- */
+// translations.js - English only translation module
 
-// Language translations
 const translations = {
   'en': {
     'title': 'Faster than Jay?',
@@ -45,8 +42,8 @@ const translations = {
     'saving': 'Saving your score...',
     'your-rank': 'Your rank',
     'restart-game': 'Restart Game'
-  },
-  'ko': {
+  }
+/** No Korean translations. English only.
     'title': '지석이보다 빠르다고?',
     'game-description': '반응 속도를 테스트하는 간단한 게임입니다:',
     'click-to-start': '화면을 클릭하여 시작하세요',
@@ -87,8 +84,8 @@ const translations = {
     'saving': '기록 저장 중...',
     'your-rank': '당신의 순위',
     'restart-game': '게임 다시 시작하기'
-  }
-};
+*/
+  };
 
 // 현재 언어 - 기본값은 영어
 let currentLang = 'en';

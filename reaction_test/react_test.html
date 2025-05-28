@@ -1,28 +1,27 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>오! 지석이보다 빨르다고?</title>
+  <title>Oh! Can you be faster than Jay?</title>
   <link rel="icon" href="images/favicon.ico" type="image/x-icon" />
   <link rel="shortcut icon" href="images/favicon.ico" type="image/x-icon" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <div class="language-selector">
-    <button class="lang-btn" data-lang="en">English</button>
-    <button class="lang-btn" data-lang="ko">한국어</button>
+  
+    
   </div>
   
   
   <div class="game-container">
     <div class="game-area">
-      <h1><span id="game-title">Oh!</span> <span data-text="title">can you faster than Jay?</span></h1>
+      <h1><span id="game-title">Oh!</span> <span data-text="title">Can you faster than Jay?</span></h1>
       
       <!-- 게임 화면 영역 -->
       <div id="game-container">
         <div id="game-screen">
-          <div id="signal-box" class="clickable-start" data-text="click-to-start">화면을 클릭하여 시작하세요</div>
+          <div id="signal-box" class="clickable-start" data-text="click-to-start">Click here!!</div>
         </div>
         
         <!-- 좌측 결과 및 기록 영역 -->
@@ -38,41 +37,41 @@
           <span data-text="how-to-play">How to play</span> <span class="toggle-icon">+</span>
         </button>
         <div class="collapsible-content" id="instructions">
-          <p data-text="game-description">반응 속도를 테스트하는 간단한 게임입니다:</p>
+          <p data-text="game-description">Test your reaction speed:</p>
           <ol>
-            <li data-text="instruction-1">시작하기 버튼을 누르세요</li>
-            <li data-text="instruction-2">화면이 녹색으로 바뀔 때까지 기다리세요</li>
-            <li data-text="instruction-3">녹색으로 바뀌는 즉시 화면을 클릭하세요</li>
-            <li data-text="instruction-4">5회 반복 후 최고 반응 시간이 기록됩니다</li>
+            <li data-text="instruction-1">Click the start button</li>
+            <li data-text="instruction-2">Wait until the screen turns green</li>
+            <li data-text="instruction-3">Click the screen as soon as it turns green</li>
+            <li data-text="instruction-4">After 5 attempts, your best reaction time will be recorded</li>
           </ol>
-          <p class="warning" data-text="warning">주의: 녹색으로 바뀌기 전에 클릭하면 안 됩니다!</p>
+          <p class="warning" data-text="warning">Warning: Do not click before the screen turns green!</p>
         </div>
       </div>
     </div>
     
     <div class="leaderboard-panel">
-      <h2 data-text="leaderboard-title">클릭 마스터</h2>
-      <div id="leaderboard-loading" class="hidden" data-text="loading">로딩 중...</div>
+      <h2 data-text="leaderboard-title">Click Master</h2>
+      <div id="leaderboard-loading" class="hidden" data-text="loading">Loading...</div>
       
       <!-- 최고 기록 순위표 - 상시 노출 -->
       <div id="leaderboard-content">
         <table id="leaderboard-table">
           <thead>
             <tr>
-              <th data-text="rank">순위</th>
-              <th data-text="name">이름</th>
-              <th data-text="score">반응속도</th>
-              <th data-text="date">날짜</th>
+              <th data-text="rank">Rank</th>
+              <th data-text="name">Name</th>
+              <th data-text="score">Score</th>
+              <th data-text="date">Date</th>
             </tr>
           </thead>
           <tbody id="leaderboard-body">
-            <!-- 최고 순위 데이터가 여기에 들어갑니다 -->
+            <!-- Top ranking data will be inserted here -->
           </tbody>
         </table>
       </div>
       
       <div class="show-more-container">
-        <button id="show-more-btn" class="show-more-btn" data-text="show-more">더 보기</button>
+        <button id="show-more-btn" class="show-more-btn" data-text="show-more">Show More</button>
       </div>
     </div>
   </div>

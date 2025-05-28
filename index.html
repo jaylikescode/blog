@@ -320,7 +320,7 @@
             <button class="language-btn" data-lang="ko" style="display:none">한국어</button>
             <button class="language-btn" data-lang="en" style="display:none">English</button>
         </div>
-        <h1 data-text="blog-title">My Blog</h1>
+        <h1 data-text="blog-title">Jay's Blog</h1>
         <p data-text="blog-subtitle">Welcome to my personal space</p>
     </header>
     
@@ -338,7 +338,7 @@
             <p data-text="home-welcome">Welcome to my blog! Here you can find an introduction about Jay, my thoughts and ideas, and images I want to share.</p>
             
             <div class="game-challenge">
-                <button id="play-reaction-game" class="game-button" data-text="game-challenge">Click faster than Jay</button>
+                <button id="play-reaction-game" class="game-button" data-text="game-challenge">Game: Click faster than Jay</button>
             </div>
         </section>
         
@@ -582,7 +582,7 @@
             'en': {
                 'blog-title': 'My Blog',
                 'blog-subtitle': 'Welcome to Jay personal space',
-                'game-challenge': 'Click faster than Jay',
+                'game-challenge': 'Game: Click faster than Jay',
                 'menu-games': 'My Games',
                 'games-title': 'My Games',
                 'games-intro': 'Play the games I created. Have fun!',
@@ -643,7 +643,10 @@
                 const textKey = element.getAttribute('data-text');
                 if (translations[lang] && translations[lang][textKey]) {
                     element.textContent = translations[lang][textKey];
-                }
+                } else if (translations['en'] && translations['en'][textKey]) {
+                    // fallback to English if available
+                    element.textContent = translations['en'][textKey];
+                } // else leave as is (original hardcoded HTML)
             });
             
             // 언어 버튼 활성화 상태 업데이트
@@ -664,7 +667,8 @@
             const languageButtons = document.querySelectorAll('.language-btn');
             
             // 로컬 스토리지에서 저장된 언어 가져오기 또는 기본값 설정
-            const savedLanguage = localStorage.getItem('selectedLanguage') || 'ko';
+            //const savedLanguage = localStorage.getItem('selectedLanguage') || 'en';
+            const savedLanguage = 'en';
             
             // 초기 언어 설정
             changeLanguage(savedLanguage);
@@ -779,16 +783,16 @@
                             .then(response => response.text())
                             .then(markdown => {
                                 // 현재 언어 가져오기
-                                const currentLang = document.documentElement.lang || 'ko';
+                                const currentLang = document.documentElement.lang || 'en';
                                 
                                 // HTML 파싱 및 적절한 언어 콘텐츠 표시
                                 const parser = new DOMParser();
                                 const doc = parser.parseFromString(markdown, 'text/html');
                                 
                                 // 현재 언어에 맞는 콘텐츠 찾기
-                                const langContent = currentLang === 'ko' ? 
-                                    doc.querySelector('.content-ko') : 
-                                    doc.querySelector('.content-en');
+                                const langContent = currentLang === 'en' ? 
+                                    doc.querySelector('.content-en') : 
+                                    doc.querySelector('.content-ko');
                                 
                                 // iframe에 콘텐츠 설정
                                 embeddedGameIframe.srcdoc = langContent ? langContent.innerHTML : markdown;

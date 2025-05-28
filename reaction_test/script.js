@@ -835,50 +835,12 @@ function toggleLeaderboard(tabType = null) {
 }
 
 /**
- * 랜덤 도시 이름 생성 함수
- * @returns {string} 랜덤한 도시 이름
- */
-function getRandomCityName() {
-  const citiesEn = [
-    'Seoul', 'Tokyo', 'Paris', 'London', 'New York', 'Sydney', 'Berlin', 'Rome', 'Cairo',
-    'Toronto', 'Moscow', 'Madrid', 'Beijing', 'Amsterdam', 'Bangkok', 'Dubai', 'Singapore',
-    'Athens', 'Vienna', 'Venice', 'Istanbul', 'Prague', 'Barcelona', 'Zurich', 'Munich',
-    'Milan', 'Miami', 'Chicago', 'Montreal', 'Vancouver', 'Stockholm', 'Helsinki', 'Oslo',
-    'Dublin', 'Brussels', 'Budapest', 'Warsaw', 'Lisbon', 'Copenhagen', 'Florence', 'Geneva'
-  ];
-  
-  const citiesKo = [
-    '서울', '뉴욕', '오사카', '키오토', '이스탄불', '베를를린', '마드리드', '로마',
-    '토론토', '파리', '마우사', '바르셀로나', '쉼통가죽', '버민엇', '마닐라',
-    '도켄', '임스테르런', '카이로', '두바이', '스토크홀름', '헬싱키',
-    '오슬로', '더블린', '브부셀', '부다페스트', '바르샤바', '리스번', '코펜하겐',
-    '플로렌스', '제네바', '만치안', '다라스', '셉빗디오'
-  ];
-  
-  // 현재 언어에 따라 도시 목록 선택
-  const cities = currentLang === 'en' ? citiesEn : citiesKo;
-  
-  // 랜덤 인덱스 선택
-  const randomIndex = Math.floor(Math.random() * cities.length);
-  
-  return cities[randomIndex];
-}
-
-/**
  * 게임 종료 후 페이지 로드시 실행
 */
-// 기본 언어 설정 초기화
-(function() {
-  // 만약 브라우저 언어가 영어라면 영어로 초기화
-  if (navigator.language && navigator.language.startsWith('en')) {
-    changeLanguage('en');
-  } else {
-    changeLanguage('ko'); // 기본값 한국어
-  }
-  
+// 기본 언어는 무조건 영어로 고정
   // 더 보기 버튼 이벤트 연결
   showMoreBtn.addEventListener('click', () => {
     leaderboardPage++;
     fetchLeaderboard(false); // 기존 데이터 유지하면서 추가 로드
   });
-})();
+
