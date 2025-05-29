@@ -1,4 +1,6 @@
-# 블로그 댓글 시스템 구현 계획
+# 블로그 댓글 시스템 구현 계획 - 핵심 기능
+
+> 참고: 고급 기능은 `design_optional.md` 파일에 정리되어 있습니다.
 
 ## 1. 프로젝트 준비 및 Firebase 설정
 
@@ -43,19 +45,25 @@ const analytics = getAnalytics(app);
   "comments": {
     "comment_id_1": {
       "author": "작성자 이름",
+      "email": "user@example.com", // 선택적 이메일 (답글 알림용)
       "content": "댓글 내용",
-      "timestamp": 1621500000000,
+      "timestamp": 1621500000000,  // UNIX 타임스탬프 (밀리초), 초 단위는 무시됨
+      "created_at": "2025-05-28 23:30", // 표시용 시간 형식 (YYYY-MM-DD HH:MM)
       "parent_id": null,  // 최상위 댓글
       "depth": 0,        // 댓글 깊이
-      "ip_hash": "해시된 IP 주소" // 차단 목적
+      "ip_hash": "해시된 IP 주소", // 차단 목적
+      "has_replies": true // 답글 존재 여부 (UI 표시용)
     },
     "comment_id_2": {
       "author": "대댓글 작성자",
+      "email": null, // 이메일 입력하지 않은 경우
       "content": "대댓글 내용",
       "timestamp": 1621500100000,
+      "created_at": "2025-05-28 23:31",
       "parent_id": "comment_id_1", // 부모 댓글 ID
       "depth": 1,        // 대댓글 깊이
-      "ip_hash": "해시된 IP 주소"
+      "ip_hash": "해시된 IP 주소",
+      "has_replies": false
     }
   },
   "blocked_users": {
@@ -102,23 +110,42 @@ const analytics = getAnalytics(app);
 ```html
 <!-- 단일 댓글 템플릿 -->
 <div class="comment-card" data-id="${commentId}" data-depth="${depth}">
+  <!-- 계층 구조 표시용 요소 -->
+  <div class="depth-indicator">
+    ${depthIndicatorHTML} <!-- 깊이에 따른 세로 선 표시 -->
+  </div>
+  
   <div class="comment-header">
     <span class="comment-author">${author}</span>
-    <span class="comment-date">${formattedDate}</span>
+    <span class="comment-date">${formattedDate}</span> <!-- YYYY-MM-DD HH:MM 형식 -->
   </div>
+  
   <div class="comment-body">
     <p class="comment-content">${processedContent}</p>
     <!-- 이미지가 있는 경우 -->
     <div class="comment-media">${mediaHTML}</div>
   </div>
+  
   <div class="comment-footer">
-    <button class="reply-button">답글</button>
-    <!-- 작성자인 경우에만 표시 -->
-    <button class="edit-button hidden">수정</button>
-    <button class="delete-button hidden">삭제</button>
+    <div class="comment-actions">
+      <button class="reply-button" aria-label="답글 달기">답글</button>
+      <!-- 작성자인 경우에만 표시 -->
+      <button class="edit-button hidden" aria-label="수정">수정</button>
+      <button class="delete-button hidden" aria-label="삭제">삭제</button>
+    </div>
   </div>
+  
   <!-- 대댓글 컨테이너 -->
-  <div class="replies-container"></div>
+  <div class="replies-container">
+    <!-- 대댓글이 많을 경우 -->
+    <div class="replies-summary ${hasReplies ? '' : 'hidden'}">
+      <button class="toggle-replies">
+        <span class="replies-count">${repliesCount}개의 답글</span>
+        <span class="toggle-icon">▼</span>
+      </button>
+    </div>
+  </div>
+  
   <!-- 대댓글 입력폼 (숨김 상태로 시작) -->
   <div class="reply-form hidden"></div>
 </div>
@@ -127,13 +154,170 @@ const analytics = getAnalytics(app);
 ### 2.3 CSS 스타일링
 - 댓글 섹션 기본 스타일 정의
 - 댓글 카드 디자인 구현
-- 중첩 댓글 시각적 계층 구조 구현 (들여쓰기, 경계선)
+- 중첩 댓글 시각적 계층 구조 구현:
+  ```css
+  /* 대댓글 계층 구조 스타일링 */
+  .comment-card {
+    position: relative;
+    margin-bottom: 15px;
+    padding: 12px;
+    border-radius: 8px;
+    background-color: var(--comment-bg-color);
+  }
+  
+  /* 대댓글 깊이별 스타일링 */
+  .comment-card[data-depth="0"] {
+    border-left: none;
+    margin-left: 0;
+  }
+  
+  .comment-card[data-depth="1"] {
+    margin-left: 25px;
+    border-left: 3px solid #4e89ae;
+    font-size: 0.98em;
+  }
+  
+  .comment-card[data-depth="2"] {
+    margin-left: 30px;
+    border-left: 3px solid #43658b;
+    font-size: 0.96em;
+  }
+  
+  .comment-card[data-depth="3"] {
+    margin-left: 35px;
+    border-left: 3px solid #32527b;
+    font-size: 0.94em;
+  }
+  
+  /* 깊이가 4 이상인 댓글은 동일한 스타일 적용 */
+  .comment-card[data-depth="4"],
+  .comment-card[data-depth="5"],
+  .comment-card[data-depth="6"],
+  .comment-card[data-depth="7"],
+  .comment-card[data-depth="8"],
+  .comment-card[data-depth="9"],
+  .comment-card[data-depth="10"] {
+    margin-left: 40px;
+    border-left: 3px solid #27496d;
+    font-size: 0.92em;
+  }
+  
+  /* 모바일 환경에서는 들여쓰기 제한 */
+  @media (max-width: 767px) {
+    .comment-card[data-depth] {
+      margin-left: min(5vw, 20px);
+    }
+  }
+  ```
+- 정렬 UI 컴포넌트 스타일링:
+  ```css
+  .comment-sort-options {
+    display: flex;
+    margin-bottom: 15px;
+    border-bottom: 1px solid var(--border-color);
+  }
+  
+  .sort-option {
+    padding: 8px 12px;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+  }
+  
+  .sort-option.active {
+    border-bottom: 2px solid var(--primary-color);
+    font-weight: bold;
+  }
+  ```
 - 반응형 디자인 적용 (모바일 및 데스크톱)
 - 라이트/다크 모드 지원 (전체 사이트 테마 연동)
 
 ## 3. 핵심 기능 구현
 
-### 3.1 댓글 모듈 초기화
+### 3.1 댓글 정렬 및 계층 구조 관리
+
+#### 3.1.1 정렬 UI 컴포넌트
+```html
+<!-- 기본 댓글 컬렉션 표시 -->
+<div class="comments-container">
+  <h3>댓글 목록</h3>
+  <div id="comments-list"></div>
+  <button id="load-more-comments" class="hidden">더보기</button>
+</div>
+```
+
+#### 3.1.2 댓글 로딩 구현
+```javascript
+// 댓글 로드 함수
+function loadComments(limit = 10, startAt = null) {
+  // 최상위 댓글만 로드 (깊이가 0인 댓글)
+  const topLevelComments = commentsRef
+    .orderByChild('timestamp')
+    .limitToLast(limit);
+    
+  // 시간순 정렬 (최신순)
+  return topLevelComments.once('value')
+    .then(snapshot => {
+      const comments = [];
+      snapshot.forEach(child => {
+        const comment = child.val();
+        comment.id = child.key;
+        comments.push(comment);
+      });
+      
+      // 최신순 정렬
+      return comments.sort((a, b) => b.timestamp - a.timestamp);
+    });
+}
+
+// 대댓글 로드 함수
+function loadReplies(parentId) {
+  return commentsRef
+    .orderByChild('parent_id')
+    .equalTo(parentId)
+    .once('value')
+    .then(snapshot => {
+      const replies = [];
+      snapshot.forEach(child => {
+        const reply = child.val();
+        reply.id = child.key;
+        replies.push(reply);
+      });
+      
+      // 시간순 오름차순 정렬 (오래된 댓글이 먼저)
+      return replies.sort((a, b) => a.timestamp - b.timestamp);
+    });
+}
+```
+
+#### 3.1.3 계층 구조 구현
+```javascript
+// 댓글 트리 구조 생성
+function buildCommentTree(allComments, parentId = null) {
+  const result = [];
+  
+  // 특정 부모 ID를 가진 댓글들 필터링
+  const comments = allComments.filter(comment => comment.parent_id === parentId);
+  
+  // 부모 ID가 없는 경우 (최상위 댓글)는 정렬
+  if (parentId === null) {
+    comments.sort((a, b) => b.timestamp - a.timestamp); // 기본 최신순
+  } else {
+    // 대댓글은 시간순 정렬
+    comments.sort((a, b) => a.timestamp - b.timestamp);
+  }
+  
+  // 각 댓글에 대해 자식 댓글(대댓글) 찾아 계층 구조 생성
+  for (const comment of comments) {
+    const children = buildCommentTree(allComments, comment.id);
+    comment.replies = children;
+    result.push(comment);
+  }
+  
+  return result;
+}
+```
+
+### 3.2 댓글 모듈 초기화
 ```javascript
 /**
  * 댓글 시스템 초기화 함수
@@ -143,6 +327,53 @@ function initCommentSystem() {
   if (!firebase || !firebase.database) {
     console.error("Firebase가 초기화되지 않았습니다.");
     return;
+  }
+  
+  // 현재 페이지 ID 가져오기 (URL 기반)
+  const pageId = getPageIdentifier();
+  
+    // 기본 설정 초기화
+  this.initializeFormValidation();
+  
+  // 폼 유효성 검증 구현
+  function initializeFormValidation() {
+    const form = document.querySelector('.comment-form');
+    const nameInput = form.querySelector('#commenter-name') || form.querySelector('#comment-author');
+    const emailInput = form.querySelector('#commenter-email');
+    const contentTextarea = form.querySelector('#comment-content');
+    const submitButton = form.querySelector('button[type="submit"]');
+    
+    // 초기 버튼 비활성화
+    submitButton.disabled = true;
+    
+    // 입력 필드 변경시 검증
+    function validateForm() {
+      const nameValue = nameInput.value.trim();
+      const contentValue = contentTextarea.value.trim();
+      const emailValue = emailInput ? emailInput.value.trim() : '';
+      
+      // 이메일 유효성 검증
+      let emailValid = true;
+      if (emailValue) {
+        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        emailValid = emailPattern.test(emailValue);
+        if (!emailValid) {
+          emailInput.classList.add('invalid');
+        } else {
+          emailInput.classList.remove('invalid');
+        }
+      }
+      
+      // 이름과 내용이 있고 이메일이 유효하면 버튼 활성화
+      submitButton.disabled = !(nameValue && contentValue && emailValid);
+    }
+    
+    // 이벤트 리스너 추가
+    nameInput.addEventListener('input', validateForm);
+    contentTextarea.addEventListener('input', validateForm);
+    if (emailInput) {
+      emailInput.addEventListener('input', validateForm);
+    }
   }
   
   // 댓글 데이터베이스 참조 생성
@@ -181,9 +412,89 @@ function initCommentSystem() {
 - 최대 10단계 깊이 제한 설정
 
 ### 4.2 대댓글 표시 로직
-- 댓글 트리 구조 생성 알고리즘 구현
-- 깊이에 따른 시각적 구분 적용
-- 대댓글 접기/펼치기 기능
+
+#### 4.2.1 댓글 계층 구조 표시
+```javascript
+// 깊이에 따른 시각적 표시 생성
+function generateDepthIndicator(depth) {
+  if (depth === 0) return '';
+  
+  let indicator = '';
+  const colors = ['#4e89ae', '#43658b', '#32527b', '#27496d'];
+  
+  for (let i = 0; i < depth; i++) {
+    const colorIndex = Math.min(i, colors.length - 1);
+    indicator += `<div class="depth-line" style="left: ${i * 10}px; background-color: ${colors[colorIndex]}"></div>`;
+  }
+  
+  return indicator;
+}
+
+// 댓글 깊이에 따른 CSS 클래스 적용
+function applyDepthStyling(commentElement, depth) {
+  // 기본 스타일 적용
+  commentElement.dataset.depth = depth;
+  
+  // 깊이에 따른 폰트 크기 조절 (최대 3단계까지)
+  if (depth > 0) {
+    const fontSizeReduction = Math.min(depth, 3) * 0.02;
+    commentElement.style.fontSize = `${1 - fontSizeReduction}em`;
+  }
+  
+  // 깊이가 5 이상인 경우 기본적으로 접혀있음
+  if (depth >= 5) {
+    commentElement.classList.add('collapsed-by-default');
+  }
+}
+```
+
+#### 4.2.2 대댓글 접기/펼치기 기능
+```javascript
+// 대댓글 토글 기능 구현
+function setupReplyToggle(commentCard) {
+  const toggleButton = commentCard.querySelector('.toggle-replies');
+  const repliesContainer = commentCard.querySelector('.replies-content');
+  
+  if (!toggleButton || !repliesContainer) return;
+  
+  toggleButton.addEventListener('click', function() {
+    const isExpanded = repliesContainer.classList.contains('expanded');
+    
+    // 상태 토글
+    if (isExpanded) {
+      repliesContainer.classList.remove('expanded');
+      repliesContainer.classList.add('collapsed');
+      this.querySelector('.toggle-icon').textContent = '▼';
+    } else {
+      repliesContainer.classList.remove('collapsed');
+      repliesContainer.classList.add('expanded');
+      this.querySelector('.toggle-icon').textContent = '▲';
+    }
+  });
+  
+  // 깊이가 5 이상인 댓글들은 기본적으로 접혀있음
+  const depth = parseInt(commentCard.dataset.depth, 10);
+  if (depth >= 5) {
+    repliesContainer.classList.add('collapsed');
+    toggleButton.querySelector('.toggle-icon').textContent = '▼';
+  }
+}
+
+// 대댓글이 많은 경우 '더보기' 버튼 추가
+function addLoadMoreRepliesButton(repliesContainer, parentId, loadedCount, totalCount) {
+  if (loadedCount < totalCount) {
+    const loadMoreButton = document.createElement('button');
+    loadMoreButton.classList.add('load-more-replies');
+    loadMoreButton.textContent = `더 보기 (${loadedCount}/${totalCount})`;
+    
+    loadMoreButton.addEventListener('click', function() {
+      loadMoreReplies(parentId, loadedCount);
+      this.parentNode.removeChild(this);
+    });
+    
+    repliesContainer.appendChild(loadMoreButton);
+  }
+}
 
 ## 5. 미디어 지원 기능
 
@@ -224,7 +535,7 @@ function initCommentSystem() {
 **Firebase 기반 솔루션:**
 - **Firebase Cloud Functions + Google Cloud Natural Language API**: 텍스트 분석을 통한 부적절한 콘텐츠 감지
 - 구현 예시:
-  ```javascript
+```javascript```
   // Cloud Function으로 댓글 필터링 구현
   exports.moderateComment = functions.database.ref('/comments/{commentId}')
       .onCreate(async (snapshot, context) => {
@@ -248,7 +559,7 @@ function initCommentSystem() {
           
           return null;
       });
-  ```
+
 
 **무료/오픈소스 옵션:**
 - **bad-words**: 다국어 부적절한 단어 감지 JavaScript 라이브러리
@@ -336,6 +647,7 @@ exports.moderateNewComment = functions.database.ref('/comments/{commentId}')
 - 댓글 로딩 지연 최소화
 - 이미지 지연 로딩 구현
 - DOM 조작 최적화
+- Cloud Functions 실행 주기 최적화 (이메일 알림 관련)
 
 ### 7.2 테스트
 - 다양한 브라우저 호환성 테스트
@@ -355,14 +667,203 @@ exports.moderateNewComment = functions.database.ref('/comments/{commentId}')
 - 오류 수정 및 디버깅
 - 최종 배포
 
-## 9. 추가 고려사항
+## 9. 관리자 이메일 알림 기능
 
-### 9.1 확장성
+### 9.1 알림 기능 구현
+
+#### 9.1.1 Firebase Cloud Functions 설정
+```javascript
+// 새 댓글이 추가될 때 이메일 알림 보내기
+const functions = require('firebase-functions');
+const admin = require('firebase-admin');
+const nodemailer = require('nodemailer');
+
+admin.initializeApp();
+
+// 이메일 전송을 위한 트랜스포터 설정
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: 'your-service-account@gmail.com', // 서비스 계정 (알림 발송용)
+    pass: 'your-app-password' // 앱 비밀번호 또는 OAuth 토큰
+  }
+});
+
+// 새로운 댓글이 추가될 때 이메일 알림 보내기
+exports.sendNewCommentNotification = functions.database.ref('/comments/{commentId}')
+  .onCreate(async (snapshot, context) => {
+    const comment = snapshot.val();
+    
+    // 새로운 댓글 정보 가져오기
+    const commentId = context.params.commentId;
+    const pageUrl = comment.pageUrl || 'Unknown Page';
+    const author = comment.author || 'Anonymous';
+    const content = comment.content || 'No content';
+    const createdAt = comment.created_at || new Date().toISOString();
+    
+    // 부모 댓글 정보 가져오기 (대댓글인 경우)
+    let parentCommentInfo = '';
+    if (comment.parent_id) {
+      const parentCommentSnapshot = await admin.database().ref(`/comments/${comment.parent_id}`).once('value');
+      const parentComment = parentCommentSnapshot.val();
+      
+      if (parentComment) {
+        parentCommentInfo = `
+        <div style="margin-left: 20px; padding-left: 10px; border-left: 2px solid #ccc;">
+          <p><strong>원본 댓글:</strong></p>
+          <p><strong>작성자:</strong> ${parentComment.author}</p>
+          <p><strong>내용:</strong> ${parentComment.content}</p>
+          <p><strong>작성 시간:</strong> ${parentComment.created_at}</p>
+        </div>`;
+      }
+    }
+    
+    // 이메일 내용 구성
+    const mailOptions = {
+      from: '\"Blog Comment Notification\" <your-service-account@gmail.com>',
+      to: 'fromsnowman14@gmail.com', // 고정된 관리자 이메일 주소
+      subject: `새 댓글 알림: ${author}가 댓글을 남기셨습니다`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2>새로운 댓글이 작성되었습니다</h2>
+          <p><strong>페이지:</strong> <a href="${pageUrl}">${pageUrl}</a></p>
+          <p><strong>작성자:</strong> ${author}</p>
+          <p><strong>내용:</strong> ${content}</p>
+          <p><strong>작성 시간:</strong> ${createdAt}</p>
+          <p><strong>댓글 ID:</strong> ${commentId}</p>
+          ${parentCommentInfo}
+          <p>
+            <a href="${pageUrl}" style="display: inline-block; padding: 10px 15px; background-color: #4285f4; color: white; text-decoration: none; border-radius: 4px;">댓글 확인하기</a>
+          </p>
+        </div>
+      `
+    };
+    
+    // 이메일 보내기
+    try {
+      await transporter.sendMail(mailOptions);
+      console.log('New comment notification email sent successfully');
+      return null;
+    } catch (error) {
+      console.error('Error sending email:', error);
+      return null;
+    }
+  });
+```
+
+#### 9.1.2 Cloud Functions 배포 명령어
+```bash
+# Firebase CLI 설치 (명령줄에서 실행)
+npm install -g firebase-tools
+
+# Firebase 프로젝트에 로그인
+firebase login
+
+# 함수 디렉토리에서 nodemailer 설치
+cd functions
+npm install nodemailer
+
+# Cloud Functions 배포
+firebase deploy --only functions
+```
+
+#### 9.1.3 알림 구성 옵션
+- **안전한 이메일 전송**:
+  - Gmail SMTP를 사용하려면 "앱 비밀번호" 생성 필요 (2단계 인증 필요)
+  - 대안적으로 SendGrid, Mailgun 등의 서비스 사용 가능
+
+- **알림 대상 필터링**:
+  - 일반 댓글과 특정 키워드가 포함된 댓글 구분
+  - 특정 사용자의 댓글만 알림 전송 가능
+
+## 10. 기존 구현과의 호환성 검토
+
+### 10.1 현재 구현과 업데이트된 요구사항 간의 차이점
+
+현재 구현된 코드와 업데이트된 요구사항/설계 문서 간의 주요 차이점은 다음과 같습니다:
+
+1. **시간 형식 처리**:
+   - 현재 구현: `CommentModel.js`에서는 시간을 단순히 `timestamp` 값으로 저장하고 추가 형식화된 `created_at` 필드가 없음
+   - 업데이트된 설계: YYYY-MM-DD HH:MM 형식의 `created_at` 필드 추가 필요
+
+2. **댓글 정렬 옵션 UI**:
+   - 현재 구현: 기본적인 시간순 정렬만 제공
+   - 업데이트된 설계: 최신순, 오래된순, 인기순 정렬 옵션 UI 필요
+
+3. **댓글 좋아요 기능**:
+   - 현재 구현: 기능 없음
+   - 업데이트된 설계: 추가 구현 필요
+
+4. **대댓글 계층 UI**:
+   - 현재 구현: 기본적인 대댓글 표시 기능 있음
+   - 업데이트된 설계: 깊이에 따른 언어일성 가늠한 UI 개선 필요
+
+5. **폼 입력 필드 선택자**:
+   - 현재 구현: `comment-author`, `comment-content` ID 사용
+   - 업데이트된 설계: 이미 `CommentController.js`에서 두 가지 ID 형식을 모두 지원하도록 수정함
+
+### 10.2 호환성 유지를 위한 권장사항
+
+새로운 기능을 구현하면서 현재 구현과의 충돌을 방지하기 위한 권장사항은 다음과 같습니다:
+
+1. **시간 형식 처리**:
+   ```javascript
+   // CommentModel.js - addComment 함수 수정
+   const comment = {
+     author: commentData.author,
+     content: commentData.content,
+     timestamp: firebase.database.ServerValue.TIMESTAMP,
+     // 형식화된 시간 추가
+     created_at: new Date().toISOString().slice(0, 16).replace('T', ' '), // YYYY-MM-DD HH:MM 형식
+     parent_id: commentData.parent_id || null,
+     depth: commentData.depth || 0,
+     ip_hash: this.hashIpAddress(commentData.ipAddress || '0.0.0.0'),
+     user_id: this.currentUserId,
+     likes: 0, // 좋아요 카운트 초기화
+   };
+   ```
+
+2. **정렬 옵션 UI 구현**:
+   - `CommentView.js` 파일에 정렬 옵션 UI 부분을 추가하고, `CommentController.js`에서 이벤트 리스너 추가
+   - `CommentModel.js`의 `getComments` 함수에 정렬 옵션 파라미터 추가
+
+3. **좋아요 기능 구현**:
+   - `CommentModel.js`에 `likeComment` 함수 추가
+   - `CommentView.js`에 좋아요 버튼 UI 추가
+   - `CommentController.js`에 이벤트 리스너 구현
+
+4. **대댓글 UI 개선**:
+   - `comment-styles.css`에서 깊이별 스타일 수정 또는 추가
+   - `CommentView.js`의 대댓글 관련 함수 수정
+
+5. **Firebase Cloud Functions 환경 구성**:
+   - Firebase 프로젝트에 Cloud Functions 추가
+   - nodemailer 또는 다른 이메일 서비스 설정
+
+### 10.3 설계 문서 호환성 업데이트
+
+현재 구현과의 호환성을 유지하기 위해 설계 문서에서 다음 사항을 강조해야 합니다:
+
+1. **선택자 이중화**:
+   - 폼 입력 필드에 대해 `comment-author`와 `commenter-name` 모두 지원
+   - 하위호환성을 유지하기 위해 두 가지 전략을 모두 고려
+
+2. **기존 데이터 호환성**:
+   - 새로운 필드(`created_at`, `likes`)가 없는 기존 데이터를 처리하기 위한 방법 추가
+   - 데이터 모델 변경 시 기존 데이터 마이그레이션 고려
+
+3. **점진적 적용**:
+   - 파일별 변경사항을 구분하여 점진적으로 적용
+   - 변경 후 활발한 테스트를 통해 기존 기능이 작동하는지 확인
+
+## 11. 추가 고려사항
+
+### 11.1 확장성
 - 다국어 지원 준비 (i18n)
-- 알림 기능 확장 가능성
+- 알림 기능 확장 가능성 (답글 작성 시 작성자에게 알림 등)
 - API 구조화 (향후 다른 페이지에서도 사용 가능하도록)
 
-### 9.2 유지 보수
+### 11.2 유지 보수
 - 코드 문서화
 - 로깅 시스템 구현
 - 정기적인 백업 메커니즘
