@@ -183,14 +183,24 @@ class CommentController {
     const allInputs = form.querySelectorAll('input, textarea');
     console.log('모든 입력 요소:', allInputs);
     
-    const authorInput = form.querySelector('#comment-author') || form.querySelector('input[id^="comment-author"]');
-    const contentTextarea = form.querySelector('#comment-content') || form.querySelector('textarea[id^="comment-content"]');
+    // 다양한 가능한 ID와 속성을 사용하여 작성자 입력 필드 찾기
+    const authorInput = form.querySelector('#commenter-name') || 
+                        form.querySelector('#comment-author') || 
+                        form.querySelector('input[id^="commenter-name"]') || 
+                        form.querySelector('input[id^="comment-author"]') || 
+                        form.querySelector('input[name="commenter-name"]') || 
+                        form.querySelector('input[name="comment-author"]');
+    
+    // 다양한 가능한 ID와 속성을 사용하여 내용 입력 필드 찾기
+    const contentTextarea = form.querySelector('#comment-content') || 
+                            form.querySelector('textarea[id^="comment-content"]') || 
+                            form.querySelector('textarea[name="comment-content"]');
     
     console.log('작성자 입력 필드:', authorInput);
     console.log('내용 입력 필드:', contentTextarea);
 
     if (!authorInput || !contentTextarea) {
-      console.error('댓글 폼 요소를 찾을 수 없습니다.');
+      console.error('댓글 폼 요소를 찾을 수 없습니다. 필드 ID 확인 필요: 작성자=' + (authorInput ? '찾음' : '없음') + ', 내용=' + (contentTextarea ? '찾음' : '없음'));
       return;
     }
     
