@@ -1,13 +1,8 @@
 /**
  * CommentModel.js
  * 댓글 관련 데이터 모델 및 Firebase 상호작용을 담당하는 클래스
- * Firebase SDK v9 호환성 모드 사용
  */
 
-/**
- * 댓글 모델 클래스
- * 단일 책임 원칙(SRP): Firebase 데이터베이스와의 상호 작용 및 댓글 데이터 관리만 담당
- */
 class CommentModel {
   /**
    * 생성자
@@ -15,7 +10,6 @@ class CommentModel {
    */
   constructor(config = {}) {
     this.dbRef = null;
-    this.moderationRef = null;
     this.moderationConfig = null;
     this.currentUserId = null;
     this.init(config);
@@ -24,7 +18,6 @@ class CommentModel {
   /**
    * 초기화 함수
    * @param {Object} config - 설정 객체
-   * @returns {boolean} 초기화 성공 여부
    */
   init(config) {
     // Firebase 초기화 확인
@@ -35,8 +28,7 @@ class CommentModel {
 
     try {
       debugLog('CommentModel', '댓글 데이터 검증 및 준비 시작');
-      
-      // 댓글 데이터베이스 참조 생성
+      // 댓글 데이터 검증 및 준비참조 생성
       this.dbRef = firebase.database().ref('comments');
       
       // 모더레이션 설정 참조
@@ -48,12 +40,11 @@ class CommentModel {
       // 모더레이션 설정 로드
       this.loadModerationConfig();
       
-      debugLog('CommentModel', 'Firebase 데이터베이스 참조 생성 완료');
       return true;
     } catch (error) {
-      debugLog('CommentModel', '댓글 모델 초기화 중 오류 발생', error);
-      console.error('댓글 모델 초기화 중 오류:', error);
-      return false;
+      debugLog('CommentModel', '댓글 추가 중 오류 발생', error);
+      console.error('댓글 추가 중 오류:', error);
+      throw error;
     }
   }
 
@@ -135,18 +126,6 @@ class CommentModel {
     snapshot.forEach((childSnapshot) => {
         const comment = childSnapshot.val();
         comment.id = childSnapshot.key;
-        
-        // created_at 필드가 없는 경우 생성
-        if (!comment.created_at && comment.timestamp) {
-          const date = new Date(comment.timestamp);
-          const year = date.getFullYear();
-          const month = String(date.getMonth() + 1).padStart(2, '0');
-          const day = String(date.getDate()).padStart(2, '0');
-          const hours = String(date.getHours()).padStart(2, '0');
-          const minutes = String(date.getMinutes()).padStart(2, '0');
-          comment.created_at = `${year}-${month}-${day} ${hours}:${minutes}`;
-        }
-        
         // 최상위 댓글만 가져오기 (depth === 0)
         if (comment.depth === 0) {
           comments.push(comment);
@@ -174,22 +153,10 @@ class CommentModel {
         snapshot.forEach(childSnapshot => {
           const reply = childSnapshot.val();
           reply.id = childSnapshot.key;
-          
-          // created_at 필드가 없는 경우 생성
-          if (!reply.created_at && reply.timestamp) {
-            const date = new Date(reply.timestamp);
-            const year = date.getFullYear();
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const day = String(date.getDate()).padStart(2, '0');
-            const hours = String(date.getHours()).padStart(2, '0');
-            const minutes = String(date.getMinutes()).padStart(2, '0');
-            reply.created_at = `${year}-${month}-${day} ${hours}:${minutes}`;
-          }
-          
           replies.push(reply);
         });
         
-        // 시간순 오름차순으로 정렬 (오래된 댓글이 먼저)
+        // 시간순 정렬
         replies.sort((a, b) => a.timestamp - b.timestamp);
         
         return replies;
@@ -203,82 +170,27 @@ class CommentModel {
    */
   async addComment(commentData) {
     debugLog('CommentModel', '댓글 추가 시작', commentData);
+    // 새 댓글 ID 생성
+    const newCommentRef = this.dbRef.push();
     
-    try {
-      // 필수 필드 확인
-      if (!commentData.author || !commentData.content) {
-        throw new Error('이름과 내용은 필수입니다.');
-      }
-      
-      // 내용 필터링 (금지어 확인) - 개방-폐쇄 원칙(OCP)에 따라 확장 가능한 필터링 로직
-      const filterResult = this.filterContent(commentData.content);
-      if (!filterResult.passed) {
-        throw new Error('금지된 단어가 포함되어 있습니다: ' + filterResult.word);
-      }
-      
-      // 필터링된 내용으로 교체
-      commentData.content = this._filterBannedWords(commentData.content);
-      debugLog('CommentModel', '금지어 필터링 후', commentData.content);
-      
-      // 현재 날짜 및 시간 구현 - 리스코프 적용 방식으로 분리
-      const formattedDateTime = this._getFormattedDateTime();
-      
-      // IP 해싱 (제공된 경우)
-      if (commentData.ip) {
-        commentData.ip_hash = this.hashIpAddress(commentData.ip);
-        delete commentData.ip; // 원본 IP 삭제
-      }
-      
-      // 댓글 데이터 완성
-      const newComment = {
-        author: commentData.author,
-        content: commentData.content,
-        timestamp: firebase.database.ServerValue.TIMESTAMP,
-        created_at: formattedDateTime, // 사람이 읽기 쉽게 포맷팅된 시간
-        email: commentData.email || '',
-        parent_id: commentData.parent_id || null,
-        depth: commentData.parent_id ? (commentData.depth || 1) : 0,
-        ip_hash: commentData.ip_hash || '',
-        has_replies: false
-      };
-      
-      // 날짜 관련 배열 생성 (Optional)
-      if (commentData.date) {
-        newComment.date = commentData.date;
-      }
-      
-      debugLog('CommentModel', 'Firebase에 댓글 저장 시작', newComment);
-      
-      // Firebase에 댓글 저장 - async/await 사용하여 더 가독성 좋게 변경
-      const snapshot = await this.dbRef.push(newComment);
-      const commentId = snapshot.key;
-      debugLog('CommentModel', '댓글 저장 성공', { commentId });
-      
-      // 대댓글인 경우 부모 댓글의 has_replies를 true로 설정
-      if (commentData.parent_id) {
-        await this.dbRef.child(commentData.parent_id).update({ has_replies: true });
-      }
-      
-      return commentId;
-    } catch (error) {
-      debugLog('CommentModel', '댓글 추가 중 오류 발생', error);
-      throw error; // async 함수이뮼로 Promise.reject 대신 throw 사용
-    }
-  }
-  
-  /**
-   * 현재 날짜와 시간을 서식화된 문자열로 반환
-   * @returns {string} YYYY-MM-DD HH:MM 형식의 날짜/시간 문자열
-   * @private
-   */
-  _getFormattedDateTime() {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const day = String(now.getDate()).padStart(2, '0');
-    const hours = String(now.getHours()).padStart(2, '0');
-    const minutes = String(now.getMinutes()).padStart(2, '0');
-    return `${year}-${month}-${day} ${hours}:${minutes}`;
+    // 기본 데이터와 사용자 입력 병합
+    const comment = {
+      author: commentData.author,
+      content: commentData.content,
+      timestamp: firebase.database.ServerValue.TIMESTAMP,
+      parent_id: commentData.parent_id || null,
+      depth: commentData.depth || 0,
+      ip_hash: this.hashIpAddress(commentData.ipAddress || '0.0.0.0'),
+      user_id: this.currentUserId
+    };
+    
+    // Firebase에 저장
+    const processedData = { ...comment };
+    debugLog('CommentModel', 'Firebase 댓글 저장 중', { refKey: newCommentRef.key, data: processedData });
+    await newCommentRef.set(processedData);
+    
+    debugLog('CommentModel', 'Firebase 댓글 저장 완료', newCommentRef.key);
+    return newCommentRef.key;
   }
 
   /**
@@ -291,25 +203,14 @@ class CommentModel {
     // 수정할 수 있는 필드만 선택
     const updates = {};
     if (updatedData.content) updates.content = updatedData.content;
-    if (updatedData.email !== undefined) updates.email = updatedData.email;
     
     // 금지어 필터링
     debugLog('CommentModel', '금지어 필터링 전', updatedData.content);
     updates.content = this._filterBannedWords(updatedData.content);
     debugLog('CommentModel', '금지어 필터링 후', updates.content);
     
-    // 현재 날짜 및 시간 포맷팅 (YYYY-MM-DD HH:MM 형식)
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const day = String(now.getDate()).padStart(2, '0');
-    const hours = String(now.getHours()).padStart(2, '0');
-    const minutes = String(now.getMinutes()).padStart(2, '0');
-    const formattedDateTime = `${year}-${month}-${day} ${hours}:${minutes}`;
-    
     // 수정 시간 추가
     updates.edited_timestamp = firebase.database.ServerValue.TIMESTAMP;
-    updates.edited_at = formattedDateTime; // 사람이 읽기 쉬운 형식의 수정 시간 추가
     
     return this.dbRef.child(commentId).update(updates);
   }
@@ -353,32 +254,6 @@ class CommentModel {
     
     return { passed: true };
   }
-  
-  /**
-   * 댓글 내용에서 금지어 필터링 (내부 함수)
-   * @param {string} content - 댓글 내용
-   * @returns {string} 필터링된 내용
-   * @private
-   */
-  _filterBannedWords(content) {
-    if (!content || !this.moderationConfig) {
-      return content;
-    }
-    
-    const bannedWords = this.moderationConfig.banned_words['ko'] || [];
-    let filteredContent = content;
-    
-    // 금지어 검색 및 바꿀
-    for (const word of bannedWords) {
-      if (filteredContent.toLowerCase().includes(word.toLowerCase())) {
-        // 금지어를 '*' 문자로 바꿈
-        const replacement = '*'.repeat(word.length);
-        filteredContent = filteredContent.replace(new RegExp(word, 'gi'), replacement);
-      }
-    }
-    
-    return filteredContent;
-  }
 
   /**
    * IP 주소 해싱 (개인정보 보호)
@@ -399,72 +274,33 @@ class CommentModel {
   /**
    * 실시간 댓글 업데이트 리스너 설정
    * @param {Function} callback - 콜백 함수
-   * @param {number} limit - 가져올 댓글 수 (기본값 10)
    * @returns {Object} 리스너 참조
    */
-  onCommentsUpdate(callback, limit = 10) {
-    debugLog('CommentModel', '실시간 댓글 업데이트 리스너 설정', { limit });
-    
-    // 인터페이스 분리 원칙(ISP)에 따라 콜백이 함수인지 확인
-    if (typeof callback !== 'function') {
-      console.error('콜백은 반드시 함수여야 합니다.');
-      return null;
-    }
-    
-    try {
-      const query = this.dbRef.orderByChild('timestamp').limitToLast(limit);
-      
-      const listener = query.on('value', snapshot => {
-        const comments = [];
-        snapshot.forEach(childSnapshot => {
-          const comment = childSnapshot.val();
-          comment.id = childSnapshot.key;
-          comments.push(comment);
-        });
-        
-        // 시간순 정렬 (최신순)
-        comments.sort((a, b) => b.timestamp - a.timestamp);
-        
-        // 콜백 호출 전 디버그 로그
-        debugLog('CommentModel', '실시간 댓글 업데이트 받음', { count: comments.length });
-        
-        callback(comments);
-      }, error => {
-        // 오류 처리 개선
-        console.error('댓글 업데이트 리스너 오류:', error);
-        debugLog('CommentModel', '댓글 업데이트 리스너 오류 발생', error);
+  onCommentsUpdate(callback) {
+    const listener = this.dbRef.orderByChild('timestamp').limitToLast(10).on('value', snapshot => {
+      const comments = [];
+      snapshot.forEach(childSnapshot => {
+        const comment = childSnapshot.val();
+        comment.id = childSnapshot.key;
+        comments.push(comment);
       });
       
-      // 리스너 정보 반환 - 후에 제거하기 위한 필수 정보 포함
-      return { ref: query, event: 'value', callback: listener };
-    } catch (error) {
-      debugLog('CommentModel', '리스너 설정 오류', error);
-      console.error('리스너 설정 중 오류가 발생했습니다:', error);
-      return null;
-    }
+      // 시간순 정렬 (최신순)
+      comments.sort((a, b) => b.timestamp - a.timestamp);
+      
+      callback(comments);
+    });
+    
+    return { ref: this.dbRef, event: 'value', callback: listener };
   }
 
   /**
    * 리스너 제거
    * @param {Object} listener - 리스너 참조
-   * @returns {boolean} 제거 성공 여부
    */
   removeListener(listener) {
-    debugLog('CommentModel', '리스너 제거 시도');
-    
-    try {
-      if (listener && listener.ref && listener.event && listener.callback) {
-        listener.ref.off(listener.event, listener.callback);
-        debugLog('CommentModel', '리스너 제거 성공');
-        return true;
-      } else {
-        debugLog('CommentModel', '리스너 제거 실패 - 유효하지 않은 리스너 객체');
-        return false;
-      }
-    } catch (error) {
-      debugLog('CommentModel', '리스너 제거 오류', error);
-      console.error('리스너 제거 중 오류가 발생했습니다:', error);
-      return false;
+    if (listener && listener.ref) {
+      listener.ref.off(listener.event, listener.callback);
     }
   }
 }

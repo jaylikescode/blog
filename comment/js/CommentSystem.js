@@ -1,14 +1,13 @@
 /**
  * CommentSystem.js
  * 블로그 댓글 시스템의 메인 초기화 및 조정 모듈
- * Firebase SDK v9 호환성 모드 사용
  */
 
 // 디버그 모드 설정 (1: 활성화, 0: 비활성화)
 const DEBUG_MODE = 1;
 
 /**
- * 디버그 로그 출력 함수 - 단일 책임 원칙(SRP)에 따라 로깅만 담당
+ * 디버그 로그 출력 함수
  * @param {string} source - 로그 출처
  * @param {string} message - 로그 메시지
  * @param {any} data - 로그 데이터 (선택적)
@@ -18,74 +17,32 @@ function debugLog(source, message, data = null) {
     const timestamp = new Date().toISOString();
     const prefix = `[DEBUG][${timestamp}][${source}]`;
     
-    try {
-      if (data !== null) {
-        console.log(prefix, message, data);
-      } else {
-        console.log(prefix, message);
-      }
-    } catch (error) {
-      // 로깅 중 오류 방지
-      console.log(`${prefix} 로깅 오류: ${error.message}`);
+    if (data !== null) {
+      console.log(prefix, message, data);
+    } else {
+      console.log(prefix, message);
     }
   }
 }
 
-/**
- * 댓글 시스템 팩토리 - 의존성 주입 원칙(DIP)을 따름
- * 의존성(Model, View, Controller)을 외부에서 주입받아 결합도를 낮춤
- */
-class CommentSystemFactory {
-  /**
-   * 새로운 댓글 시스템 인스턴스 생성
-   * @param {Object} config - 댓글 시스템 설정
-   * @returns 댓글 시스템 인스턴스
-   */
-  static create(config = {}) {
-    debugLog('CommentSystemFactory', '새 댓글 시스템 인스턴스 생성', config);
-    return new BlogCommentSystem(config);
-  }
-}
-
-/**
- * 댓글 시스템 클래스 - 모듈성과 재사용성 향상
- */
-class BlogCommentSystem {
-  /**
-   * 댓글 시스템 생성자
-   * @param {Object} customConfig - 사용자 정의 설정
-   */
-  constructor(customConfig = {}) {
-    // 구성 요소
-    this.model = null;
-    this.view = null;
-    this.controller = null;
-    
-    // 기본 설정
-    this.config = {
-      commentsPerPage: 10,
-      maxDepth: 10,
-      autoRefresh: false,
-      refreshInterval: 30000,
-      charLimit: 200
-    };
-    
-    // 사용자 설정으로 기본 설정 덮어쓰기
-    this.config = Object.assign(this.config, customConfig);
-    
-    // 다국어 번역 초기화
-    this.translations = this._initializeTranslations();
-    
-    debugLog('BlogCommentSystem', '인스턴스 생성됨', this.config);
-  }
+// 댓글 시스템 전역 객체
+const BlogCommentSystem = {
+  // 구성 요소
+  model: null,
+  view: null,
+  controller: null,
   
-  /**
-   * 번역 데이터 초기화
-   * @returns 번역 데이터 객체
-   * @private
-   */
-  _initializeTranslations() {
-    return {
+  // 설정
+  config: {
+    commentsPerPage: 10,
+    maxDepth: 10,
+    autoRefresh: false,
+    refreshInterval: 30000,
+    charLimit: 200
+  },
+  
+  // 다국어 번역 확장
+  translations: {
     'ko': {
       'loading': '로딩 중...',
       'load-more': '더보기',
@@ -98,15 +55,6 @@ class BlogCommentSystem {
       'save-button': '저장',
       'submitting': '저장 중...',
       'saving': '저장 중...',
-      'name-label': '이름:',
-      'email-label': '이메일:',
-      'comment-label': '내용:',
-      'name-placeholder': '이름을 입력하세요 (필수)',
-      'email-placeholder': '답글 알림을 받으려면 이메일을 입력하세요 (선택)',
-      'comments-submit-button': '댓글 작성',
-      'comments-form-title': '댓글 남기기',
-      'comments-list-title': '댓글 목록',
-      'comments-title': '댓글',
       'required-fields': '이름과 댓글 내용을 모두 입력해주세요.',
       'content-too-long': '댓글 내용이 너무 깁니다. 최대 200자까지 입력 가능합니다.',
       'content-contains-banned-word': '금지된 단어가 포함되어 있습니다',
@@ -143,15 +91,6 @@ class BlogCommentSystem {
       'save-button': 'Save',
       'submitting': 'Submitting...',
       'saving': 'Saving...',
-      'name-label': 'Name:',
-      'email-label': 'Email:',
-      'comment-label': 'Comment:',
-      'name-placeholder': 'Enter your name (required)',
-      'email-placeholder': 'Enter your email for reply notifications (optional)',
-      'comments-submit-button': 'Leave a Comment',
-      'comments-form-title': 'Leave a Comment',
-      'comments-list-title': 'Comments',
-      'comments-title': 'Comments',
       'required-fields': 'Please enter both name and comment.',
       'content-too-long': 'Comment is too long. Maximum 200 characters allowed.',
       'content-contains-banned-word': 'Contains banned word',
@@ -176,26 +115,19 @@ class BlogCommentSystem {
       'yesterday': 'yesterday',
       'days-ago': ' days ago'
     }
-  }
+  },
   
   /**
    * 댓글 시스템 초기화
    * @param {Object} customConfig - 사용자 정의 설정
-   * @returns 초기화 성공 여부
    */
-  init(customConfig = {}) {
+  init: function(customConfig = {}) {
     debugLog('CommentSystem', '댓글 시스템 초기화 시작');
     
     // Firebase SDK 로드 상태 확인
     if (typeof firebase === 'undefined') {
-      console.error('Firebase SDK가 로드되지 않았습니다. SDK 로드를 시도합니다.');
-      debugLog('CommentSystem', 'Firebase SDK 로드 시도');
-      
-      if (typeof window.initializeFirebase === 'function') {
-        window.initializeFirebase();
-        // 재귀적으로 1초 후에 다시 초기화 시도
-        setTimeout(() => this.init(customConfig), 1000);
-      }
+      console.error('Firebase SDK가 로드되지 않았습니다. 댓글 시스템을 초기화할 수 없습니다.');
+      debugLog('CommentSystem', 'Firebase SDK 로드 실패');
       return false;
     }
     
@@ -345,12 +277,12 @@ class BlogCommentSystem {
       console.error('댓글 시스템 초기화 중 오류 발생:', error);
       return false;
     }
-  }
+  },
   
   /**
    * 언어 변경 리스너 설정
    */
-  setupLanguageChangeListener() {
+  setupLanguageChangeListener: function() {
     document.querySelectorAll('.language-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         // 언어 변경 시 뷰 업데이트
@@ -368,27 +300,6 @@ class BlogCommentSystem {
 // 디버그 로그 함수를 전역으로 노출
 window.debugLog = debugLog;
 
-// 전역 배포를 위한 객체 아리아스 (하위 호환성 유지)
-window.BlogCommentSystem = BlogCommentSystem;
-
-// 싱글턴 인스턴스
-let commentSystem = null;
-
-/**
- * 댓글 시스템 초기화 함수
- * @param {Object} config - 설정 객체
- * @returns 초기화된 댓글 시스템 인스턴스
- */
-function initializeCommentSystem(config = {}) {
-  if (!commentSystem) {
-    debugLog('CommentSystem', '새 댓글 시스템 인스턴스 생성');
-    commentSystem = CommentSystemFactory.create(config);
-  }
-  
-  commentSystem.init(config);
-  return commentSystem;
-}
-
 // DOM 콘텐츠 로드 시 초기화
 document.addEventListener('DOMContentLoaded', function() {
   debugLog('CommentSystem', 'DOMContentLoaded 이벤트 발생');
@@ -396,7 +307,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // Firebase가 로드된 후 댓글 시스템 초기화
   if (typeof firebase !== 'undefined') {
     debugLog('CommentSystem', 'Firebase SDK 이미 로드됨, 초기화 시작');
-    initializeCommentSystem();
+    BlogCommentSystem.init();
   } else {
     // Firebase가 지연 로드되는 경우 대기
     debugLog('CommentSystem', 'Firebase SDK 아직 로드되지 않음, load 이벤트 대기');
@@ -404,11 +315,8 @@ document.addEventListener('DOMContentLoaded', function() {
       debugLog('CommentSystem', 'window load 이벤트 발생, 1초 후 초기화 예정');
       setTimeout(() => {
         debugLog('CommentSystem', '지연 초기화 시작');
-        initializeCommentSystem();
+        BlogCommentSystem.init();
       }, 1000);
     });
   }
 });
-
-// 버전 정보 추가
-window.COMMENT_SYSTEM_VERSION = '1.1.0'; // Firebase SDK v9 호환성 지원

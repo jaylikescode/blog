@@ -90,8 +90,8 @@ class CommentView {
   setupUI() {
     debugLog('CommentView', 'UI 초기 설정 시작');
     
-    // 댓글 폼 UI 생성 (강제 렌더링 적용)
-    this.renderCommentForm(true);
+    // 댓글 폼 UI 생성
+    this.renderCommentForm();
     debugLog('CommentView', '폼 UI 생성 완료');
     
     // 댓글 목록 컨테이너 초기화
@@ -117,9 +117,8 @@ class CommentView {
 
   /**
    * 댓글 폼 렌더링
-   * @param {boolean} forceRender - 기존 폼이 있어도 강제로 다시 렌더링할지 여부
    */
-  renderCommentForm(forceRender = false) {
+  renderCommentForm() {
     debugLog('CommentView', '댓글 폼 렌더링 시작');
     
     if (!this.formContainer) {
@@ -130,13 +129,8 @@ class CommentView {
     // 기존 폼이 있는지 확인
     const existingForm = this.formContainer.querySelector('form');
     if (existingForm) {
-      if (forceRender) {
-        debugLog('CommentView', '기존 폼 제거 후 새로 렌더링');
-        this.formContainer.removeChild(existingForm);
-      } else {
-        debugLog('CommentView', '폼이 이미 있음, 새로 생성하지 않음');
-        return true;
-      }
+      debugLog('CommentView', '폼이 이미 있음, 새로 생성하지 않음');
+      return true;
     }
     
     debugLog('CommentView', '새 폼 생성 시작');
@@ -145,109 +139,47 @@ class CommentView {
     const form = document.createElement('form');
     form.className = 'comment-form';
     
-    // 이름 입력 필드 (필수)
+    // 이름 입력 필드
     const nameGroup = document.createElement('div');
     nameGroup.className = 'form-group';
-    debugLog('CommentView', '이름 그룹 생성');
     
     const nameLabel = document.createElement('label');
     nameLabel.setAttribute('for', 'commenter-name');
-    nameLabel.className = 'input-label required';
-    nameLabel.textContent = this.getText('name-label') || 'Name: ';
-    nameLabel.style.display = 'block';
-    nameLabel.style.marginBottom = '5px';
-    nameLabel.style.fontWeight = 'bold';
-    debugLog('CommentView', '이름 라벨 생성', { text: nameLabel.textContent });
+    nameLabel.className = 'input-label';
+    nameLabel.textContent = 'Name: ';
     
     const nameInput = document.createElement('input');
     nameInput.type = 'text';
     nameInput.id = 'commenter-name';
     nameInput.name = 'commenter-name';
     nameInput.required = true;
-    nameInput.placeholder = this.getText('name-placeholder') || '이름을 입력하세요 (필수)';
-    nameInput.style.width = '100%';
-    nameInput.style.padding = '8px';
-    nameInput.style.boxSizing = 'border-box';
-    debugLog('CommentView', '이름 입력필드 생성');
     
     nameGroup.appendChild(nameLabel);
     nameGroup.appendChild(nameInput);
-    debugLog('CommentView', '이름 그룹 완성');
     
-    // 이메일 입력 필드 (선택)
-    const emailGroup = document.createElement('div');
-    emailGroup.className = 'form-group';
-    debugLog('CommentView', '이메일 그룹 생성');
-    
-    const emailLabel = document.createElement('label');
-    emailLabel.setAttribute('for', 'commenter-email');
-    emailLabel.className = 'input-label';
-    emailLabel.textContent = this.getText('email-label') || 'Email: ';
-    emailLabel.style.display = 'block';
-    emailLabel.style.marginBottom = '5px';
-    emailLabel.style.fontWeight = 'bold';
-    debugLog('CommentView', '이메일 라벨 생성', { text: emailLabel.textContent });
-    
-    const emailInput = document.createElement('input');
-    emailInput.type = 'email';
-    emailInput.id = 'commenter-email';
-    emailInput.name = 'commenter-email';
-    emailInput.placeholder = this.getText('email-placeholder') || '답글 알림을 받으려면 이메일을 입력하세요 (선택)';
-    emailInput.style.width = '100%';
-    emailInput.style.padding = '8px';
-    emailInput.style.boxSizing = 'border-box';
-    debugLog('CommentView', '이메일 입력필드 생성');
-    
-    emailGroup.appendChild(emailLabel);
-    emailGroup.appendChild(emailInput);
-    debugLog('CommentView', '이메일 그룹 완성');
-    
-    // 내용 입력 필드 (필수)
+    // 내용 입력 필드
     const contentGroup = document.createElement('div');
     contentGroup.className = 'form-group';
-    debugLog('CommentView', '내용 그룹 생성');
     
     const contentLabel = document.createElement('label');
     contentLabel.setAttribute('for', 'comment-content');
-    contentLabel.className = 'input-label required';
-    contentLabel.textContent = this.getText('comment-label') || 'Comment: ';
-    contentLabel.style.display = 'block';
-    contentLabel.style.marginBottom = '5px';
-    contentLabel.style.fontWeight = 'bold';
-    debugLog('CommentView', '내용 라벨 생성', { text: contentLabel.textContent });
+    contentLabel.className = 'input-label';
+    contentLabel.textContent = 'Comment: ';
     
     const contentTextarea = document.createElement('textarea');
     contentTextarea.id = 'comment-content';
     contentTextarea.name = 'comment-content';
     contentTextarea.required = true;
     contentTextarea.maxLength = this.charLimit;
-    contentTextarea.placeholder = this.getText('comment-placeholder') || '내용을 입력하세요 (필수)';
-    contentTextarea.style.width = '100%';
-    contentTextarea.style.padding = '8px';
-    contentTextarea.style.boxSizing = 'border-box';
-    contentTextarea.style.minHeight = '100px';
-    contentTextarea.style.resize = 'vertical';
-    debugLog('CommentView', '내용 텍스트영역 생성');
     
     contentGroup.appendChild(contentLabel);
     contentGroup.appendChild(contentTextarea);
-    debugLog('CommentView', '내용 그룹 완성');
     
-    // 제출 버튼 (처음에는 비활성화)
+    // 제출 버튼
     const submitButton = document.createElement('button');
     submitButton.type = 'submit';
     submitButton.setAttribute('data-text', 'comments-submit-button');
     submitButton.textContent = this.getText('comments-submit-button') || '댓글 작성';
-    submitButton.disabled = true; // 처음에는 비활성화
-    submitButton.className = 'submit-button';
-    submitButton.style.padding = '8px 16px';
-    submitButton.style.backgroundColor = '#4CAF50';
-    submitButton.style.color = 'white';
-    submitButton.style.border = 'none';
-    submitButton.style.borderRadius = '4px';
-    submitButton.style.cursor = 'pointer';
-    submitButton.style.marginTop = '10px';
-    debugLog('CommentView', '제출 버튼 생성', { buttonText: submitButton.textContent });
     
     // 부모 ID (댓글 용)
     const parentIdInput = document.createElement('input');
@@ -257,48 +189,12 @@ class CommentView {
     
     // 폼에 요소 추가
     form.appendChild(nameGroup);
-    form.appendChild(emailGroup);
     form.appendChild(contentGroup);
     form.appendChild(parentIdInput);
     form.appendChild(submitButton);
     
-    debugLog('CommentView', '폼 요소 추가 완료', {
-      nameGroupExists: !!nameGroup,
-      emailGroupExists: !!emailGroup,
-      contentGroupExists: !!contentGroup,
-      submitButtonExists: !!submitButton,
-      submitButtonText: submitButton.textContent,
-      formElementCount: form.childElementCount
-    });
-    
     // 폼을 컨테이너에 추가
     this.formContainer.appendChild(form);
-    debugLog('CommentView', '폼을 DOM에 추가함', {
-      formContainerExists: !!this.formContainer,
-      formContainerChildCount: this.formContainer.childElementCount,
-      formContainerHtml: this.formContainer.innerHTML.substring(0, 100) + '...'
-    });
-    
-    // 폼 유효성 검증 이벤트 추가
-    this._setupFormValidation(form);
-    
-    // 스타일 추가 - 폼 전체
-    form.style.marginBottom = '20px';
-    form.style.padding = '15px';
-    form.style.border = '1px solid #ddd';
-    form.style.borderRadius = '5px';
-    form.style.backgroundColor = '#f9f9f9';
-    
-    // 테스트용 임시 스타일시트
-    const styleEl = document.createElement('style');
-    styleEl.textContent = `
-      .form-group { margin-bottom: 15px; }
-      .input-label { font-weight: bold; display: block; margin-bottom: 5px; }
-      .input-label.required:after { content: ' *'; color: red; }
-      .submit-button { padding: 8px 16px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; }
-      .submit-button:disabled { background-color: #cccccc; cursor: not-allowed; }
-    `;
-    document.head.appendChild(styleEl);
     
     debugLog('CommentView', '폼 생성 완료');
     return true;
@@ -596,33 +492,11 @@ class CommentView {
    * @returns {string} 번역된 텍스트
    */
   getText(key) {
-    const lang = this.currentLanguage || document.documentElement.lang || 'ko';
-    debugLog('CommentView', `getText 호출: ${key}, 현재 언어: ${lang}`);
-    
-    // 번역 로깅
-    if (!window.translations) {
-      debugLog('CommentView', 'window.translations가 없음', { key });
-    } else {
-      debugLog('CommentView', 'window.translations 확인', { 
-        hasLang: !!window.translations[lang],
-        availableKeys: window.translations[lang] ? Object.keys(window.translations[lang]) : [],
-        hasKey: window.translations[lang] && window.translations[lang][key]
-      });
-    }
-    
-    if (this.translations[lang] && this.translations[lang][key]) {
-      debugLog('CommentView', `번역 찾음 (local): ${key} => ${this.translations[lang][key]}`);
+    const lang = this.currentLanguage;
+    if (this.translations && this.translations[lang] && this.translations[lang][key]) {
       return this.translations[lang][key];
     }
-    
-    // 번역이 없으면 전역 번역 객체에서 찾기
-    if (window.translations && window.translations[lang] && window.translations[lang][key]) {
-      debugLog('CommentView', `번역 찾음 (global): ${key} => ${window.translations[lang][key]}`);
-      return window.translations[lang][key];
-    }
-    
-    debugLog('CommentView', `번역 미발견: ${key}`);
-    return null;
+    return key;
   }
   
   /**
@@ -662,14 +536,13 @@ class CommentView {
     const form = document.createElement('form');
     form.className = 'comment-form reply-form';
     
-    // 이름 입력 필드 (필수)
+    // 이름 입력 필드
     const nameGroup = document.createElement('div');
     nameGroup.className = 'form-group';
     
     const nameLabel = document.createElement('label');
     nameLabel.setAttribute('for', 'reply-author');
     nameLabel.setAttribute('data-text', 'comments-name-label');
-    nameLabel.className = 'input-label required'; // 필수 필드 표시
     nameLabel.textContent = this.getText('comments-name-label') || '이름:';
     
     const nameInput = document.createElement('input');
@@ -677,38 +550,18 @@ class CommentView {
     nameInput.name = 'commenter-name';
     nameInput.id = 'comment-author'; // 동일한 ID 사용
     nameInput.required = true;
-    nameInput.placeholder = this.getText('comments-name-placeholder') || '이름을 입력하세요 (필수)';
+    nameInput.placeholder = this.getText('comments-name-placeholder') || '이름을 입력하세요';
     
     nameGroup.appendChild(nameLabel);
     nameGroup.appendChild(nameInput);
     
-    // 이메일 입력 필드 (선택)
-    const emailGroup = document.createElement('div');
-    emailGroup.className = 'form-group';
-    
-    const emailLabel = document.createElement('label');
-    emailLabel.setAttribute('for', 'reply-email');
-    emailLabel.setAttribute('data-text', 'comments-email-label');
-    emailLabel.className = 'input-label';
-    emailLabel.textContent = this.getText('comments-email-label') || '이메일:';
-    
-    const emailInput = document.createElement('input');
-    emailInput.type = 'email';
-    emailInput.name = 'commenter-email';
-    emailInput.id = 'commenter-email';
-    emailInput.placeholder = this.getText('comments-email-placeholder') || '답글 알림을 받으려면 이메일을 입력하세요 (선택)';
-    
-    emailGroup.appendChild(emailLabel);
-    emailGroup.appendChild(emailInput);
-    
-    // 내용 입력 필드 (필수)
+    // 내용 입력 필드
     const contentGroup = document.createElement('div');
     contentGroup.className = 'form-group';
     
     const contentLabel = document.createElement('label');
     contentLabel.setAttribute('for', 'reply-content');
     contentLabel.setAttribute('data-text', 'comments-content-label');
-    contentLabel.className = 'input-label required'; // 필수 필드 표시
     contentLabel.textContent = this.getText('comments-content-label') || '내용:';
     
     const contentTextarea = document.createElement('textarea');
@@ -716,7 +569,7 @@ class CommentView {
     contentTextarea.id = 'comment-content'; // 동일한 ID 사용
     contentTextarea.required = true;
     contentTextarea.rows = 3; // 답글은 좌식 수 적게
-    contentTextarea.placeholder = this.getText('comments-content-placeholder') || '내용을 입력하세요 (필수)';
+    contentTextarea.placeholder = this.getText('comments-content-placeholder') || '내용을 입력하세요';
     
     contentGroup.appendChild(contentLabel);
     contentGroup.appendChild(contentTextarea);
@@ -727,13 +580,12 @@ class CommentView {
     parentIdInput.name = 'parent-id';
     parentIdInput.value = parentId;
     
-    // 제출 버튼 (처음에는 비활성화)
+    // 제출 버튼
     const submitButton = document.createElement('button');
     submitButton.type = 'submit';
     submitButton.setAttribute('data-text', 'reply-submit-button');
     submitButton.className = 'submit-reply-button';
     submitButton.textContent = this.getText('reply-button') || '답글 등록';
-    submitButton.disabled = true; // 처음에는 비활성화
     
     // 취소 버튼
     const cancelButton = document.createElement('button');
@@ -749,85 +601,13 @@ class CommentView {
     
     // 폼에 요소 추가
     form.appendChild(nameGroup);
-    form.appendChild(emailGroup);
     form.appendChild(contentGroup);
     form.appendChild(parentIdInput);
     form.appendChild(buttonGroup);
     
-    // 폼 유효성 검증 이벤트 추가
-    this._setupFormValidation(form);
-    
     return form;
   }
 
-  /**
-   * 폼 유효성 검증 설정 (내부 함수)
-   * @param {HTMLFormElement} form - 유효성 검증을 적용할 폼
-   * @private
-   */
-  _setupFormValidation(form) {
-    debugLog('CommentView', '폼 유효성 검증 설정 시작');
-    
-    const nameInput = form.querySelector('input[name="commenter-name"]');
-    const emailInput = form.querySelector('input[name="commenter-email"]');
-    const contentTextarea = form.querySelector('textarea[name="comment-content"]');
-    const submitButton = form.querySelector('button[type="submit"]');
-    
-    if (!nameInput || !contentTextarea || !submitButton) {
-      debugLog('CommentView', '폼 유효성 검증을 위한 요소를 찾을 수 없음');
-      return;
-    }
-    
-    // 유효성 검증 함수
-    const validateForm = () => {
-      const nameValue = nameInput.value.trim();
-      const contentValue = contentTextarea.value.trim();
-      const emailValue = emailInput ? emailInput.value.trim() : '';
-      
-      // 이메일 유효성 검증 (입력된 경우에만)
-      let emailValid = true;
-      if (emailValue) {
-        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        emailValid = emailPattern.test(emailValue);
-        
-        // 유효하지 않은 이메일에 스타일 적용
-        if (!emailValid) {
-          emailInput.classList.add('invalid');
-        } else {
-          emailInput.classList.remove('invalid');
-        }
-      }
-      
-      // 이름과 내용이 있고 이메일이 유효한 경우에만 버튼 활성화
-      submitButton.disabled = !(nameValue && contentValue && emailValid);
-      
-      // 유효성 상태에 따른 스타일 적용
-      if (nameValue) {
-        nameInput.classList.remove('invalid');
-      } else {
-        nameInput.classList.add('invalid');
-      }
-      
-      if (contentValue) {
-        contentTextarea.classList.remove('invalid');
-      } else {
-        contentTextarea.classList.add('invalid');
-      }
-    };
-    
-    // 이벤트 리스너 추가
-    nameInput.addEventListener('input', validateForm);
-    contentTextarea.addEventListener('input', validateForm);
-    if (emailInput) {
-      emailInput.addEventListener('input', validateForm);
-    }
-    
-    // 초기 유효성 검증 실행
-    validateForm();
-    
-    debugLog('CommentView', '폼 유효성 검증 설정 완료');
-  }
-  
   /**
    * 언어 변경 시 UI 업데이트
    * @param {string} lang - 언어 코드
