@@ -196,8 +196,14 @@ class CommentController {
                             form.querySelector('textarea[id^="comment-content"]') || 
                             form.querySelector('textarea[name="comment-content"]');
     
+    // 이메일 입력 필드 찾기 (선택적 필드)
+    const emailInput = form.querySelector('#commenter-email') || 
+                       form.querySelector('input[id^="commenter-email"]') || 
+                       form.querySelector('input[name="commenter-email"]');
+    
     console.log('작성자 입력 필드:', authorInput);
     console.log('내용 입력 필드:', contentTextarea);
+    console.log('이메일 입력 필드:', emailInput);
 
     if (!authorInput || !contentTextarea) {
       console.error('댓글 폼 요소를 찾을 수 없습니다. 필드 ID 확인 필요: 작성자=' + (authorInput ? '찾음' : '없음') + ', 내용=' + (contentTextarea ? '찾음' : '없음'));
@@ -206,6 +212,7 @@ class CommentController {
     
     const author = authorInput.value.trim();
     const content = contentTextarea.value.trim();
+    const email = emailInput ? emailInput.value.trim() : null;
     
     // 입력 유효성 검사
     if (!author) {
@@ -218,6 +225,16 @@ class CommentController {
       alert(this.view.getText('error-empty-comment'));
       contentTextarea.focus();
       return;
+    }
+    
+    // 이메일 유효성 검사 (이메일이 입력된 경우에만)
+    if (email) {
+      const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailPattern.test(email)) {
+        alert(this.view.getText('error-invalid-email') || '유효한 이메일 주소를 입력해주세요.');
+        emailInput.focus();
+        return;
+      }
     }
     
     if (content.length > this.view.charLimit) {
@@ -236,6 +253,7 @@ class CommentController {
     // 댓글 데이터 구성
     const commentData = {
       author,
+      email,  // 이메일 필드 추가 (선택적)
       content,
       // 대댓글인 경우 부모 ID와 깊이 정보 추가
       parent_id: form.querySelector('input[name="parent_id"]')?.value || null,

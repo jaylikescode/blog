@@ -43,6 +43,13 @@
   min-width: 80px;
 }
 
+/* Required field label styles */
+.input-label.required:after {
+  content: ' *';
+  color: #e74c3c;
+  font-weight: bold;
+}
+
 /* Form group layout */
 .form-group {
   display: flex;
@@ -52,6 +59,7 @@
 
 /* Input and textarea styles */
 .input-group input[type="text"],
+.input-group input[type="email"],
 .input-group textarea {
   flex: 1;
   padding: 10px;
@@ -63,10 +71,23 @@
 }
 
 .input-group input[type="text"]:focus,
+.input-group input[type="email"]:focus,
 .input-group textarea:focus {
   border-color: #4a89dc;
   outline: none;
   box-shadow: 0 0 0 2px rgba(74, 137, 220, 0.2);
+}
+
+/* Validation styles */
+.input-group input.invalid,
+.input-group textarea.invalid {
+  border-color: #e74c3c;
+  background-color: #fff8f8;
+}
+
+.input-group input.invalid:focus,
+.input-group textarea.invalid:focus {
+  box-shadow: 0 0 0 2px rgba(231, 76, 60, 0.2);
 }
 
 .input-group textarea {
@@ -74,7 +95,8 @@
   resize: vertical;
 }
 
-.input-group input[type="text"] {
+.input-group input[type="text"],
+.input-group input[type="email"] {
   width: 100%;
   padding: 10px;
   border: 1px solid #ddd;
@@ -96,6 +118,28 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+/* Submit button styles */
+button[type="submit"] {
+  background-color: #4a89dc;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 10px 15px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+button[type="submit"]:hover {
+  background-color: #3a77c9;
+}
+
+button[type="submit"]:disabled {
+  background-color: #b5c8e6;
+  cursor: not-allowed;
+  opacity: 0.7;
 }
 
 .char-count {
