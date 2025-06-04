@@ -600,6 +600,14 @@ class MenuSystem {
     }
     
     /**
+     * Gets the current screen name
+     * @returns {string} The current screen name
+     */
+    getCurrentScreen() {
+        return this.currentScreen;
+    }
+    
+    /**
      * Fades in the current menu
      * @param {Function} callback - Called when fade in completes
      */
