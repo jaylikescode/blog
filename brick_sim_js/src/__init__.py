@@ -1,3 +1,0 @@
-"""
-Bric Game package initialization
-"""
