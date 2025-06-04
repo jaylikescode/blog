@@ -149,13 +149,7 @@ class Game {
         // Set up event listeners
         this.setupEventListeners();
         
-        // Load assets
-        this.loadAssets();
-        
-        // Initial resize to set up the canvas correctly
-        this.handleResize();
-        
-        // Start in menu state after assets are loaded
+        // Set up asset manager callbacks before loading assets
         console.log('[DEBUG] Game: 에셋 매니저 콜백 설정...');
         this.assetManager.setCallbacks(
             // Progress callback
@@ -188,10 +182,22 @@ class Game {
                 
                 // Hide loading overlay
                 console.log('[DEBUG] 로딩 오버레이 숨김 시도...');
-                hideLoading();
+                try {
+                    hideLoading();
+                    console.log('[DEBUG] 로딩 화면 숨기기 성공');
+                } catch (error) {
+                    console.error('[DEBUG] hideLoading 호출 오류:', error);
+                }
                 console.log('[DEBUG] 현재 게임 상태:', this.state);
             }
         );
+
+        // Initial resize to set up the canvas correctly
+        this.handleResize();
+        
+        // Load assets (this must be called AFTER setting callbacks)
+        this.loadAssets();
+        
         console.log('[DEBUG] Game.init 완료');
     }
     
