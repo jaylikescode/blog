@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brick Simulation</title>
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Canvas 요소 생성 및 준비를 위한 스크립트 -->
+    <script>
+        // 브라우저 프리뷰 iframe 문제를 해결하기 위한 초기 설정
+        window.canvasDebug = {
+            creationTime: new Date().toISOString(),
+            log: []
+        };
+        
+        // 로그 추가 함수
+        window.logCanvasInfo = function(message) {
+            if (window.canvasDebug) {
+                const timeStamp = new Date().toISOString();
+                const logEntry = timeStamp + ': ' + message;
+                window.canvasDebug.log.push(logEntry);
+                console.log('[Canvas Debug]', message);
+            }
+        };
+        
+        // 페이지 로드 시작 로그
+        window.logCanvasInfo('페이지 로드 시작');
+    </script>
+</head>
+<body>
+    <div class="game-container">
+        <canvas id="game-canvas" width="800" height="600"></canvas>
+        <div id="loading-overlay">
+            <div id="loading-text">Loading Brick Simulation...</div>
+            <div class="spinner"></div>
+        </div>
+    </div>
+    
+    <!-- Canvas 디버깅 및 초기화를 위한 인라인 스크립트 -->
+    <script>
+        // 즉시 실행되는 스크립트로 Canvas 요소 처리
+        (function() {
+            window.logCanvasInfo('인라인 스크립트 실행 - DOM 상태: ' + document.readyState);
+            
+            // 캔버스 초기화 및 등록
+            function initCanvas() {
+                // Canvas 등록 시도
+                console.log('[Canvas Debug] Canvas 확인 시도 #1');
+                const canvas = document.getElementById('game-canvas');
+                
+                if (canvas) {
+                    // 전역 변수에 저장
+                    window.gameCanvas = canvas;
+                    
+                    // 캐스캐이드 특수 객체에도 등록
+                    window.__cascade_canvas = canvas;
+                    
+                    console.log(`[Canvas Debug] Canvas 요소 발견: ${canvas.id} (${canvas.width}x${canvas.height})`);
+                    console.log('[Canvas Debug] Canvas 요소가 window.gameCanvas에 등록됨');
+                    console.log('[Canvas Debug] Canvas 요소가 window.__cascade_canvas에도 등록됨');
+                    console.log('[Canvas Debug] Canvas 요소 초기화 성공!');
+                    return true;
+                } else {
+                    console.error('[Canvas Debug] ERROR: game-canvas를 찾을 수 없습니다!');
+                    return false;
+                }
+            }
+            
+            // 게임 초기화 함수
+            function initGame() {
+                console.log('[Game Debug] 게임 초기화 시작...');
+                
+                try {
+                    if (initCanvas()) {
+                        const canvas = window.gameCanvas;
+                        console.log('[Game Debug] Canvas 초기화 성공, Game 인스턴스 생성 시작...');
+                        
+                        // 스크립트 로딩 확인
+                        console.log('[Game Debug] 필수 클래스 확인:');
+                        console.log('- InputManager 정의됨:', typeof InputManager !== 'undefined');
+                        console.log('- AssetManager 정의됨:', typeof AssetManager !== 'undefined');
+                        console.log('- LevelManager 정의됨:', typeof LevelManager !== 'undefined');
+                        console.log('- UIManager 정의됨:', typeof UIManager !== 'undefined');
+                        console.log('- CollisionManager 정의됨:', typeof CollisionManager !== 'undefined');
+                        
+                        // Game 인스턴스 생성
+                        window.game = new Game(canvas);
+                        console.log('[Game Debug] Game 인스턴스 생성 성공, 게임 시작...');
+                        window.game.start();
+                    } else {
+                        console.error('[Game Debug] Canvas 초기화 실패');
+                        showError('캔버스를 초기화할 수 없습니다. 브라우저가 HTML5 Canvas를 지원하는지 확인하세요.');
+                    }
+                } catch (error) {
+                    console.error('[Game Debug] 게임 초기화 중 오류 발생:', error);
+                    showError(`게임 초기화 중 오류: ${error.message}`);
+                }
+            }
+            
+            // 즉시 실행 및 주기적 확인
+            initCanvas();
+            initGame();
+            
+            // DOM 로드 후 한번 더 확인
+            let checkAttempts = 0;
+            const maxAttempts = 10;
+            
+            let canvasCheck = setInterval(function() {
+                checkAttempts++;
+                window.logCanvasInfo('Canvas 확인 시도 #' + checkAttempts);
+                
+                if (createCanvasIfNeeded() && registerCanvasGlobally()) {
+                    window.logCanvasInfo('Canvas 요소 초기화 성공!');
+                    clearInterval(canvasCheck);
+                } else if (checkAttempts >= maxAttempts) {
+                    window.logCanvasInfo('Canvas 초기화 시도 횟수 초과 (' + maxAttempts + ')');
+                    clearInterval(canvasCheck);
+                }
+            }, 300);
+        })();
+    </script>
+    
+    <div id="error-message" class="error-message">
+        Failed to load the game. Please make sure your browser supports Canvas and JavaScript.
+    </div>
+    
+    <div class="controls">
+        <h2>Controls</h2>
+        <table class="controls-table">
+            <tr>
+                <td class="key">Left/Right Arrow Keys</td>
+                <td>Move the paddle</td>
+            </tr>
+            <tr>
+                <td class="key">Space</td>
+                <td>Start game / Launch ball</td>
+            </tr>
+            <tr>
+                <td class="key">P</td>
+                <td>Pause / Resume</td>
+            </tr>
+            <tr>
+                <td class="key">Enter</td>
+                <td>Restart after Game Over</td>
+            </tr>
+            <tr>
+                <td class="key">Esc</td>
+                <td>Quit game</td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- Game Scripts -->
+    <script src="js/config.js"></script>
+    <script src="js/utils/helpers.js"></script>
+    <script src="js/utils/physics.js"></script>
+    
+    <script src="js/components/gameObject.js"></script>
+    <script src="js/components/paddle.js"></script>
+    <script src="js/components/ball.js"></script>
+    <script src="js/components/brick.js"></script>
+    <script src="js/components/item.js"></script>
+    <script src="js/components/level.js"></script>
+    
+    <script src="js/managers/collisionManager.js"></script>
+    <script src="js/managers/scoreManager.js"></script>
+    <script src="js/managers/levelManager.js"></script>
+    <script src="js/managers/assetManager.js"></script>
+    <script src="js/managers/inputManager.js"></script>
+    
+    <script src="js/ui/text.js"></script>
+    <script src="js/ui/menu.js"></script>
+    <script src="js/ui/hud.js"></script>
+    <script src="js/ui/uiManager.js"></script>
+    
+    <script src="js/game.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

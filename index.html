@@ -404,6 +404,23 @@
                     </div>
                 </div>
                 
+                <!-- 게임 카드 3: 벽돌 시뮬레이터 게임 -->
+                <div class="game-card">
+                    <div class="game-info">
+                        <h3 data-text="brick-game-title">Brick Simulator</h3>
+                        <p data-text="brick-game-desc">Classic brick breaking game. Control the paddle and break all the bricks to advance!</p>
+                        <button class="play-game-btn" data-game="brick" data-text="play-game">Play Game</button>
+                    </div>
+                    <div class="game-preview">
+                        <div class="game-thumbnail" id="brick-thumbnail" style="background-color: #E64A19; background-image: linear-gradient(45deg, #E64A19, #FF7043);">
+                            <div style="font-size: 40px; color: white; text-align: center; padding-top: 65px;">🧱🏓</div>
+                            <div class="thumbnail-overlay">
+                                <span data-text="click-to-play">Click to Play</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
                 <!-- 추가 게임을 위한 플레이스홀더 -->
                 <div class="game-card game-placeholder">
                     <div class="game-info">
@@ -541,6 +558,8 @@
                 'reaction-game-desc': '반응 속도를 테스트하는 게임입니다. 화면이 녹색으로 변할 때 클릭하세요. Jay와 경쟁해보세요!',
                 'smoke-game-title': '스모크 게임',
                 'smoke-game-desc': '방향키로 움직이고 스페이스바로 적을 공격하는 흥미진진한 액션 게임이에요. 매혹적인 연기 효과를 확인해보세요!',
+                'brick-game-title': '벽돌 시뮬레이터',
+                'brick-game-desc': '클래식한 벽돌 깨기 게임입니다. 패들을 움직여 모든 벽돌을 파괴하고 다음 레벨로 진행하세요!',
                 'play-game': '게임 하기',
                 'click-to-play': '클릭하여 플레이',
                 'coming-soon': '곧 출시 예정',
@@ -590,6 +609,8 @@
                 'reaction-game-desc': 'Test your reaction speed. Click when the screen turns green. Compete with Jay!',
                 'smoke-game-title': 'Smoke Game',
                 'smoke-game-desc': 'An exciting action game where you move with arrow keys and attack enemies using the spacebar! Watch mesmerizing smoke effects with each attack.',
+                'brick-game-title': 'Brick Simulator',
+                'brick-game-desc': 'Classic brick breaking game. Control the paddle with arrow keys and break all bricks to advance to the next level!',
                 'play-game': 'Play Now',
                 'click-to-play': 'Click to Play',
                 'coming-soon': 'Coming Soon',
@@ -808,8 +829,52 @@
                                 embeddedGameContainer.scrollIntoView({ behavior: 'smooth' });
                             })
                             .catch(error => {
-                                console.error('Error loading Smoke Game introduction:', error);
+                                // 스모크 게임 소개 로딩 오류 발생
                             });
+                    } else if (game === 'brick') {
+                        // 벽돌 시뮬레이터 게임 표시
+                        const currentLang = document.documentElement.lang || 'en';
+                        
+                        // iframe에 게임 URL 설정
+                        embeddedGameIframe.src = 'brick_sim_js/brick_sim_main.html';
+                        embeddedGameIframe.style.width = '100%';
+                        embeddedGameIframe.style.height = '600px'; // 기본 높이
+                        embeddedGameIframe.style.border = 'none';
+                        
+                        // 게임 제목 설정
+                        const gameTitle = document.getElementById('embedded-game-title');
+                        gameTitle.setAttribute('data-text', 'brick-game-title');
+                        gameTitle.textContent = translations[currentLang]['brick-game-title'];
+                        
+                        // 게임 컨테이너 표시
+                        embeddedGameContainer.style.display = 'block';
+                        
+                        // 게임 컨테이너로 부드럽게 스크롤
+                        embeddedGameContainer.scrollIntoView({ behavior: 'smooth' });
+                        
+                        // iframe 로드 완료 후 리사이징 처리
+                        embeddedGameIframe.onload = function() {
+                            // 화면 크기에 맞게 iframe 내부 요소 조정 시도
+                            try {
+                                const iframeDoc = embeddedGameIframe.contentDocument || embeddedGameIframe.contentWindow.document;
+                                const canvas = iframeDoc.getElementById('game-canvas');
+                                
+                                if (canvas) {
+                                    // 캔버스 크기 조정 (화면 비율 유지)
+                                    const containerWidth = embeddedGameIframe.clientWidth;
+                                    const scaleFactor = containerWidth / 800; // 원래 캔버스 너비가 800px
+                                    
+                                    // 캔버스 스타일 조정
+                                    canvas.style.width = '100%';
+                                    canvas.style.height = 'auto';
+                                    canvas.style.maxWidth = '100%';
+                                    
+                                    // 캔버스 리사이징 완료
+                                }
+                            } catch (e) {
+                                // 캔버스 조정 중 오류 발생
+                            }
+                        };
                     }
                     // 추후 다른 게임들을 추가할 수 있습니다.
                 });
