@@ -518,8 +518,10 @@ class Game {
     start() {
         if (this.running) return;
         
+        console.log('[DEBUG] Game.start() 메소드 실행');        
         this.running = true;
         this.lastTime = performance.now();
+        console.log('[DEBUG] 게임 루프 시작 (requestAnimationFrame 호출)');        
         requestAnimationFrame(this.gameLoop.bind(this));
     }
 
@@ -535,7 +537,10 @@ class Game {
      * @param {number} timestamp - The current timestamp
      */
     gameLoop(timestamp) {
-        if (!this.running) return;
+        if (!this.running) {
+            console.log('[DEBUG] gameLoop: this.running이 false임. 게임 루프 중단됨');
+            return;
+        }
         
         // Calculate time since last frame
         const currentTime = timestamp;
@@ -550,6 +555,13 @@ class Game {
         // Add to accumulator and update as many times as needed
         this.accumulator += deltaTime;
         
+        // 첫 프레임 로그 출력 (첫 번째 프레임인 경우에만)
+        if (!this.firstFrameLogged) {
+            console.log('[DEBUG] 게임 루프 첫 프레임 실행. 게임 상태:', this.state);
+            console.log('[DEBUG] 메뉴 시스템 활성화 상태:', this.menuSystem ? this.menuSystem.isActive() : 'menuSystem 없음');
+            this.firstFrameLogged = true;
+        }
+        
         // Update game state
         while (this.accumulator >= this.timeStep) {
             this.update(this.timeStep);
@@ -561,6 +573,12 @@ class Game {
         
         // Update game time
         this.gameTime += deltaTime;
+        
+        // 프레임 레이트 로깅 (10초에 한 번씩)
+        if (!this.lastFpsLog || currentTime - this.lastFpsLog > 10000) {
+            console.log(`[DEBUG] 현재 FPS: ${Math.round(1000 / deltaTime)}, 게임 상태: ${this.state}`);
+            this.lastFpsLog = currentTime;
+        }
         
         // Continue the loop
         requestAnimationFrame(this.gameLoop.bind(this));
@@ -785,65 +803,89 @@ class Game {
      * Renders the game
      */
     render() {
-        // Clear the canvas
-        this.ctx.fillStyle = CONFIG.COLOR_BLACK;
-        this.ctx.fillRect(0, 0, this.width, this.height);
-        
-        // Draw background
-        const backgroundImage = this.assetManager.getImage('background');
-        if (backgroundImage) {
-            this.ctx.globalAlpha = 0.2;
-            this.ctx.drawImage(backgroundImage, 0, 0, this.width, this.height);
-            this.ctx.globalAlpha = 1.0;
+        // 첫번째 렌더링 시에만 로그 남기기
+        if (!this.firstRenderLogged) {
+            console.log('[DEBUG] 첫 번째 렌더링 시작. 게임 상태:', this.state);
+            console.log('[DEBUG] ctx 확인:', this.ctx ? '정상' : '없음');
+            this.firstRenderLogged = true;
         }
         
-        // Only render game elements if not in menu
-        if (this.state !== 'menu') {
-            // Render level (bricks)
-            if (this.levelManager.getCurrentLevel()) {
-                this.levelManager.render(this.ctx);
+        try {
+            // Clear the canvas
+            this.ctx.fillStyle = CONFIG.COLOR_BLACK;
+            this.ctx.fillRect(0, 0, this.width, this.height);
+            
+            // Draw background
+            const backgroundImage = this.assetManager.getImage('background');
+            if (backgroundImage) {
+                this.ctx.globalAlpha = 0.2;
+                this.ctx.drawImage(backgroundImage, 0, 0, this.width, this.height);
+                this.ctx.globalAlpha = 1.0;
             }
             
-            // Render items
-            for (const item of this.items) {
-                if (item.active) {
-                    item.render(this.ctx);
+            // Only render game elements if not in menu
+            if (this.state !== 'menu') {
+                // Render level (bricks)
+                if (this.levelManager.getCurrentLevel()) {
+                    this.levelManager.render(this.ctx);
+                }
+                
+                // Render items
+                for (const item of this.items) {
+                    if (item.active) {
+                        item.render(this.ctx);
+                    }
+                }
+                
+                // Render paddle
+                if (this.paddle) {
+                    this.paddle.render(this.ctx);
+                }
+                
+                // Render balls
+                for (const ball of this.balls) {
+                    if (ball.active) {
+                        ball.render(this.ctx);
+                    }
+                }
+                
+                // Render HUD
+                this.hud.render(
+                    this.ctx,
+                    this.scoreManager.getScore(),
+                    this.scoreManager.getHighScore(),
+                    this.lives,
+                    this.levelManager.getCurrentLevelNumber()
+                );
+                
+                // Render score events
+                this.scoreManager.renderScoreEvents(this.ctx);
+            } else {
+                // 메뉴 상태에서는 메뉴와 관련된 디버깅 정보 출력
+                if (!this.menuRenderLogged) {
+                    console.log('[DEBUG] 메뉴 상태 렌더링. 메뉴 시스템 활성화 상태:', 
+                        this.menuSystem ? this.menuSystem.isActive() : 'menuSystem 없음');
+                    console.log('[DEBUG] 현재 메뉴 화면:', 
+                        this.menuSystem ? this.menuSystem.getCurrentScreen() : '없음');
+                    this.menuRenderLogged = true;
                 }
             }
             
-            // Render paddle
-            if (this.paddle) {
-                this.paddle.render(this.ctx);
-            }
-            
-            // Render balls
-            for (const ball of this.balls) {
-                if (ball.active) {
-                    ball.render(this.ctx);
+            // Render menu if active
+            if (this.menuSystem && this.menuSystem.isActive()) {
+                try {
+                    this.menuSystem.render(this.ctx);
+                } catch (error) {
+                    console.error('[ERROR] 메뉴 시스템 렌더링 중 오류 발생:', error);
                 }
             }
             
-            // Render HUD
-            this.hud.render(
-                this.ctx,
-                this.scoreManager.getScore(),
-                this.scoreManager.getHighScore(),
-                this.lives,
-                this.levelManager.getCurrentLevelNumber()
-            );
-            
-            // Render score events
-            this.scoreManager.renderScoreEvents(this.ctx);
-        }
-        
-        // Render menu if active
-        if (this.menuSystem.isActive()) {
-            this.menuSystem.render(this.ctx);
-        }
-        
-        // Debug rendering
-        if (this.debugMode) {
-            this.renderDebug();
+            // Debug rendering
+            if (this.debugMode) {
+                this.renderDebug();
+            }
+        } catch (error) {
+            console.error('[ERROR] 렌더링 중 오류 발생:', error);
         }
     }
     
