@@ -146,14 +146,30 @@ class AssetManager {
         // Calculate loading progress
         const progress = Math.floor((this.loadedAssets / this.totalAssets) * 100);
         
+        console.log(`[DEBUG] AssetManager.assetLoaded(): ${this.loadedAssets}/${this.totalAssets} 에셋 로드됨 (${progress}%)`);
+        
         // Call progress callback if provided
         if (this.onProgress) {
+            console.log('[DEBUG] AssetManager: onProgress 콜백 호출 중...');
             this.onProgress(progress, this.loadedAssets, this.totalAssets);
+        } else {
+            console.warn('[DEBUG] AssetManager: onProgress 콜백이 설정되지 않았습니다.');
         }
         
         // Check if all assets are loaded
-        if (this.loadedAssets === this.totalAssets && this.onComplete) {
-            this.onComplete(this.loadingErrors === 0);
+        if (this.loadedAssets === this.totalAssets) {
+            console.log(`[DEBUG] AssetManager: 모든 에셋 로딩 완료! (${this.loadedAssets}/${this.totalAssets})`);
+            
+            if (this.onComplete) {
+                console.log('[DEBUG] AssetManager: onComplete 콜백 호출 중... 성공 여부:', this.loadingErrors === 0);
+                setTimeout(() => {
+                    // Added setTimeout to ensure this executes after other synchronous code
+                    this.onComplete(this.loadingErrors === 0);
+                    console.log('[DEBUG] AssetManager: onComplete 콜백 실행 완료');
+                }, 0);
+            } else {
+                console.error('[DEBUG] AssetManager: onComplete 콜백이 설정되지 않아 로딩 완료를 알릴 수 없습니다!');
+            }
         }
     }
     
