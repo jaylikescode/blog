@@ -12,19 +12,34 @@ export default class Ball {
      * @param {object} paddle - Reference to the paddle object
      */
     constructor(gameWidth, gameHeight, paddle) {
+        // Base dimensions that will be scaled
+        this.baseRadius = 8;
+        this.baseInitialSpeed = 5;
+        
+        // Current dimensions
         this.gameWidth = gameWidth;
         this.gameHeight = gameHeight;
         this.paddle = paddle;
-        this.radius = 8;
-        this.initialSpeed = 5; // Base speed for calculating new speeds after collisions
+        this.radius = this.baseRadius;
+        this.initialSpeed = this.baseInitialSpeed;
+        this.scaleFactor = 1;
         
         this.reset();
     }
     
     /**
      * Reset the ball to its starting position
+     * @param {number} gameWidth - Width of the game area
+     * @param {number} gameHeight - Height of the game area
+     * @param {object} paddle - Reference to the paddle object
      */
-    reset() {
+    reset(gameWidth, gameHeight, paddle) {
+        // Update dimensions if provided
+        if (gameWidth) this.gameWidth = gameWidth;
+        if (gameHeight) this.gameHeight = gameHeight;
+        if (paddle) this.paddle = paddle;
+        
+        // Position ball in the center of the canvas
         this.position = {
             x: this.gameWidth / 2,
             y: this.gameHeight / 2
@@ -32,10 +47,54 @@ export default class Ball {
         
         // Randomize initial launch angle (between -45 and +45 degrees)
         const angle = (Math.random() * 90 - 45) * Math.PI / 180;
+        // Use scaled speed
+        const speedMagnitude = this.initialSpeed;
         this.speed = {
-            x: this.initialSpeed * Math.sin(angle),
-            y: -this.initialSpeed * Math.cos(angle)
+            x: speedMagnitude * Math.sin(angle),
+            y: -speedMagnitude * Math.cos(angle)
         };
+    }
+    
+    /**
+     * Resize the ball when the canvas size changes
+     * @param {number} gameWidth - New game width
+     * @param {number} gameHeight - New game height
+     * @param {number} scaleFactor - Scale factor to apply to ball dimensions
+     */
+    resize(gameWidth, gameHeight, scaleFactor) {
+        // Store position ratios
+        const positionRatioX = this.position ? (this.position.x / this.gameWidth) : 0.5;
+        const positionRatioY = this.position ? (this.position.y / this.gameHeight) : 0.5;
+        
+        // Update dimensions
+        this.gameWidth = gameWidth;
+        this.gameHeight = gameHeight;
+        this.scaleFactor = scaleFactor;
+        
+        // Scale ball dimensions
+        this.radius = this.baseRadius * scaleFactor;
+        this.initialSpeed = this.baseInitialSpeed * Math.sqrt(scaleFactor);
+        
+        // Maintain the ball's relative position in the game area
+        if (this.position) {
+            this.position = {
+                x: positionRatioX * gameWidth,
+                y: positionRatioY * gameHeight
+            };
+            
+            // Also scale current speed if it exists
+            if (this.speed) {
+                const currentSpeedMagnitude = Math.sqrt(this.speed.x * this.speed.x + this.speed.y * this.speed.y);
+                const directionX = this.speed.x / currentSpeedMagnitude;
+                const directionY = this.speed.y / currentSpeedMagnitude;
+                
+                const newSpeedMagnitude = this.initialSpeed;
+                this.speed = {
+                    x: directionX * newSpeedMagnitude,
+                    y: directionY * newSpeedMagnitude
+                };
+            }
+        }
     }
     
     /**

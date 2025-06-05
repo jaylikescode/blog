@@ -2,13 +2,20 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Classic Brick Game JS</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <h1>Classic Brick Game</h1>
-    <canvas id="gameCanvas"></canvas>
+    <div class="game-container">
+        <h1 class="game-title">Classic Brick Game</h1>
+        <div class="canvas-container">
+            <canvas id="gameCanvas"></canvas>
+        </div>
+        <div class="game-controls">
+            <!-- Mobile controls will be added here dynamically -->
+        </div>
+    </div>
     <script type="module" src="js/game.js"></script>
 </body>
 </html>
