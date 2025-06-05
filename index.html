@@ -812,11 +812,40 @@
                     
                     // 게임 유형에 따른 처리
                     if (game === 'reaction') {
-                        // 임베디드 게임 표시
-                        embeddedGameIframe.src = 'reaction_test/react_test.html';
-                        embeddedGameContainer.style.display = 'block';
-                        // 게임 컨테이너로 부드럽게 스크롤
-                        embeddedGameContainer.scrollIntoView({ behavior: 'smooth' });
+                        console.log('리액션 게임 로드 시작');
+                        
+                        // 만약 마크다운 컨테이너가 존재하면 반드시 숨길
+                        const markdownContainer = document.getElementById('markdown-container');
+                        if (markdownContainer) {
+                            markdownContainer.style.display = 'none';
+                            console.log('마크다운 컨테이너 숨김');
+                        }
+                        
+                        // iframe을 확실히 보이게 설정
+                        embeddedGameIframe.style.display = 'block';
+                        embeddedGameIframe.style.width = '100%';
+                        embeddedGameIframe.style.height = '600px';
+                        embeddedGameIframe.style.border = 'none';
+                        
+                        // 이전에 설정된 모든 iframe 콘텐츠 제거
+                        embeddedGameIframe.removeAttribute('srcdoc');
+                        
+                        // 새로운 src를 설정하기 전에 최소한의 지연 추가
+                        setTimeout(() => {
+                            // src 설정
+                            console.log('리액션 게임 src 설정');
+                            embeddedGameIframe.src = 'reaction_test/react_test.html';
+                            
+                            // 로드 이벤트 추가
+                            embeddedGameIframe.onload = function() {
+                                console.log('리액션 게임 iframe 로드 완료');
+                            };
+                            
+                            // 게임 컨테이너 표시
+                            embeddedGameContainer.style.display = 'block';
+                            // 게임 컨테이너로 부드럽게 스크롤
+                            embeddedGameContainer.scrollIntoView({ behavior: 'smooth' });
+                        }, 50); // 50ms 지연
                     } else if (game === 'smoke') {
                         console.log('스모크 게임 로딩 시작');
                         
@@ -874,28 +903,49 @@
                                 // 스모크 게임 소개 로딩 오류 발생
                             });
                     } else if (game === 'brick') {
-                        // 벽돌 시뮬레이터 게임 표시
+                        console.log('벽돌 게임 로드 시작');
+                        
+                        // 마크다운 컨테이너가 존재하면 반드시 숨기기
+                        const markdownContainer = document.getElementById('markdown-container');
+                        if (markdownContainer) {
+                            markdownContainer.style.display = 'none';
+                            console.log('마크다운 컨테이너 숨김');
+                        }
+                        
                         const currentLang = document.documentElement.lang || 'en';
                         
-                        // iframe에 게임 URL 설정
-                        embeddedGameIframe.src = 'brick_simulation_js/brick_sim_main.html';
+                        // iframe을 확실히 보이게 설정
+                        embeddedGameIframe.style.display = 'block';
                         embeddedGameIframe.style.width = '100%';
                         embeddedGameIframe.style.height = '600px'; // 기본 높이
                         embeddedGameIframe.style.border = 'none';
                         
-                        // 게임 제목 설정
-                        const gameTitle = document.getElementById('embedded-game-title');
-                        gameTitle.setAttribute('data-text', 'brick-game-title');
-                        gameTitle.textContent = translations[currentLang]['brick-game-title'];
+                        // 이전에 설정된 모든 iframe 콘텐츠 제거
+                        embeddedGameIframe.removeAttribute('srcdoc');
                         
-                        // 게임 컨테이너 표시
-                        embeddedGameContainer.style.display = 'block';
-                        
-                        // 게임 컨테이너로 부드럽게 스크롤
-                        embeddedGameContainer.scrollIntoView({ behavior: 'smooth' });
+                        // 새로운 src를 설정하기 전에 최소한의 지연 추가
+                        setTimeout(() => {
+                            // src 설정
+                            console.log('벽돌 게임 src 설정');
+                            embeddedGameIframe.src = 'brick_simulation_js/brick_sim_main.html';
+                            
+                            // 게임 제목 설정
+                            const gameTitle = document.getElementById('embedded-game-title');
+                            gameTitle.setAttribute('data-text', 'brick-game-title');
+                            gameTitle.textContent = translations[currentLang]['brick-game-title'];
+                            
+                            // 게임 컨테이너 표시
+                            embeddedGameContainer.style.display = 'block';
+                            
+                            // 게임 컨테이너로 부드럽게 스크롤
+                            embeddedGameContainer.scrollIntoView({ behavior: 'smooth' });
+                            
+                            console.log('벽돌 게임 로드 중...');
+                        }, 50); // 50ms 지연
                         
                         // iframe 로드 완료 후 리사이징 처리
                         embeddedGameIframe.onload = function() {
+                            console.log('벽돌 게임 iframe 로드 완료');
                             // 화면 크기에 맞게 iframe 내부 요소 조정 시도
                             try {
                                 const iframeDoc = embeddedGameIframe.contentDocument || embeddedGameIframe.contentWindow.document;
