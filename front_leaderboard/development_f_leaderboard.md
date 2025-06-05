@@ -1,37 +1,40 @@
-# 메인 페이지 우측 리더보드 섹션 설계 문서
+# 멀티 게임 리더보드 및 인기게임 순위 설계 문서
 
 ## 개발 접근 방식
-이 문서는 메인 페이지 우측에 게임 리더보드 섹션을 구현하기 위한 설계 및 개발 접근 방식을 설명합니다. 핵심 기능부터 단계적으로 구현하여 기본 기능을 먼저 확보한 후 점진적으로 기능을 확장하는 방식으로 진행합니다.
+이 문서는 메인 페이지 우측 상단에 인기게임 순위를 표시하고, 각 게임별 리더보드를 구현하기 위한 설계 및 개발 접근 방식을 설명합니다. 핵심 기능부터 단계적으로 구현하여 기본 기능을 먼저 확보한 후 점진적으로 기능을 확장하는 방식으로 진행합니다. 각 게임은 독립적인 리더보드를 가지되, 공통 인터페이스와 코드를 공유합니다.
 
 ## 개발 우선순위 및 단계
 
 ### 1단계: 기본 구조 및 레이아웃 구현 (핵심)
 - **HTML 구조 추가**
-  - `blog/index.html`에 우측 세로 리더보드 섹션을 위한 기본 컨테이너 추가
-  - "명예의 전당" 제목 및 기본 UI 요소 배치
-  - 리액션 테스트 리더보드 테이블 구조 설정
+  - `blog/index.html`에 우측 상단 인기게임 순위 섹션을 위한 기본 컨테이너 추가
+  - "인기 게임" 제목 및 기본 UI 요소 배치
+  - **상위 3개 게임만 표시하는 구조 설정**
+  - 각 게임별 리더보드 테이블 구조 설정
 
 - **CSS 스타일 기본 구현**
-  - 우측 세로 섹션 기본 레이아웃 스타일 적용
-  - 메인 콘텐츠와 리더보드 섹션의 너비 비율 조정
+  - 우측 상단 섹션 기본 레이아웃 스타일 적용
+  - 메인 콘텐츠와 인기게임 순위 섹션의 너비 비율 조정
   - 테이블 기본 스타일링
 
 - **반응형 디자인 기본 구조**
-  - 데스크톱에서는 우측 배치, 모바일에서는 하단 배치 구현
+  - 데스크톱에서는 우측 상단 배치, 모바일에서는 적절한 위치에 배치 구현
   - 기본적인 미디어 쿼리 설정
 
 ### 2단계: 데이터 연동 및 기본 기능 구현 (핵심)
 - **Firebase 연동**
-  - 리액션 테스트의 기존 Firebase 데이터베이스 연결 코드 활용
-  - 리더보드 데이터 가져오기 기능 구현
+  - 모듈화된 리더보드 코드 구현 (`leaderboard.js`)
+  - 게임별 Firebase 컬렉션 분리 (`/leaderboard_reaction`, `/leaderboard_brick` 등)
+  - **각 게임별 상위 5명의 기록만 조회하는 쿼리 최적화**
+  - **최근 활동 기준 상위 3개 게임만 조회하는 쿼리 구현**
 
 - **기본 리더보드 표시 기능**
-  - 상위 10명의 기록 표시 기능 구현
+  - **각 게임별 상위 1~5위까지만 표시하는 기능 구현**
   - 순위, 이름, 점수, 날짜 정보 표시
   - 현재 사용자 기록 강조 표시
 
 - **"더 보기" 버튼 기능 구현**
-  - 버튼 클릭 시 리액션 테스트 게임 페이지로 이동 기능
+  - 버튼 클릭 시 해당 게임의 전체 리더보드 페이지로 이동 기능
 
 ### 3단계: 다국어 지원 및 UI 개선 (중요)
 - **다국어 지원 구현**
@@ -48,8 +51,10 @@
 - **확장 가능한 게임 리더보드 구조 구현**
   - 여러 게임의 리더보드를 추가할 수 있는 구조 설계
   - 게임별 탭 또는 선택 메뉴 구현
+  - **새로운 게임 추가 시 collectionName만 변경하여 즉시 리더보드 지원**
 
 - **성능 최적화**
+  - **필요한 데이터만 로드하는 쿼리 최적화 (상위 3개 게임, 각 게임당 상위 5명)**
   - 데이터 캐싱 메커니즘 구현
   - 비동기 로딩 및 렌더링 최적화
   - 불필요한 리렌더링 방지
@@ -63,53 +68,61 @@
 
 ### HTML 구조
 ```html
-<!-- 메인 컨텐츠 영역과 리더보드 섹션을 감싸는 컨테이너 -->
+<!-- 메인 컨텐츠 영역과 인기게임 순위 섹션을 감싸는 컨테이너 -->
 <div class="main-content-wrapper">
   <!-- 기존 메인 컨텐츠 -->
   <main class="main-content">
     <!-- 기존 컨텐츠 유지 -->
   </main>
   
-  <!-- 새로운 우측 리더보드 섹션 -->
-  <aside class="leaderboard-sidebar">
-    <h2 data-text="hall-of-fame">명예의 전당</h2>
+  <!-- 새로운 우측 상단 인기게임 순위 섹션 -->
+  <aside class="popular-games-sidebar">
+    <h2 data-text="popular-games">인기 게임</h2>
     
-    <!-- 리액션 테스트 리더보드 -->
-    <div class="game-leaderboard" id="reaction-leaderboard">
-      <h3 data-text="reaction-leaderboard">리액션 테스트</h3>
-      
+    <!-- 인기게임 순위 컨테이너 (상위 3개 게임만 표시) -->
+    <div class="popular-games-container" id="popular-games-container">
       <!-- 로딩 상태 표시 -->
-      <div class="leaderboard-loading" id="sidebar-leaderboard-loading" data-text="loading">로딩 중...</div>
+      <div class="loading-indicator" id="popular-games-loading" data-text="loading">로딩 중...</div>
       
-      <!-- 리더보드 테이블 -->
-      <table class="sidebar-leaderboard-table">
-        <thead>
-          <tr>
-            <th data-text="rank">순위</th>
-            <th data-text="name">이름</th>
-            <th data-text="score">기록</th>
-            <th data-text="date">날짜</th>
-          </tr>
-        </thead>
-        <tbody id="sidebar-leaderboard-body">
-          <!-- 리더보드 데이터가 여기에 삽입됩니다 -->
-        </tbody>
-      </table>
-      
-      <!-- 더 보기 버튼 -->
-      <div class="show-more-container">
-        <button class="show-more-btn" data-game="reaction" data-text="show-more">더 보기</button>
+      <!-- 인기게임 순위 목록 (동적으로 생성됨) -->
+      <div id="popular-games-list">
+        <!-- 여기에 상위 3개 게임이 동적으로 추가됩니다 -->
       </div>
     </div>
     
-    <!-- 추가 게임 리더보드는 이 아래에 배치됩니다 -->
+    <!-- 게임별 리더보드 템플릿 (각 게임마다 복제되어 사용됨) -->
+    <template id="game-leaderboard-template">
+      <div class="game-leaderboard">
+        <h3 class="game-title">게임 이름</h3>
+        
+        <!-- 리더보드 테이블 (각 게임당 상위 5명만 표시) -->
+        <table class="game-leaderboard-table">
+          <thead>
+            <tr>
+              <th data-text="rank">순위</th>
+              <th data-text="name">이름</th>
+              <th data-text="score">기록</th>
+              <th data-text="date">날짜</th>
+            </tr>
+          </thead>
+          <tbody class="leaderboard-body">
+            <!-- 상위 5명의 리더보드 데이터가 여기에 삽입됩니다 -->
+          </tbody>
+        </table>
+        
+        <!-- 더 보기 버튼 -->
+        <div class="show-more-container">
+          <button class="show-more-btn" data-text="show-more">더 보기</button>
+        </div>
+      </div>
+    </template>
   </aside>
 </div>
 ```
 
 ### CSS 스타일 (기본)
 ```css
-/* 메인 컨텐츠와 리더보드 섹션 레이아웃 */
+/* 메인 컨텐츠와 인기게임 순위 섹션 레이아웃 */
 .main-content-wrapper {
   display: flex;
   flex-direction: row;
@@ -123,7 +136,7 @@
   min-width: 0; /* 텍스트 오버플로우 방지 */
 }
 
-.leaderboard-sidebar {
+.popular-games-sidebar {
   width: 300px;
   background-color: white;
   border-radius: 5px;
@@ -132,42 +145,62 @@
   margin-bottom: 30px;
 }
 
+/* 인기게임 아이템 스타일 */
+.popular-game-item {
+  margin-bottom: 15px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #eee;
+}
+
+.popular-game-item:last-child {
+  border-bottom: none;
+}
+
 /* 반응형 디자인 */
 @media (max-width: 768px) {
   .main-content-wrapper {
     flex-direction: column;
   }
   
-  .leaderboard-sidebar {
+  .popular-games-sidebar {
     width: 100%;
     margin-top: 20px;
   }
 }
 
-/* 리더보드 테이블 스타일 */
-.sidebar-leaderboard-table {
+/* 게임 리더보드 테이블 스타일 */
+.game-leaderboard-table {
   width: 100%;
   border-collapse: collapse;
   font-size: 14px;
   margin-top: 10px;
 }
 
-.sidebar-leaderboard-table th,
-.sidebar-leaderboard-table td {
+.game-leaderboard-table th,
+.game-leaderboard-table td {
   padding: 6px 4px;
   text-align: center;
   border-bottom: 1px solid #eee;
 }
 
-.sidebar-leaderboard-table th {
+.game-leaderboard-table th {
   font-weight: bold;
   color: #4a89dc;
 }
 
 /* 현재 사용자 강조 표시 */
-.sidebar-leaderboard-table tr.current-user {
+.game-leaderboard-table tr.current-user {
   background-color: #f0f7ff;
   font-weight: bold;
+}
+
+/* 게임 제목 스타일 */
+.game-title {
+  font-size: 16px;
+  color: #333;
+  margin-bottom: 10px;
+  padding-bottom: 5px;
+  border-bottom: 2px solid #4a89dc;
 }
 
 /* 더 보기 버튼 */
@@ -189,15 +222,32 @@
 }
 
 /* 로딩 상태 표시 */
-.leaderboard-loading {
+.loading-indicator {
   text-align: center;
   padding: 10px;
   color: #777;
   font-style: italic;
 }
 
-.leaderboard-loading.hidden {
+.loading-indicator.hidden {
   display: none;
+}
+
+/* 인기게임 순위 스타일 */
+.popular-game-rank {
+  font-weight: bold;
+  color: #4a89dc;
+  margin-right: 5px;
+}
+
+.popular-game-name {
+  font-size: 16px;
+  margin-bottom: 5px;
+}
+
+.popular-game-info {
+  font-size: 12px;
+  color: #777;
 }
 ```
 
